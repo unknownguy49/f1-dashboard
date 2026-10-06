@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>F1 / 26 — Race Dashboard</title>
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="favicon.svg"
+    >
+
+    <link
+        rel="stylesheet"
+        href="styles.css"
+    >
+
+</head>
+
+
+<body>
+
+    <!-- INITIAL ASSET LOADER -->
+    <div class="page-loader" id="pageLoader" aria-label="Loading F1 dashboard">
+        <div class="loader-content">
+            <div class="loader-logo">F1<span style="color: #fff; padding-left: 10px;">26</span></div>
+            <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
+            <div class="loader-progress" aria-hidden="true">
+                <div class="loader-progress-bar" id="loaderProgressBar"></div>
+            </div>
+            <div class="loader-meta">
+                <span>LOADING ASSETS</span>
+                <span id="loaderPercentage">0%</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Custom desktop laser cursor -->
+    <div class="laser-cursor"></div>
+    <div class="laser-trail"></div>
+
+
+    <!-- =================================================
+         NAVBAR
+    ================================================== -->
+
+    <header class="navbar">
+
+        <div class="brand">
+
+            <div class="f1-logo">
+                <span>F1</span>
+                <span class="logo-year">26</span>
+            </div>
+
+
+            <div class="brand-divider"></div>
+
+
+            <div class="brand-title">
+                RACE DASHBOARD
+            </div>
+
+        </div>
+
+        <div class="navbar-dashboard">
+        <nav class="dashboard-nav" aria-label="Dashboard sections">
+            <button class="dashboard-tab active" data-dashboard="overview" type="button">Overview</button>
+            <button class="dashboard-tab" data-dashboard="drivers" type="button">Drivers</button>
+            <button class="dashboard-tab" data-dashboard="teams" type="button">Teams</button>
+            <button class="dashboard-tab" data-dashboard="championship" type="button">Championship</button>
+            <button class="dashboard-tab" data-dashboard="race" type="button">Race Center</button>
+        </nav>
+        </div>
+
+        <div class="season">
+            2026 SEASON
+        </div>
+
+    </header>
+
+
+
+    <main>
+
+
+        <section class="dashboard-panel active" id="dashboardOverview">
+            <div class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">2026 SEASON</span>
+                    <h1>Overview</h1>
+                </div>
+                <p>Everything important from the current F1 season, without leaving the dashboard.</p>
+            </div>
+            <div id="overviewContent" class="dashboard-loading">LOADING SEASON DATA</div>
+        </section>
+
+        <section class="dashboard-panel" id="dashboardDrivers">
+            <div class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">THE GRID</span>
+                    <h1>Drivers</h1>
+                </div>
+                <p>Driver performance and championship position for the 2026 season.</p>
+            </div>
+            <div id="driversContent" class="dashboard-loading">LOADING DRIVER DATA</div>
+        </section>
+
+        <section class="dashboard-panel" id="dashboardTeams">
+            <div class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">CONSTRUCTORS</span>
+                    <h1>Teams</h1>
+                </div>
+                <p>Constructor standings and race performance across the season.</p>
+            </div>
+            <div id="teamsContent" class="dashboard-loading">LOADING TEAM DATA</div>
+        </section>
+
+        <section class="dashboard-panel" id="dashboardChampionship">
+            <div class="dashboard-heading">
+                <div>
+                    <span class="eyebrow">STANDINGS</span>
+                    <h1>Championship</h1>
+                </div>
+                <p>Driver and constructor championship standings.</p>
+            </div>
+            <div id="championshipContent" class="dashboard-loading">LOADING CHAMPIONSHIP DATA</div>
+        </section>
+
+        <section class="dashboard-panel" id="dashboardRace">
+
+        <!-- =================================================
+             RACE SELECTOR
+        ================================================== -->
+
+        <section class="race-navigation">
+
+            <div class="navigation-header">
+
+                <div>
+
+                    <span class="eyebrow">
+                        SELECT RACE
+                    </span>
+
+                    <h2>
+                        2026 Calendar
+                    </h2>
+
+                </div>
+
+
+                <div class="navigation-controls">
+
+                    <button
+                        class="nav-button"
+                        id="scrollLeft"
+                        type="button"
+                        aria-label="Previous races"
+                    >
+                        ←
+                    </button>
+
+
+                    <button
+                        class="nav-button"
+                        id="scrollRight"
+                        type="button"
+                        aria-label="Next races"
+                    >
+                        →
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="race-track-wrapper">
+
+                <div
+                    class="race-track"
+                    id="raceTrack"
+                >
+                    <!-- Generated by JavaScript -->
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             INITIAL EMPTY STATE
+        ================================================== -->
+
+        <section
+            class="empty-state"
+            id="emptyState"
+        >
+
+            <div class="empty-line"></div>
+
+
+            <div class="empty-content">
+
+                <span class="eyebrow">
+                    RACE DASHBOARD
+                </span>
+
+
+                <h1>
+                    Select a<br>
+                    Grand Prix.
+                </h1>
+
+
+                <p>
+                    Choose a race above to view its
+                    circuit, podium and fastest lap.
+                </p>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             SELECTED RACE
+        ================================================== -->
+
+        <section
+            class="race-view"
+            id="raceView"
+            hidden
+        >
+
+
+            <!-- =================================================
+                 HERO
+            ================================================== -->
+
+            <section class="hero">
+
+                <div class="hero-content">
+
+                    <span
+                        class="eyebrow"
+                        id="raceStatusLabel"
+                    >
+                        —
+                    </span>
+
+
+                    <h1 id="trackName">
+                        —
+                    </h1>
+
+
+                    <p id="trackLocation">
+                        —
+                    </p>
+
+
+                    <div class="race-meta">
+
+                        <div>
+
+                            <span>
+                                ROUND
+                            </span>
+
+                            <strong id="roundNumber">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                DATE
+                            </span>
+
+                            <strong id="raceDate">
+                                —
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                STATUS
+                            </span>
+
+                            <strong id="raceStatus">
+                                —
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="track-image">
+
+                    <img
+                        id="trackImage"
+                        src=""
+                        alt=""
+                    >
+
+
+                    <div class="track-image-label">
+
+                        <span id="trackShortName">
+                            —
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 RACE RESULT
+            ================================================== -->
+
+            <section class="section" id="raceClassificationSection">
+
+                <div class="section-heading">
+
+                    <span class="eyebrow">RESULT</span>
+
+                    <h2>Race Result</h2>
+
+                </div>
+
+                <div
+                    class="podium"
+                    id="podium"
+                >
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <div class="classification-grid" id="raceClassificationVisible">
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <div class="classification-remaining" id="raceClassificationRemaining" hidden>
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <button class="data-more-button" id="raceClassificationMore" type="button">VIEW MORE</button>
+
+            </section>
+
+
+            <!-- =================================================
+                 QUALIFYING
+            ================================================== -->
+
+            <section class="section" id="qualifyingSection">
+
+                <div class="section-heading">
+
+                    <span class="eyebrow">QUALIFYING</span>
+
+                    <h2>Qualifying Results</h2>
+
+                </div>
+
+                <div id="polePositionCard">
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <div class="qualifying-visible" id="qualifyingVisible">
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <div class="qualifying-remaining" id="qualifyingRemaining" hidden>
+                    <!-- Generated by JavaScript -->
+                </div>
+
+                <button class="data-more-button" id="qualifyingMore" type="button">VIEW MORE</button>
+
+            </section>
+
+
+            <!-- =================================================
+                 STARTING GRID VS FINISH
+            ================================================== -->
+
+            <section class="section" id="gridFinishSection" hidden>
+
+                <div class="section-heading">
+
+                    <span class="eyebrow">
+                        RACE MOVEMENT
+                    </span>
+
+                    <h2>
+                        Starting Grid → Finish
+                    </h2>
+
+                </div>
+
+                <div class="grid-finish-table">
+
+                    <div class="grid-finish-head">
+                        <span>GRID</span>
+                        <span>DRIVER</span>
+                        <span></span>
+                        <span>FINISH</span>
+                        <span>CHANGE</span>
+                    </div>
+
+                    <div id="gridFinishVisible"></div>
+
+                    <div id="gridFinishRemaining" hidden></div>
+
+                </div>
+
+                <button class="data-more-button" id="gridFinishMore" type="button">VIEW MORE</button>
+
+                <div class="grid-finish-summary" id="gridFinishSummary"></div>
+
+            </section>
+
+
+            <!-- =================================================
+                 FASTEST LAP
+            ================================================== -->
+
+            <section class="section">
+
+                <div class="section-heading">
+
+                    <span class="eyebrow">
+                        PACE
+                    </span>
+
+                    <h2>
+                        Fastest Lap
+                    </h2>
+
+                </div>
+
+
+                <div class="fastest-lap-card" id="fastestLapCard">
+                    <!-- Generated by JavaScript -->
+                </div>
+
+            </section>
+
+        </section>
+
+        </section>
+
+    </main>
+
+
+
+
+    <!-- =================================================
+         FOOTER
+    ================================================== -->
+
+    <footer>
+
+        <div class="footer-logo">
+
+            F1
+
+            <span>
+                26
+            </span>
+
+        </div>
+
+
+        <p>
+            OpenF1 race intelligence dashboard
+        </p>
+
+
+        <span>
+            2026
+        </span>
+
+    </footer>
+
+
+
+    <button
+        class="back-to-top"
+        id="backToTop"
+        type="button"
+        aria-label="Scroll to top"
+        title="Back to top"
+    >
+        ↑
+    </button>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

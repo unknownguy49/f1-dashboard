@@ -1,0 +1,4190 @@
+@import url(
+    "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+);
+
+
+/* =====================================================
+   RESET
+===================================================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+body {
+
+    min-height: 100vh;
+
+    background: #080808;
+
+    color: #f5f5f5;
+
+    font-family:
+        "Inter",
+        Arial,
+        sans-serif;
+
+}
+
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+:root {
+
+    --red: #e10600;
+
+    --black: #080808;
+
+    --surface: #111111;
+
+    --surface-2: #151515;
+
+    --border: #272727;
+
+    --white: #f5f5f5;
+
+    --muted: #858585;
+
+    --dim: #4c4c4c;
+
+    --mercedes: #00a19c;
+
+    --ferrari: #e10600;
+
+    --redbull: #3671c6;
+
+    --mclaren: #ff8700;
+
+}
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+.navbar {
+
+    height: 76px;
+
+    padding: 0 6%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    border-bottom:
+        1px solid var(--border);
+
+    background: #080808;
+
+}
+
+
+.brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+}
+
+
+.f1-logo {
+
+    color: var(--red);
+
+    font-size: 29px;
+
+    font-weight: 900;
+
+    font-style: italic;
+
+    letter-spacing: -4px;
+
+    transform: skew(-10deg);
+
+}
+
+
+.logo-year {
+
+    color: #ffffff;
+
+    padding-left: 5px;
+
+}
+
+
+.brand-divider {
+
+    width: 1px;
+
+    height: 17px;
+
+    background: #303030;
+
+}
+
+
+.brand-title {
+
+    color: #8a8a8a;
+
+    font-size: 9px;
+
+    font-weight: 600;
+
+    letter-spacing: 2px;
+
+}
+
+
+.season {
+
+    color: #777;
+
+    font-size: 9px;
+
+    letter-spacing: 2px;
+
+}
+
+
+/* =====================================================
+   MAIN
+===================================================== */
+
+main {
+
+    width: 88%;
+
+    max-width: 1400px;
+
+    margin: auto;
+
+}
+
+
+/* =====================================================
+   RACE NAVIGATION
+===================================================== */
+
+.race-navigation {
+
+    padding: 35px 0 28px;
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.navigation-header {
+
+    display: flex;
+
+    align-items: end;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+
+}
+
+
+.navigation-header h2 {
+
+    font-size: 25px;
+
+    letter-spacing: -1px;
+
+}
+
+
+.navigation-controls {
+
+    display: flex;
+
+    gap: 6px;
+
+}
+
+
+.nav-button {
+
+    width: 38px;
+
+    height: 34px;
+
+    border:
+        1px solid #303030;
+
+    background: #111111;
+
+    color: #888888;
+
+    font-size: 15px;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+
+}
+
+
+.nav-button:hover {
+
+    border-color: #555555;
+
+    background: #171717;
+
+    color: #ffffff;
+
+}
+
+
+/* =====================================================
+   RACE TRACK
+===================================================== */
+
+.race-track-wrapper {
+
+    width: 100%;
+
+    overflow: hidden;
+
+}
+
+
+.race-track {
+
+    display: flex;
+
+    gap: 7px;
+
+    overflow-x: auto;
+
+    overflow-y: hidden;
+
+    scroll-behavior: smooth;
+
+    scrollbar-width: none;
+
+    cursor: none !important;
+
+    padding-bottom: 2px;
+
+}
+
+
+.race-track::-webkit-scrollbar {
+
+    display: none;
+
+}
+
+
+.race-track.dragging {
+
+    cursor: none !important;
+
+    scroll-behavior: auto;
+
+}
+
+
+/* =====================================================
+   RACE BUTTON
+===================================================== */
+
+.race-button {
+
+    flex: 0 0 auto;
+
+    width: 116px;
+
+    height: 54px;
+
+    padding: 0 15px;
+
+    position: relative;
+
+    border:
+        1px solid #282828;
+
+    background: #101010;
+
+    color: #777777;
+
+    text-align: left;
+
+    font-family: inherit;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease;
+
+}
+
+
+.race-button:hover {
+
+    background: #171717;
+
+    border-color: #444444;
+
+    color: #ffffff;
+
+}
+
+
+.race-button.active {
+
+    background: var(--red);
+
+    border-color: var(--red);
+
+    color: #ffffff;
+
+}
+
+
+.race-button.upcoming {
+
+    opacity: 0.8;
+
+}
+
+
+.race-button.live {
+
+    border-color: #555555;
+
+}
+
+
+.race-button.live .race-state {
+
+    background: var(--red);
+
+    box-shadow: 0 0 8px rgba(225, 6, 0, 0.65);
+
+}
+
+
+.race-number {
+
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #555555;
+
+    font-size: 8px;
+
+    letter-spacing: 1.5px;
+
+}
+
+
+.race-button.active .race-number {
+
+    color:
+        rgba(255, 255, 255, 0.75);
+
+}
+
+
+.race-name {
+
+    display: block;
+
+    white-space: nowrap;
+
+    font-size: 10px;
+
+    font-weight: 600;
+
+}
+
+
+.race-state {
+
+    position: absolute;
+
+    top: 7px;
+
+    right: 7px;
+
+    width: 5px;
+
+    height: 5px;
+
+    border-radius: 50%;
+
+    background: #3b3b3b;
+
+}
+
+
+.race-button.active .race-state {
+
+    background: #ffffff;
+
+}
+
+
+/* =====================================================
+   EMPTY STATE
+===================================================== */
+
+.empty-state {
+
+    min-height: 620px;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+.empty-line {
+
+    position: absolute;
+
+    top: 0;
+
+    left: 0;
+
+    width: 1px;
+
+    height: 100%;
+
+    background: #151515;
+
+}
+
+
+.empty-content {
+
+    margin-left: 40px;
+
+}
+
+
+.empty-state h1 {
+
+    margin-bottom: 25px;
+
+    font-size:
+        clamp(55px, 7vw, 95px);
+
+    line-height: 0.88;
+
+    letter-spacing: -6px;
+
+}
+
+
+.empty-state p {
+
+    max-width: 350px;
+
+    color: #666666;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+
+}
+
+
+.empty-state[hidden] {
+
+    display: none;
+
+}
+
+
+/* =====================================================
+   EYEBROW
+===================================================== */
+
+.eyebrow {
+
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: var(--red);
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 2.5px;
+
+}
+
+
+/* =====================================================
+   RACE VIEW
+===================================================== */
+
+.race-view[hidden] {
+
+    display: none;
+
+}
+
+
+/* =====================================================
+   HERO
+===================================================== */
+
+.hero {
+
+    min-height: 470px;
+
+    display: grid;
+
+    grid-template-columns:
+        0.82fr 1.18fr;
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.hero-content {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    padding-right: 50px;
+
+}
+
+
+.hero h1 {
+
+    max-width: 600px;
+
+    margin-bottom: 20px;
+
+    font-size:
+        clamp(48px, 5vw, 76px);
+
+    line-height: 0.91;
+
+    letter-spacing: -5px;
+
+}
+
+
+.hero-content > p {
+
+    color: #777777;
+
+    font-size: 13px;
+
+}
+
+
+.race-meta {
+
+    display: flex;
+
+    gap: 42px;
+
+    margin-top: 55px;
+
+}
+
+
+.race-meta div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+
+}
+
+
+.race-meta span {
+
+    color: #555555;
+
+    font-size: 8px;
+
+    letter-spacing: 2px;
+
+}
+
+
+.race-meta strong {
+
+    color: #d4d4d4;
+
+    font-size: 11px;
+
+}
+
+
+#raceStatus.upcoming-status {
+
+    color: var(--red);
+
+}
+
+
+/* =====================================================
+   TRACK IMAGE
+===================================================== */
+
+.track-image {
+
+    min-height: 470px;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #080808;
+
+}
+
+
+.track-image img {
+
+    width: 100%;
+
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+
+    object-position: center;
+
+    opacity: 1;
+
+    transition:
+        opacity 0.25s ease;
+
+}
+
+
+/* No blur or edge gradient */
+
+
+.track-image-label {
+
+    position: absolute;
+
+    left: 18px;
+
+    bottom: 18px;
+
+    padding: 7px 10px;
+
+    background:
+        rgba(8, 8, 8, 0.9);
+
+    border-left:
+        2px solid var(--red);
+
+}
+
+
+.track-image-label span {
+
+    color: #dddddd;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: 3px;
+
+}
+
+
+/* =====================================================
+   SECTIONS
+===================================================== */
+
+.section {
+
+    padding: 75px 0;
+
+    border-bottom:
+        1px solid var(--border);
+
+}
+
+
+.section-heading {
+
+    margin-bottom: 30px;
+
+}
+
+
+.section h2 {
+
+    font-size: 28px;
+
+    letter-spacing: -1.5px;
+
+}
+
+
+/* =====================================================
+   PODIUM
+===================================================== */
+
+.podium {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 8px;
+
+    align-items: end;
+
+}
+
+
+.podium-card {
+
+    min-height: 175px;
+
+    position: relative;
+
+    padding: 25px;
+
+    background: var(--surface);
+
+    border:
+        1px solid var(--border);
+
+    overflow: hidden;
+
+}
+
+
+.podium-card.first {
+
+    min-height: 205px;
+
+    border:
+        1px solid var(--border);
+
+}
+
+
+.position {
+
+    position: absolute;
+
+    top: 7px;
+
+    right: 18px;
+
+    color: #292929;
+
+    font-size: 50px;
+
+    font-weight: 900;
+
+    line-height: 1;
+
+}
+
+
+.driver-info {
+
+    position: absolute;
+
+    bottom: 24px;
+
+    left: 25px;
+
+    z-index: 4;
+
+}
+
+
+.driver-number {
+
+    color: #555555;
+
+    font-family: monospace;
+
+    font-size: 9px;
+
+}
+
+
+.driver-info h3 {
+
+    margin: 5px 0;
+
+    color: #eeeeee;
+
+    font-size: 16px;
+
+    letter-spacing: -0.4px;
+
+}
+
+
+.driver-info p {
+
+    color: #666666;
+
+    font-size: 10px;
+
+}
+
+
+.team-color {
+
+    position: absolute;
+
+    bottom: 0;
+
+    left: 0;
+
+    width: 100%;
+
+    height: 3px;
+
+    background: #333333;
+
+    z-index: 5;
+
+}
+
+
+.team-color.mercedes {
+
+    background: var(--mercedes);
+
+}
+
+
+.team-color.ferrari {
+
+    background: var(--ferrari);
+
+}
+
+
+.team-color.redbull {
+
+    background: var(--redbull);
+
+}
+
+
+.team-color.mclaren {
+
+    background: var(--mclaren);
+
+}
+
+
+/* =====================================================
+   FULL PODIUM DRIVER IMAGES
+===================================================== */
+
+.driver-image {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position: center top;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+
+}
+
+
+.driver-image-fade {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(17, 17, 17, 0.95) 0%,
+            rgba(17, 17, 17, 0.72) 25%,
+            rgba(17, 17, 17, 0.20) 55%,
+            transparent 80%
+        );
+
+}
+
+
+.podium-card .position {
+
+    z-index: 3;
+
+}
+
+
+.podium-card .driver-info {
+
+    z-index: 4;
+
+}
+
+
+.podium-card .team-color {
+
+    z-index: 5;
+
+}
+
+
+/* =====================================================
+   FASTEST LAP FEATURE
+===================================================== */
+
+.fastest-lap-card {
+
+    position: relative;
+
+    min-height: 275px;
+
+    display: grid;
+
+    grid-template-columns: 1fr 0.85fr;
+
+    overflow: hidden;
+
+    background: #111111;
+
+    border:
+        1px solid var(--border);
+
+}
+
+
+.fastest-lap-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+
+    width: 4px;
+    height: 100%;
+
+    background: var(--red);
+
+    z-index: 8;
+
+}
+
+
+.fastest-lap-main {
+
+    position: relative;
+
+    z-index: 5;
+
+    padding: 38px 42px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            90deg,
+            #111111 0%,
+            rgba(17,17,17,0.98) 55%,
+            rgba(17,17,17,0.78) 100%
+        );
+
+}
+
+
+.fastest-lap-label {
+
+    margin-bottom: 15px;
+
+    color: #555555;
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: 2.5px;
+
+}
+
+
+.fastest-lap-time {
+
+    color: #f5f5f5;
+
+    font-family: monospace;
+
+    font-size:
+        clamp(44px, 5vw, 70px);
+
+    font-weight: 700;
+
+    line-height: 0.95;
+
+    letter-spacing: -4px;
+
+}
+
+
+.fastest-lap-driver {
+
+    margin-top: 22px;
+
+    color: #eeeeee;
+
+    font-size: 19px;
+
+    font-weight: 700;
+
+    letter-spacing: -0.5px;
+
+}
+
+
+.fastest-lap-team {
+
+    margin-top: 5px;
+
+    color: #666666;
+
+    font-size: 11px;
+
+}
+
+
+.fastest-lap-visual {
+
+    position: relative;
+
+    min-width: 0;
+
+    overflow: hidden;
+
+    background: #0d0d0d;
+
+}
+
+
+.fastest-lap-driver-image {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    object-position: center 15%;
+
+    opacity: 0.95;
+
+    z-index: 1;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    -webkit-user-drag: none;
+
+}
+
+
+.fastest-lap-image-fade {
+
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    pointer-events: none;
+
+    background:
+        linear-gradient(
+            90deg,
+            #111111 0%,
+            rgba(17,17,17,0.55) 18%,
+            rgba(17,17,17,0.08) 58%,
+            rgba(17,17,17,0.15) 100%
+        );
+
+}
+
+
+.fastest-lap-stats {
+
+    position: absolute;
+
+    right: 28px;
+    bottom: 25px;
+
+    z-index: 4;
+
+    display: flex;
+
+    gap: 28px;
+
+    padding: 13px 16px;
+
+    background:
+        rgba(8,8,8,0.88);
+
+    border:
+        1px solid rgba(255,255,255,0.08);
+
+    backdrop-filter: blur(8px);
+
+}
+
+
+.fastest-lap-stats div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+}
+
+
+.fastest-lap-stats span {
+
+    color: #555555;
+
+    font-size: 7px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.7px;
+
+}
+
+
+.fastest-lap-stats strong {
+
+    color: #eeeeee;
+
+    font-family: monospace;
+
+    font-size: 17px;
+
+}
+
+
+.fastest-lap-visual-placeholder {
+
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #333333;
+
+    font-size: 60px;
+
+    font-weight: 800;
+
+}
+
+
+.fastest-lap-card.empty .fastest-lap-time {
+
+    color: #333333;
+
+}
+
+
+.fastest-lap-card.empty .fastest-lap-driver {
+
+    color: #444444;
+
+}
+
+
+.fastest-lap-card.empty .fastest-lap-team {
+
+    color: #444444;
+
+}
+
+
+/* =====================================================
+   FASTEST LAP RESPONSIVE
+===================================================== */
+
+@media (max-width: 700px) {
+
+    .fastest-lap-card {
+
+        grid-template-columns: 1fr;
+
+        min-height: 440px;
+
+    }
+
+
+    .fastest-lap-main {
+
+        min-height: 255px;
+
+        padding: 30px;
+
+    }
+
+
+    .fastest-lap-visual {
+
+        min-height: 185px;
+
+    }
+
+
+    .fastest-lap-driver-image {
+
+        object-position: center 30%;
+
+    }
+
+
+    .fastest-lap-stats {
+
+        right: 20px;
+        bottom: 18px;
+
+        gap: 20px;
+
+    }
+
+
+    .fastest-lap-time {
+
+        font-size: 44px;
+
+        letter-spacing: -3px;
+
+    }
+
+}
+
+
+/* =====================================================
+   FUTURE RACE
+===================================================== */
+
+.upcoming-card {
+
+    border-top-color:
+        #242424 !important;
+
+}
+
+
+.upcoming-driver {
+
+    color: #444444 !important;
+
+}
+
+
+/* =====================================================
+   FOOTER
+===================================================== */
+
+footer {
+
+    width: 88%;
+
+    max-width: 1400px;
+
+    height: 100px;
+
+    margin: auto;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+}
+
+
+.footer-logo {
+
+    color: var(--red);
+
+    font-size: 24px;
+
+    font-weight: 900;
+
+    font-style: italic;
+
+}
+
+
+.footer-logo span {
+
+    color: #ffffff;
+
+    font-size: inherit;
+
+}
+
+
+footer p {
+
+    color: #7d7d7d;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+}
+
+
+footer > span {
+
+    color: #7d7d7d;
+
+    font-size: 9px;
+
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 900px) {
+
+    main {
+
+        width: 90%;
+
+    }
+
+
+    .hero {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .hero-content {
+
+        min-height: 330px;
+
+        padding:
+            60px 0 40px;
+
+    }
+
+
+    .track-image {
+
+        min-height: 350px;
+
+    }
+
+
+    .podium {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .podium-card,
+    .podium-card.first {
+
+        min-height: 160px;
+
+    }
+
+    .podium {
+        grid-template-columns: 1fr;
+    }
+
+    .podium-card[data-position="1"] {
+        order: 1;
+    }
+
+    .podium-card[data-position="2"] {
+        order: 2;
+    }
+
+    .podium-card[data-position="3"] {
+        order: 3;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .navbar {
+
+        padding: 0 5%;
+
+    }
+
+
+    .season {
+
+        display: none;
+
+    }
+
+
+    .brand-divider,
+    .brand-title {
+
+        display: none;
+
+    }
+
+
+    main {
+
+        width: 90%;
+
+    }
+
+
+    .race-navigation {
+
+        padding-top: 25px;
+
+    }
+
+
+    .navigation-header {
+
+        align-items: flex-start;
+
+        gap: 15px;
+
+    }
+
+
+    .navigation-header h2 {
+
+        font-size: 22px;
+
+    }
+
+
+    .race-button {
+
+        width: 105px;
+
+    }
+
+
+    .empty-state {
+
+        min-height: 500px;
+
+    }
+
+
+    .empty-state h1 {
+
+        font-size: 58px;
+
+        letter-spacing: -4px;
+
+    }
+
+
+    .hero h1 {
+
+        font-size: 48px;
+
+        letter-spacing: -4px;
+
+    }
+
+
+    .race-meta {
+
+        gap: 25px;
+
+        flex-wrap: wrap;
+
+        margin-top: 40px;
+
+    }
+
+
+    .track-image {
+
+        min-height: 270px;
+
+    }
+
+
+    .section {
+
+        padding: 55px 0;
+
+    }
+
+
+    footer {
+
+        width: 90%;
+
+    }
+
+}
+
+
+/* =====================================================
+   RED SCROLLBAR
+===================================================== */
+
+html {
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        #e10600
+        #080808;
+
+}
+
+
+::-webkit-scrollbar {
+
+    width: 6px;
+
+    height: 6px;
+
+}
+
+
+::-webkit-scrollbar-track {
+
+    background: #080808;
+
+}
+
+
+::-webkit-scrollbar-thumb {
+
+    background: #e10600;
+
+    border-radius: 0;
+
+    box-shadow:
+        0 0 4px rgba(225, 6, 0, 0.9),
+        0 0 10px rgba(225, 6, 0, 0.55),
+        0 0 20px rgba(225, 6, 0, 0.25);
+
+}
+
+
+::-webkit-scrollbar-thumb:hover {
+
+    background: #ff1a14;
+
+    box-shadow:
+        0 0 5px rgba(225, 6, 0, 1),
+        0 0 12px rgba(225, 6, 0, 0.8),
+        0 0 25px rgba(225, 6, 0, 0.4);
+
+}
+
+
+::-webkit-scrollbar-button {
+
+    display: none;
+
+}
+
+
+/* =====================================================
+   LASER CURSOR
+===================================================== */
+
+html,
+body,
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
+
+    cursor: none !important;
+
+}
+
+
+.laser-cursor {
+
+    position: fixed;
+
+    width: 7px;
+
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #ff1a14;
+
+    box-shadow:
+        0 0 4px #e10600,
+        0 0 10px #e10600,
+        0 0 20px
+            rgba(225, 6, 0, 0.8);
+
+    pointer-events: none;
+
+    z-index: 99999;
+
+    transform:
+        translate(-50%, -50%);
+
+    transition:
+        width 0.15s ease,
+        height 0.15s ease,
+        box-shadow 0.15s ease;
+
+}
+
+
+.laser-trail {
+
+    position: fixed;
+
+    width: 55px;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(225, 6, 0, 0.2),
+            rgba(225, 6, 0, 0.8)
+        );
+
+    box-shadow:
+        0 0 5px
+            rgba(225, 6, 0, 0.7);
+
+    pointer-events: none;
+
+    z-index: 99998;
+
+    transform-origin:
+        right center;
+
+}
+
+
+.laser-cursor::before,
+.laser-cursor::after {
+
+    content: "";
+
+    position: absolute;
+
+    background:
+        rgba(225, 6, 0, 0.7);
+
+}
+
+
+.laser-cursor::before {
+
+    width: 18px;
+
+    height: 1px;
+
+    left: -5px;
+
+    top: 3px;
+
+}
+
+
+.laser-cursor::after {
+
+    width: 1px;
+
+    height: 18px;
+
+    left: 3px;
+
+    top: -5px;
+
+}
+
+
+/* =====================================================
+   NEVER SHOW NATIVE CURSOR ON RACE SELECTOR
+===================================================== */
+
+.race-track,
+.race-track *,
+.race-button,
+.race-button * {
+
+    cursor: none !important;
+
+}
+
+
+/* =====================================================
+   LASER HOVER
+===================================================== */
+
+body.cursor-hover
+.laser-cursor {
+
+    width: 11px;
+
+    height: 11px;
+
+    box-shadow:
+        0 0 5px #e10600,
+        0 0 14px #e10600,
+        0 0 30px
+            rgba(225, 6, 0, 0.8);
+
+}
+
+
+/* =====================================================
+   TOUCH DEVICES
+   Completely remove fake cursor.
+===================================================== */
+
+@media (hover: none) and (pointer: coarse) {
+
+    .laser-cursor,
+    .laser-trail {
+
+        display: none !important;
+
+    }
+
+
+    html,
+    body,
+    button,
+    a,
+    input,
+    select,
+    textarea,
+    [role="button"],
+    .race-track,
+    .race-track *,
+    .race-button,
+    .race-button * {
+
+        cursor: auto !important;
+
+    }
+
+}
+
+/* =====================================================
+   INITIAL ASSET LOADER
+===================================================== */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #080808;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.55s ease, visibility 0.55s ease;
+}
+.page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.loader-content {
+    width: min(420px, 78vw);
+}
+.loader-logo {
+    margin-bottom: 32px;
+    color: var(--red);
+    font-size: 58px;
+    font-weight: 900;
+    font-style: italic;
+    line-height: 1;
+    letter-spacing: -6px;
+    transform: skew(-10deg);
+}
+.loader-label {
+    margin-bottom: 12px;
+    color: #777777;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+}
+.loader-progress {
+    width: 100%;
+    height: 2px;
+    overflow: hidden;
+    background: #202020;
+}
+.loader-progress-bar {
+    width: 0%;
+    height: 100%;
+    background: var(--red);
+    box-shadow: 0 0 8px rgba(225, 6, 0, 0.7);
+    transition: width 0.18s ease;
+}
+.loader-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    color: #444444;
+    font-family: monospace;
+    font-size: 8px;
+    letter-spacing: 1px;
+}
+#loaderPercentage { color: #888888; }
+@media (max-width: 600px) {
+    .loader-content { width: 80vw; }
+    .loader-logo { font-size: 50px; margin-bottom: 28px; }
+}
+
+
+
+.dashboard-panel{display:none;}
+.dashboard-panel.active{display:block;}
+
+/* =====================================================
+   PHASE 2 DASHBOARD
+===================================================== */
+
+.navbar-dashboard{flex:1;display:flex;justify-content:center;min-width:0;margin:0 34px}
+.dashboard-nav{display:flex;align-items:center;justify-content:center;gap:32px;height:76px;overflow-x:auto;scrollbar-width:none}
+.dashboard-nav::-webkit-scrollbar{display:none}
+.dashboard-tab{position:relative;flex:0 0 auto;height:76px;padding:0;border:0;background:transparent;color:#555;font-family:inherit;font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;cursor:none;transition:color .2s ease}
+.dashboard-tab:after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--red);transform:scaleX(0);transition:transform .2s ease}
+.dashboard-tab:hover,.dashboard-tab.active{color:#fff}
+.dashboard-tab.active:after{transform:scaleX(1)}
+
+
+/* PHASE 2 / OPEN EDITORIAL LAYOUT */
+.dashboard-panel:not(#dashboardRace){width:100%;max-width:none;margin:0;padding:65px 0 100px;box-sizing:border-box}
+.dashboard-panel:not(#dashboardRace) .dashboard-heading{width:min(1600px,89%);margin:0 auto 55px;padding-top:20px;box-sizing:border-box}
+.dashboard-panel:not(#dashboardRace) .dashboard-heading h1{font-size:clamp(55px,6vw,90px);letter-spacing:-6px}
+.dashboard-panel:not(#dashboardRace) .dashboard-heading p{color:#858585}
+#overviewContent,#driversContent,#teamsContent,#championshipContent{width:100%;border:0!important;background:transparent!important;min-height:0!important;padding:0!important;display:block!important}
+.rev-eyebrow{font-size:9px;letter-spacing:2.6px;color:#e10600;font-weight:900}
+.rev-cover{position:relative;min-height:600px;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 78% 50%,#182523 0%,#101515 25%,#080808 68%)}
+.rev-cover-text{position:relative;z-index:3;padding:75px 0 40px;max-width:65%}
+.rev-cover h2,.rev-teams-intro h2,.rev-title-race h2{font-size:clamp(68px,8.5vw,145px);letter-spacing:-.095em;line-height:.84;margin:24px 0}
+.rev-cover h2 i,.rev-teams-intro h2 i,.rev-title-race h2 i{font-style:normal;color:#e10600}
+.rev-cover-text>p,.rev-teams-intro>p{color:#a0a0a0;font-size:13px;margin:30px 0}
+.rev-cover-person{position:absolute;z-index:2;right:-2%;bottom:0;width:60%;height:106%;object-fit:contain;object-position:right bottom;filter:drop-shadow(-35px 0 70px #000)}
+.rev-giant{position:absolute;right:2%;top:0;font-size:380px;font-weight:900;line-height:1;color:#ffffff07;z-index:0}
+.rev-cover-bottom{display:flex;flex-wrap:wrap;align-items:baseline;gap:15px;margin-top:100px}
+.rev-cover-bottom span{width:100%;color:#aaa;font-size:9px;letter-spacing:2px}
+.rev-cover-bottom strong{font-size:clamp(26px,3vw,48px);letter-spacing:-2px}
+.rev-cover-bottom b{font-size:30px;color:#e10600}.rev-cover-bottom small{font-size:10px}
+.rev-races{display:flex;gap:7%;margin:110px 0 90px;align-items:stretch}
+.rev-race{position:relative;flex:1;min-height:330px;overflow:hidden;padding:0 0 40px}
+.rev-race h3{font-size:clamp(42px,5vw,80px);letter-spacing:-5px;line-height:.92;max-width:570px;margin:25px 0 15px;position:relative;z-index:2}
+.rev-race p{color:#888;font-size:12px;position:relative;z-index:2}
+.rev-race img{position:absolute;width:65%;height:100%;right:-5%;top:0;object-fit:contain;opacity:.5;z-index:0}
+.rev-race .rev-eyebrow{position:relative;z-index:2}
+.rev-next{padding-left:25px}.rev-arrow{font-size:80px;color:#e10600;display:block;margin-top:30px}
+.rev-progress{display:flex;gap:10%;padding:32px 0;margin:30px 0 110px;border-top:1px solid #252525}
+.rev-progress>div{min-width:0}.rev-progress span{display:block;color:#777;font-size:9px;letter-spacing:2px;margin-bottom:15px}
+.rev-progress strong{font-size:clamp(22px,3vw,43px);letter-spacing:-2px}.rev-progress em{font-style:normal;color:#777;font-size:18px}
+.rev-league{display:grid;grid-template-columns:1fr 1.25fr;gap:10%;margin:100px 0}.rev-league-title h3,.rev-section-heading h3,.rev-championship-list h3{font-size:clamp(46px,5vw,78px);line-height:.9;letter-spacing:-5px;margin:25px 0}
+.rev-standing{display:grid;grid-template-columns:45px 1.5fr 1fr 70px;gap:12px;align-items:center;padding:20px 0;border-bottom:1px solid #242424}.rev-pos{font:12px monospace;color:#777}.rev-standing strong{font-size:14px}.rev-standing .rev-team{color:#777;font-size:11px}.rev-standing b{text-align:right;font:700 15px monospace}
+.rev-driver-feature{position:relative;min-height:620px;overflow:hidden;background:radial-gradient(ellipse at 72% 65%,#152622,#090909 70%)}
+.rev-driver-head{position:absolute;left:0;bottom:70px;z-index:3;max-width:60%}.rev-driver-head h2{font-size:clamp(68px,9vw,145px);letter-spacing:-.09em;line-height:.8;margin:25px 0}.rev-driver-head p{color:#999;font-size:14px}
+.rev-driver-feature>img{position:absolute;right:2%;bottom:0;width:60%;height:100%;object-fit:contain;object-position:right bottom;z-index:2}
+.rev-watermark{position:absolute;right:5%;top:-60px;font-size:400px;font-weight:900;color:#ffffff07}
+.rev-section-heading{margin:110px 0 35px}.rev-section-heading p{color:#777;font-size:12px}
+.rev-driver-roster{display:flex;flex-direction:column}.rev-roster-item{position:relative;display:flex;align-items:center;gap:30px;min-height:125px;border-bottom:1px solid #222;overflow:hidden}.rev-roster-item:hover{background:linear-gradient(90deg,#171717,transparent)}
+.rev-roster-item>img{width:105px;height:120px;object-fit:contain;object-position:bottom}.rev-roster-item>div{flex:1}.rev-roster-item h4{font-size:clamp(23px,3vw,44px);letter-spacing:-2px;margin-top:8px}.rev-roster-item>strong{font-size:clamp(23px,3vw,40px);letter-spacing:-2px}.rev-roster-item small{font-size:9px;color:#888;letter-spacing:1px}
+.rev-teams-intro{min-height:460px;padding:50px 0 90px;background:radial-gradient(ellipse at 90% 30%,#211111,transparent 45%)}.rev-teams-intro h2{max-width:1000px}
+.rev-team-feature{position:relative;display:flex;align-items:center;gap:25px;min-height:290px;padding:45px 0;border-bottom:1px solid #242424;overflow:hidden}.rev-team-feature .rev-pos{align-self:flex-start;margin-top:12px}
+.rev-team-title{flex:1;position:relative;z-index:2}.rev-team-title h3{font-size:clamp(38px,5vw,78px);line-height:1;letter-spacing:-5px;margin:18px 0}.rev-team-pair{display:flex;gap:25px;flex-wrap:wrap}.rev-team-pair span{color:#999;font-size:11px}.rev-team-pair b{color:white;margin-left:8px}
+.rev-team-visual{display:flex;align-items:end;justify-content:center;width:35%;height:245px;position:relative;z-index:1}.rev-team-visual img{width:55%;height:100%;object-fit:contain;object-position:bottom;margin-left:-15%;filter:drop-shadow(0 0 20px #000)}
+.rev-team-score{font-size:clamp(35px,5vw,70px);letter-spacing:-4px;min-width:150px;text-align:right;z-index:3}.rev-team-score small{display:block;font-size:10px;color:#777;letter-spacing:2px}
+.rev-team-feature.mercedes .rev-team-title h3{color:#8be2d9}.rev-team-feature.ferrari .rev-team-title h3{color:#f05555}.rev-team-feature.mclaren .rev-team-title h3{color:#ff9b38}.rev-team-feature.redbull .rev-team-title h3{color:#6193ec}
+.rev-title-race{position:relative;min-height:670px;overflow:hidden;background:radial-gradient(ellipse at 75% 50%,#1b2522,#080808 70%);padding:60px 0}.rev-title-race h2{position:relative;z-index:2}.rev-title-race>img{position:absolute;right:0;bottom:0;width:58%;height:100%;object-fit:contain;object-position:right bottom;z-index:1}
+.rev-title-leader{position:relative;z-index:2;display:flex;flex-direction:column;gap:9px;margin-top:50px}.rev-title-leader span{color:#e10600;font-size:9px;letter-spacing:2px}.rev-title-leader strong{font-size:30px}.rev-title-leader b{font-size:25px}
+.rev-championship-list{display:grid;grid-template-columns:1.25fr 1fr;gap:10%;margin:120px 0 0}.rev-championship-list>div{min-width:0}.rev-championship-list .rev-standing{grid-template-columns:35px 1.4fr .8fr 50px}.rev-championship-list>div:nth-child(2) .rev-standing{grid-template-columns:35px 1fr 0 55px}
+@media(max-width:900px){.rev-cover-text{max-width:90%}.rev-cover-person{opacity:.35;width:85%}.rev-races,.rev-league,.rev-championship-list{display:block}.rev-race{margin-bottom:35px}.rev-league .rev-standings{margin-top:35px}.rev-driver-feature>img{opacity:.45;width:85%}.rev-driver-head{max-width:95%}.rev-team-visual{display:none}.rev-team-feature{min-height:220px}.rev-championship-list>div{margin-bottom:70px}.rev-title-race>img{opacity:.3;width:85%}}
+@media(max-width:600px){.dashboard-panel:not(#dashboardRace){padding:35px 0 65px}.rev-cover{min-height:530px}.rev-cover h2,.rev-title-race h2,.rev-teams-intro h2{font-size:64px}.rev-cover-bottom{margin-top:65px}.rev-progress{gap:20px;flex-wrap:wrap}.rev-standing{grid-template-columns:25px 1fr 65px}.rev-standing .rev-team{display:none}.rev-roster-item{gap:10px;min-height:100px}.rev-roster-item>img{width:65px;height:90px}.rev-roster-item h4{font-size:24px}.rev-team-feature{gap:10px}.rev-team-title h3{font-size:38px;letter-spacing:-2px}.rev-team-score{font-size:34px;min-width:75px}.rev-team-pair{gap:8px}.rev-title-race{min-height:550px}.rev-championship-list .rev-standing{grid-template-columns:25px 1fr 0 45px}}
+
+/* =====================================================
+   OVERVIEW ENHANCEMENT
+===================================================== */
+#dashboardOverview .dashboard-heading{margin-bottom:42px}
+#dashboardOverview .dashboard-heading h1{max-width:900px}
+#dashboardOverview .dashboard-heading p{max-width:330px}
+#dashboardOverview .overview-hero-new{position:relative;min-height:555px;overflow:hidden;background:radial-gradient(ellipse at 72% 58%,#172622 0%,#0d1110 30%,#080808 72%);isolation:isolate}
+#dashboardOverview .overview-hero-copy{position:relative;z-index:3;width:68%;padding:58px 0 48px}
+#dashboardOverview .overview-eyebrow{display:block;color:#e10600;font-size:9px;font-weight:900;letter-spacing:2.8px}
+#dashboardOverview .overview-hero-copy h2{font-size:clamp(70px,8.4vw,142px);line-height:.82;letter-spacing:-.09em;margin:23px 0 22px}
+#dashboardOverview .overview-hero-copy h2 i,#dashboardOverview .overview-section-intro h3 i{font-style:normal;color:#e10600}
+#dashboardOverview .overview-hero-description{max-width:360px;color:#858585;font-size:13px;line-height:1.7}
+#dashboardOverview .overview-leader-line{display:grid;grid-template-columns:1fr auto;align-items:end;gap:18px;margin-top:76px;max-width:760px;padding-top:19px;border-top:1px solid #292929}
+#dashboardOverview .overview-leader-line span{grid-column:1/-1;color:#777;font-size:8px;font-weight:800;letter-spacing:2.2px}
+#dashboardOverview .overview-leader-line strong{font-size:clamp(28px,3vw,47px);letter-spacing:-2.5px}
+#dashboardOverview .overview-leader-line b{font-size:clamp(30px,3.4vw,52px);letter-spacing:-3px;color:#f5f5f5}
+#dashboardOverview .overview-leader-line small{font-size:9px;color:#777;letter-spacing:1px}
+#dashboardOverview .overview-hero-number{position:absolute;right:-2%;top:-4px;z-index:0;font-size:clamp(300px,31vw,510px);line-height:.9;font-weight:900;letter-spacing:-.1em;color:#ffffff05;white-space:nowrap;pointer-events:none}
+#dashboardOverview .overview-hero-team{position:absolute;right:4%;bottom:23px;z-index:4;color:#aaa;font-size:9px;font-weight:800;letter-spacing:2.5px}
+#dashboardOverview .overview-metrics{display:grid;grid-template-columns:1fr 1.25fr 1fr 1fr;margin:0 0 105px;border-top:1px solid #292929;border-bottom:1px solid #292929}
+#dashboardOverview .overview-metrics>div{padding:24px 25px 27px 0;margin-right:30px}
+#dashboardOverview .overview-metrics>div+div{padding-left:30px;border-left:1px solid #292929}
+#dashboardOverview .overview-metrics span{display:block;color:#666;font-size:8px;font-weight:800;letter-spacing:2px;margin-bottom:13px}
+#dashboardOverview .overview-metrics strong{font-size:clamp(25px,2.8vw,43px);letter-spacing:-2px}
+#dashboardOverview .overview-metrics em{font-style:normal;color:#666;font-size:15px;letter-spacing:0}
+#dashboardOverview .overview-race-pulse{display:grid;grid-template-columns:.72fr 1.45fr .95fr;gap:42px;align-items:stretch;margin-bottom:112px}
+#dashboardOverview .overview-section-intro{padding-top:8px}
+#dashboardOverview .overview-section-intro h3{font-size:clamp(48px,5vw,84px);line-height:.87;letter-spacing:-.07em;margin:22px 0}
+#dashboardOverview .overview-section-intro p{max-width:250px;color:#777;font-size:12px;line-height:1.7}
+#dashboardOverview .overview-race-story{position:relative;min-height:340px;overflow:hidden}
+#dashboardOverview .overview-race-story:after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:#e10600}
+#dashboardOverview .overview-race-story img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center;opacity:.42;filter:brightness(.75);transition:transform .6s ease,opacity .6s ease}
+#dashboardOverview .overview-race-last:hover img{transform:scale(1.04);opacity:.58}
+#dashboardOverview .overview-race-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 20%,rgba(8,8,8,.12) 45%,#080808 100%)}
+#dashboardOverview .overview-race-copy{position:absolute;z-index:2;left:0;right:0;bottom:24px}
+#dashboardOverview .overview-race-copy>span{color:#e10600;font-size:8px;font-weight:900;letter-spacing:2px}
+#dashboardOverview .overview-race-copy h4{font-size:clamp(32px,3.6vw,58px);line-height:.9;letter-spacing:-3px;margin:14px 0 10px}
+#dashboardOverview .overview-race-copy p{color:#888;font-size:10px;letter-spacing:.5px}
+#dashboardOverview .overview-next{background:linear-gradient(135deg,#111 0%,#0b0b0b 65%)}
+#dashboardOverview .overview-next-number{position:absolute;right:-12px;top:-35px;font-size:240px;font-weight:900;line-height:1;color:#ffffff05}
+#dashboardOverview .overview-next .overview-race-copy{bottom:26px;left:28px;right:28px}
+#dashboardOverview .overview-next-arrow{position:absolute;right:24px;bottom:20px;color:#e10600;font-size:46px;line-height:1}
+#dashboardOverview .overview-championship{display:grid;grid-template-columns:.72fr 1fr 1fr;gap:55px;margin-bottom:100px}
+#dashboardOverview .overview-column-label{display:block;color:#e10600;font-size:8px;font-weight:900;letter-spacing:2.5px;margin-bottom:18px}
+#dashboardOverview .overview-standings{display:flex;flex-direction:column}
+#dashboardOverview .overview-standing{display:grid;grid-template-columns:35px 1fr 60px;gap:15px;align-items:center;padding:18px 0;border-top:1px solid #252525}
+#dashboardOverview .overview-standing>span{font:10px monospace;color:#555}
+#dashboardOverview .overview-standing div{display:flex;align-items:baseline;gap:12px;min-width:0}
+#dashboardOverview .overview-standing strong{font-size:12px;line-height:1.1}
+#dashboardOverview .overview-standing small{color:#666;font-size:8px;letter-spacing:1px;white-space:nowrap}
+#dashboardOverview .overview-standing b{text-align:right;font:700 14px monospace;color:#eee}
+#dashboardOverview .overview-teams .overview-standing{grid-template-columns:35px 1fr 60px}
+
+@media(max-width:1000px){
+#dashboardOverview .overview-hero-copy{width:75%}
+#dashboardOverview .overview-race-pulse{grid-template-columns:1fr 1.3fr 1fr;gap:25px}
+#dashboardOverview .overview-championship{grid-template-columns:1fr 1fr}
+#dashboardOverview .overview-championship .overview-section-intro{grid-column:1/-1}
+}
+@media(max-width:700px){
+#dashboardOverview .dashboard-heading{margin-bottom:38px}
+#dashboardOverview .overview-hero-new{min-height:535px}
+#dashboardOverview .overview-hero-copy{width:100%;padding-top:38px}
+#dashboardOverview .overview-hero-copy h2{font-size:64px}
+#dashboardOverview .overview-hero-description{max-width:260px}
+#dashboardOverview .overview-hero-number{font-size:220px;top:100px;right:-18px}
+#dashboardOverview .overview-leader-line{grid-template-columns:1fr auto;margin-top:72px;position:relative;z-index:5}
+#dashboardOverview .overview-leader-line strong{font-size:28px}
+#dashboardOverview .overview-leader-line b{font-size:30px}
+#dashboardOverview .overview-metrics{grid-template-columns:1fr 1fr;margin-bottom:75px}
+#dashboardOverview .overview-metrics>div{padding:19px 15px 21px 0;margin:0}
+#dashboardOverview .overview-metrics>div+div{padding-left:15px}
+#dashboardOverview .overview-race-pulse{display:block;margin-bottom:82px}
+#dashboardOverview .overview-section-intro{margin-bottom:32px}
+#dashboardOverview .overview-race-story{min-height:290px;margin-bottom:42px}
+#dashboardOverview .overview-championship{display:block;margin-bottom:70px}
+#dashboardOverview .overview-column{margin-top:42px}
+}
+
+/* =====================================================
+   OVERVIEW FULL-VIEWPORT COMPOSITION FIX
+===================================================== */
+html,body{overflow-x:hidden}
+main.overview-fullscreen{width:100%;max-width:none;margin:0}
+main.overview-fullscreen #dashboardOverview .overview-hero-new{width:100%;}
+main.overview-fullscreen #dashboardOverview .overview-hero-copy{padding-left:5.5%;padding-right:5.5%;box-sizing:border-box}
+main.overview-fullscreen #dashboardOverview .overview-metrics{padding-left:5.5%;padding-right:5.5%;box-sizing:border-box}
+main.overview-fullscreen #dashboardOverview .overview-race-pulse{padding-left:5.5%;padding-right:5.5%;box-sizing:border-box}
+main.overview-fullscreen #dashboardOverview .overview-championship{padding-left:5.5%;padding-right:5.5%;box-sizing:border-box}
+#dashboardOverview .overview-hero-number{right:0;top:0;font-size:clamp(300px,30vw,510px);line-height:.92}
+@media(max-width:700px){
+    main.overview-fullscreen #dashboardOverview .overview-hero-copy{padding-left:5%;padding-right:5%}
+    main.overview-fullscreen #dashboardOverview .overview-metrics{padding-left:5%;padding-right:5%}
+    main.overview-fullscreen #dashboardOverview .overview-race-pulse{padding-left:5%;padding-right:5%}
+    main.overview-fullscreen #dashboardOverview .overview-championship{padding-left:5%;padding-right:5%}
+    #dashboardOverview .overview-hero-number{right:0;top:0;font-size:220px}
+}
+
+/* FINAL OVERVIEW VIEWPORT FIX */
+html,body{overflow-x:hidden!important}
+main.overview-fullscreen{width:100%!important;max-width:none!important;margin:0!important;padding:0!important;box-sizing:border-box!important}
+main.overview-fullscreen #dashboardOverview{width:100%!important;max-width:none!important;margin:0!important;padding:65px 0 100px!important;box-sizing:border-box!important}
+main.overview-fullscreen #dashboardOverview .overview-hero-copy,
+main.overview-fullscreen #dashboardOverview .overview-metrics,
+main.overview-fullscreen #dashboardOverview .overview-race-pulse,
+main.overview-fullscreen #dashboardOverview .overview-championship{padding-left:5.5%;padding-right:5.5%;box-sizing:border-box}
+main.overview-fullscreen #dashboardOverview .overview-hero-new{width:100%!important;max-width:none!important;box-sizing:border-box;overflow:hidden}
+main.overview-fullscreen #dashboardOverview .overview-hero-number{left:20%;right:auto;top:0;font-size:clamp(220px,28vw,460px);line-height:.9;letter-spacing:-.075em;white-space:nowrap;transform:none;max-width:none}
+main.overview-fullscreen #dashboardOverview .overview-hero-copy{position:relative;z-index:3}
+@media(max-width:900px){
+main.overview-fullscreen #dashboardOverview{padding-top:35px!important}
+main.overview-fullscreen #dashboardOverview .overview-hero-copy,
+main.overview-fullscreen #dashboardOverview .overview-metrics,
+main.overview-fullscreen #dashboardOverview .overview-race-pulse,
+main.overview-fullscreen #dashboardOverview .overview-championship{padding-left:5%;padding-right:5%}
+main.overview-fullscreen #dashboardOverview .overview-hero-number{left:8%;top:0;font-size:210px}
+}
+@media(max-width:600px){main.overview-fullscreen #dashboardOverview .overview-hero-number{left:3%;font-size:150px}}
+
+/* =====================================================
+   DRIVERS PAGE — FULL VIEWPORT EDITORIAL REVAMP
+===================================================== */
+#dashboardDrivers{
+    width:100%;
+    max-width:none!important;
+    padding:65px 0 110px!important;
+    overflow:hidden;
+}
+#dashboardDrivers .dashboard-heading{
+    width:min(1600px,89%);
+    margin:0 auto 70px!important;
+    padding-top:20px;
+}
+#dashboardDrivers .dashboard-heading h1{
+    font-size:clamp(64px,7vw,118px)!important;
+    letter-spacing:-.085em!important;
+}
+#dashboardDrivers .dashboard-heading p{max-width:360px;color:#777}
+#driversContent{width:100%!important;max-width:none!important;overflow:hidden}
+.drivers-hero{
+    position:relative;
+    width:100%;
+    min-height:650px;
+    overflow:hidden;
+    isolation:isolate;
+    background:
+        radial-gradient(ellipse at 72% 62%,color-mix(in srgb,var(--driver-accent) 12%,transparent) 0%,transparent 35%),
+        radial-gradient(ellipse at 58% 65%,#152622 0%,#0b100f 32%,#080808 72%);
+}
+.drivers-hero::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg,rgba(8,8,8,.1),transparent 48%,rgba(8,8,8,.35));
+    z-index:1;
+    pointer-events:none;
+}
+.drivers-hero-copy{
+    position:relative;
+    z-index:4;
+    width:min(1600px,89%);
+    margin:0 auto;
+    padding-top:150px;
+}
+.drivers-hero-copy h2{
+    max-width:850px;
+    font-size:clamp(90px,11vw,190px);
+    line-height:.76;
+    letter-spacing:-.095em;
+    margin:25px 0 28px;
+    text-transform:uppercase;
+}
+.drivers-hero-copy p{font-size:13px;color:#999;letter-spacing:.5px}
+.drivers-hero>img{
+    position:absolute;
+    z-index:3;
+    right:4%;
+    bottom:-2%;
+    width:min(58vw,900px);
+    height:96%;
+    object-fit:contain;
+    object-position:right bottom;
+    filter:drop-shadow(-30px 10px 60px rgba(0,0,0,.55));
+}
+.drivers-hero-watermark{
+    position:absolute;
+    z-index:0;
+    right:2%;
+    top:0;
+    font-size:clamp(300px,34vw,540px);
+    line-height:.82;
+    letter-spacing:-.12em;
+    font-weight:900;
+    color:#ffffff06;
+    pointer-events:none;
+}
+.drivers-featured,.drivers-grid-section{
+    width:min(1600px,89%);
+    margin:0 auto;
+}
+.drivers-featured{
+    display:grid;
+    grid-template-columns:minmax(240px,.72fr) minmax(0,2fr);
+    gap:7%;
+    padding:120px 0 80px;
+}
+.drivers-section-intro{padding-top:8px}
+.drivers-section-intro h3{
+    font-size:clamp(48px,5vw,82px);
+    line-height:.86;
+    letter-spacing:-.075em;
+    margin:24px 0 25px;
+}
+.drivers-section-intro h3 i{font-style:normal;color:#e10600}
+.drivers-section-intro p{max-width:230px;color:#777;font-size:12px;line-height:1.65}
+.drivers-feature-list{display:flex;flex-direction:column}
+.drivers-feature-row{
+    position:relative;
+    min-height:270px;
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+    border-top:1px solid #222;
+    isolation:isolate;
+}
+.drivers-feature-row:last-child{border-bottom:1px solid #222}
+.drivers-feature-row::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(ellipse at 72% 50%,color-mix(in srgb,var(--driver-accent) 15%,transparent),transparent 45%);
+    opacity:.75;
+    z-index:-1;
+    transition:opacity .35s ease,transform .35s ease;
+}
+.drivers-feature-row:hover::before{opacity:1;transform:scale(1.04)}
+.drivers-feature-pos{
+    align-self:flex-start;
+    padding-top:20px;
+    width:52px;
+    flex:none;
+    color:#555;
+    font:11px monospace;
+}
+.drivers-feature-copy{position:relative;z-index:4;padding:35px 0;max-width:58%}
+.drivers-feature-copy h3{
+    font-size:clamp(38px,4.5vw,72px);
+    line-height:.9;
+    letter-spacing:-.07em;
+    margin:16px 0 12px;
+    text-transform:uppercase;
+}
+.drivers-feature-copy p{color:#999;font-size:11px;letter-spacing:1px}
+.drivers-feature-row>img{
+    position:absolute;
+    z-index:3;
+    right:9%;
+    bottom:0;
+    width:330px;
+    height:100%;
+    object-fit:contain;
+    object-position:center bottom;
+    transition:transform .45s cubic-bezier(.2,.7,.2,1);
+}
+.drivers-feature-row:hover>img{transform:translateY(-7px) scale(1.035)}
+.drivers-feature-points{
+    position:absolute;
+    right:2%;
+    top:22px;
+    z-index:4;
+    font-size:34px;
+    letter-spacing:-2px;
+}
+.drivers-feature-points small{display:block;font-size:8px;letter-spacing:2px;color:#777;text-align:right}
+.drivers-grid-section{
+    display:grid;
+    grid-template-columns:minmax(240px,.72fr) minmax(0,2fr);
+    gap:7%;
+    padding:100px 0 80px;
+}
+.drivers-roster{display:flex;flex-direction:column}
+.drivers-roster-row{
+    position:relative;
+    min-height:105px;
+    display:grid;
+    grid-template-columns:50px minmax(0,1fr) 90px 95px;
+    gap:18px;
+    align-items:center;
+    border-top:1px solid #1e1e1e;
+    transition:padding .25s ease,background .25s ease;
+}
+.drivers-roster-row:last-child{border-bottom:1px solid #1e1e1e}
+.drivers-roster-row:hover{padding-left:12px;background:linear-gradient(90deg,#101212,transparent 72%)}
+.drivers-roster-pos{font:10px monospace;color:#555}
+.drivers-roster-driver>span{display:block;color:#e10600;font-size:8px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:7px}
+.drivers-roster-driver h4{font-size:clamp(21px,2vw,31px);line-height:1;letter-spacing:-1.5px;text-transform:uppercase}
+.drivers-roster-number{color:#555;font:10px monospace;text-align:right}
+.drivers-roster-row>strong{text-align:right;font-size:25px;letter-spacing:-1.5px}
+.drivers-roster-row>strong small{font-size:7px;color:#777;letter-spacing:1.5px}
+
+@media(max-width:900px){
+    #dashboardDrivers .dashboard-heading{width:90%}
+    .drivers-hero-copy{width:90%;padding-top:100px}
+    .drivers-hero{min-height:560px}
+    .drivers-hero>img{width:70vw;right:-7%;opacity:.8}
+    .drivers-hero-copy h2{font-size:clamp(72px,13vw,130px);max-width:75%}
+    .drivers-featured,.drivers-grid-section{width:90%;display:block;padding-top:80px}
+    .drivers-section-intro{margin-bottom:45px}
+    .drivers-feature-row{min-height:240px}
+    .drivers-feature-row>img{right:3%;width:260px;opacity:.85}
+}
+@media(max-width:600px){
+    #dashboardDrivers{padding-top:35px!important}
+    #dashboardDrivers .dashboard-heading{margin-bottom:45px!important}
+    #dashboardDrivers .dashboard-heading h1{font-size:64px!important;letter-spacing:-.07em!important}
+    .drivers-hero{min-height:530px}
+    .drivers-hero-copy{padding-top:75px}
+    .drivers-hero-copy h2{font-size:clamp(58px,17vw,92px);max-width:90%}
+    .drivers-hero>img{width:78vw;right:-14%;opacity:.62}
+    .drivers-hero-watermark{font-size:250px;right:-2%;top:10px}
+    .drivers-featured,.drivers-grid-section{width:90%;padding:70px 0 45px}
+    .drivers-feature-row{min-height:205px}
+    .drivers-feature-pos{width:35px}
+    .drivers-feature-copy{max-width:75%;padding:30px 0}
+    .drivers-feature-copy h3{font-size:36px}
+    .drivers-feature-row>img{width:190px;right:-6%;opacity:.65}
+    .drivers-feature-points{font-size:25px;right:0}
+    .drivers-roster-row{grid-template-columns:32px minmax(0,1fr) 70px;gap:10px;min-height:92px}
+    .drivers-roster-number{display:none}
+    .drivers-roster-row>strong{font-size:22px}
+    .drivers-roster-driver h4{font-size:21px}
+}
+
+
+
+/* =====================================================
+   DASHBOARD VIEWPORT SYSTEM
+===================================================== */
+html,body{max-width:100%;overflow-x:hidden!important}
+main.dashboard-mode{width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box}
+main.dashboard-mode .dashboard-panel:not(#dashboardRace){width:100%!important;max-width:none!important;margin:0!important;box-sizing:border-box}
+main.dashboard-mode .dashboard-panel:not(#dashboardRace) .dashboard-heading,
+main.dashboard-mode #dashboardOverview .overview-hero-copy,
+main.dashboard-mode #dashboardOverview .overview-metrics,
+main.dashboard-mode #dashboardOverview .overview-race-pulse,
+main.dashboard-mode #dashboardOverview .overview-championship,
+main.dashboard-mode .drivers-hero-copy,
+main.dashboard-mode .drivers-featured,
+main.dashboard-mode .drivers-grid-section,
+main.dashboard-mode .rev-cover,
+main.dashboard-mode .rev-races,
+main.dashboard-mode .rev-progress,
+main.dashboard-mode .rev-league,
+main.dashboard-mode .rev-driver-feature,
+main.dashboard-mode .rev-section-heading,
+main.dashboard-mode .rev-driver-roster,
+main.dashboard-mode .rev-teams-intro,
+main.dashboard-mode .rev-teams-roster,
+main.dashboard-mode .rev-title-race,
+main.dashboard-mode .rev-championship-list{width:min(1600px,89vw)!important;max-width:1600px!important;margin-left:auto!important;margin-right:auto!important;box-sizing:border-box}
+main.dashboard-mode #dashboardOverview .overview-hero-new,
+main.dashboard-mode .drivers-hero,
+main.dashboard-mode .rev-title-race,
+main.dashboard-mode .rev-teams-intro{width:100%!important;max-width:none!important}
+main.dashboard-mode #dashboardOverview .overview-hero-number{top:0!important;right:0!important;left:auto!important;transform:none!important;overflow:visible!important}
+main.dashboard-mode .drivers-hero-watermark{top:0!important;right:0!important;overflow:visible!important}
+main.dashboard-mode .drivers-hero>img{display:none!important}
+
+/* Drivers follows the Overview rhythm instead of adding extra vertical air. */
+main.dashboard-mode #dashboardDrivers .dashboard-heading{margin-bottom:55px!important}
+main.dashboard-mode .drivers-hero{min-height:555px!important}
+main.dashboard-mode .drivers-hero-copy{padding-top:110px!important}
+main.dashboard-mode .drivers-featured{padding-top:85px!important;padding-bottom:70px!important}
+main.dashboard-mode .drivers-feature-row{min-height:215px!important}
+main.dashboard-mode .drivers-grid-section{padding-top:75px!important;padding-bottom:65px!important}
+main.dashboard-mode .drivers-roster-row{min-height:92px!important}
+
+@media(max-width:900px){
+    main.dashboard-mode{width:100%!important}
+    main.dashboard-mode .dashboard-panel:not(#dashboardRace){width:100%!important}
+    main.dashboard-mode .dashboard-panel:not(#dashboardRace) .dashboard-heading,
+    main.dashboard-mode .drivers-hero-copy,
+    main.dashboard-mode .drivers-featured,
+    main.dashboard-mode .drivers-grid-section,
+    main.dashboard-mode .rev-races,
+    main.dashboard-mode .rev-progress,
+    main.dashboard-mode .rev-league,
+    main.dashboard-mode .rev-championship-list{width:90%!important;max-width:none!important;margin-left:auto!important;margin-right:auto!important}
+}
+
+/* FINAL SHARED EDITORIAL GRID */
+@media(min-width:901px){
+    main.dashboard-mode #dashboardOverview .overview-hero-copy,
+    main.dashboard-mode #dashboardOverview .overview-metrics,
+    main.dashboard-mode #dashboardOverview .overview-race-pulse,
+    main.dashboard-mode #dashboardOverview .overview-championship{padding-left:0!important;padding-right:0!important}
+    main.dashboard-mode #dashboardOverview .overview-hero-copy{padding-top:58px!important}
+    main.dashboard-mode #dashboardDrivers .dashboard-heading{margin-bottom:42px!important}
+    main.dashboard-mode .drivers-hero-copy{padding-top:58px!important}
+}
+
+/* DRIVER VIEWPORT ISOLATION — keep Overview untouched */
+@media(min-width:901px){
+    main.dashboard-mode #dashboardDrivers .drivers-hero{
+        width:100vw!important;
+        max-width:none!important;
+        margin-left:calc(50% - 50vw)!important;
+        margin-right:calc(50% - 50vw)!important;
+        box-sizing:border-box!important;
+    }
+    main.dashboard-mode #dashboardDrivers .drivers-hero-copy{
+        width:auto!important;
+        max-width:none!important;
+        margin:0!important;
+        padding-left:5.5%!important;
+        padding-right:5.5%!important;
+        box-sizing:border-box!important;
+    }
+    main.dashboard-mode #dashboardDrivers .drivers-hero-watermark{
+        right:5%!important;
+        top:0!important;
+        white-space:nowrap!important;
+    }
+}
+
+
+/* =====================================================
+   TEAMS / FULL-WIDTH EDITORIAL ROSTER
+   Scoped only to the Teams dashboard.
+===================================================== */
+#dashboardTeams .dashboard-heading{
+    width:89vw!important;
+    max-width:1600px!important;
+    margin:0 auto 42px!important;
+}
+
+#dashboardTeams #teamsContent{
+    width:100%;
+    overflow:visible;
+}
+
+#dashboardTeams .rev-teams-intro{
+    position:relative;
+    width:100%!important;
+    max-width:none!important;
+    min-height:405px;
+    padding:58px 5.5vw 72px;
+    box-sizing:border-box;
+    overflow:hidden;
+    background:
+        radial-gradient(ellipse at 86% 46%,rgba(255,128,0,.09),transparent 32%),
+        linear-gradient(180deg,#080808 0%,#090909 100%);
+}
+
+#dashboardTeams .rev-teams-intro:after{
+    content:"11";
+    position:absolute;
+    right:4vw;
+    top:-42px;
+    font-size:clamp(280px,31vw,520px);
+    line-height:1;
+    font-weight:900;
+    letter-spacing:-.1em;
+    color:rgba(255,255,255,.025);
+    pointer-events:none;
+}
+
+#dashboardTeams .rev-teams-intro h2{
+    position:relative;
+    z-index:2;
+    max-width:1000px;
+    margin:22px 0 0;
+    font-size:clamp(64px,8.5vw,145px);
+    line-height:.84;
+    letter-spacing:-.095em;
+}
+
+#dashboardTeams .rev-teams-intro>p{
+    position:relative;
+    z-index:2;
+    margin:28px 0 0;
+    color:#777;
+}
+
+#dashboardTeams .rev-teams-roster{
+    width:89vw!important;
+    max-width:1600px!important;
+    margin:0 auto!important;
+}
+
+#dashboardTeams .rev-team-visual{
+    display:none!important;
+}
+
+#dashboardTeams .rev-team-feature{
+    --team-accent:#aaa;
+    position:relative;
+    display:grid;
+    grid-template-columns:70px minmax(0,1fr) minmax(180px,220px);
+    align-items:center;
+    gap:28px;
+    min-height:188px;
+    padding:34px 0;
+    box-sizing:border-box;
+    border-bottom:0;
+    overflow:hidden;
+    isolation:isolate;
+}
+
+#dashboardTeams .rev-team-feature:before{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:1px;
+    background:linear-gradient(90deg,var(--team-accent),rgba(255,255,255,.06) 22%,transparent 80%);
+    opacity:.7;
+}
+
+#dashboardTeams .rev-team-feature:after{
+    content:"";
+    position:absolute;
+    right:0;
+    top:5%;
+    width:48%;
+    height:90%;
+    background:radial-gradient(ellipse at 75% 50%,color-mix(in srgb,var(--team-accent) 13%,transparent),transparent 68%);
+    z-index:-1;
+    pointer-events:none;
+}
+
+#dashboardTeams .rev-team-feature .rev-pos{
+    align-self:start;
+    margin-top:8px;
+    color:#555;
+    font-size:9px;
+    letter-spacing:2px;
+}
+
+#dashboardTeams .rev-team-title{
+    min-width:0;
+}
+
+#dashboardTeams .rev-team-title .rev-eyebrow{
+    color:var(--team-accent);
+}
+
+#dashboardTeams .rev-team-title h3{
+    margin:12px 0 12px;
+    color:var(--team-accent);
+    font-size:clamp(38px,4.4vw,70px);
+    line-height:.92;
+    letter-spacing:-.075em;
+}
+
+#dashboardTeams .rev-team-pair{
+    display:flex;
+    gap:28px;
+    flex-wrap:wrap;
+}
+
+#dashboardTeams .rev-team-pair span{
+    color:#777;
+    font-size:10px;
+    letter-spacing:.5px;
+}
+
+#dashboardTeams .rev-team-pair b{
+    color:#ddd;
+    margin-left:7px;
+    font-size:10px;
+}
+
+#dashboardTeams .rev-team-score{
+    min-width:0;
+    padding-right:24px;
+    box-sizing:border-box;
+    text-align:right;
+    color:#f5f5f5;
+    font-size:clamp(48px,5vw,76px);
+    line-height:.85;
+    letter-spacing:-.07em;
+}
+
+#dashboardTeams .rev-team-score small{
+    margin-top:9px;
+    color:#555;
+    font-size:8px;
+    letter-spacing:2px;
+}
+
+#dashboardTeams .rev-team-feature.mercedes{--team-accent:#27f4d2}
+#dashboardTeams .rev-team-feature.ferrari{--team-accent:#e80020}
+#dashboardTeams .rev-team-feature.mclaren{--team-accent:#ff8000}
+#dashboardTeams .rev-team-feature.redbull{--team-accent:#3671c6}
+#dashboardTeams .rev-team-feature.racingbulls{--team-accent:#6692ff}
+#dashboardTeams .rev-team-feature.alpine{--team-accent:#2293d1}
+#dashboardTeams .rev-team-feature.haas{--team-accent:#b6babd}
+#dashboardTeams .rev-team-feature.audi{--team-accent:#e3002b}
+#dashboardTeams .rev-team-feature.williams{--team-accent:#1868db}
+#dashboardTeams .rev-team-feature.astonmartin{--team-accent:#229971}
+#dashboardTeams .rev-team-feature.cadillac{--team-accent:#d6b36a}
+#dashboardTeams .rev-team-feature.unknown{--team-accent:#999}
+
+#dashboardTeams .rev-team-feature:hover:before{
+    opacity:1;
+}
+
+@media(max-width:900px){
+    #dashboardTeams .dashboard-heading{width:90vw!important}
+    #dashboardTeams .rev-teams-intro{padding-left:5vw;padding-right:5vw;min-height:370px}
+    #dashboardTeams .rev-teams-roster{width:90vw!important}
+    #dashboardTeams .rev-team-feature{grid-template-columns:38px minmax(0,1fr) 110px;gap:14px;min-height:160px;padding:28px 0}
+    #dashboardTeams .rev-team-title h3{font-size:clamp(34px,7vw,58px)}
+    #dashboardTeams .rev-team-pair{gap:14px}
+    #dashboardTeams .rev-team-score{font-size:46px;padding-right:18px}
+}
+
+@media(max-width:600px){
+    #dashboardTeams .rev-teams-intro{min-height:330px;padding-top:42px;padding-bottom:55px}
+    #dashboardTeams .rev-teams-intro h2{font-size:58px}
+    #dashboardTeams .rev-team-feature{grid-template-columns:25px minmax(0,1fr) 75px;min-height:135px;gap:9px;padding:23px 0}
+    #dashboardTeams .rev-team-title h3{font-size:32px;letter-spacing:-.06em}
+    #dashboardTeams .rev-team-pair{gap:9px}
+    #dashboardTeams .rev-team-pair span{font-size:8px}
+    #dashboardTeams .rev-team-score{font-size:34px;padding-right:10px}
+}
+
+/* =====================================================
+   CHAMPIONSHIP / STANDINGS REDESIGN
+   Scoped only to the Championship dashboard.
+===================================================== */
+#dashboardChampionship .dashboard-heading{
+    width:89vw!important;
+    max-width:1600px!important;
+    margin:0 auto 42px!important;
+}
+
+#dashboardChampionship #championshipContent{
+    width:100%!important;
+    overflow:visible!important;
+}
+
+#dashboardChampionship .championship-hero{
+    position:relative;
+    width:100%;
+    min-height:560px;
+    overflow:hidden;
+    isolation:isolate;
+    background:
+        radial-gradient(ellipse at 73% 54%,rgba(39,244,210,.10),transparent 31%),
+        linear-gradient(180deg,#080808 0%,#090909 100%);
+}
+
+#dashboardChampionship .championship-hero:after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:1px;
+    background:linear-gradient(90deg,#e10600,rgba(225,6,0,.18) 55%,transparent);
+}
+
+#dashboardChampionship .championship-hero-watermark{
+    position:absolute;
+    right:4vw;
+    top:50%;
+    transform:translateY(-52%);
+    font-size:clamp(240px,30vw,520px);
+    line-height:.78;
+    font-weight:900;
+    letter-spacing:-.11em;
+    color:rgba(255,255,255,.025);
+    white-space:nowrap;
+    pointer-events:none;
+    z-index:0;
+}
+
+#dashboardChampionship .championship-hero-copy{
+    position:relative;
+    z-index:2;
+    width:89vw;
+    max-width:1600px;
+    margin:0 auto;
+    padding:72px 0 70px;
+    box-sizing:border-box;
+}
+
+#dashboardChampionship .championship-hero h2{
+    margin:25px 0 0;
+    max-width:850px;
+    font-size:clamp(70px,8.5vw,145px);
+    line-height:.82;
+    letter-spacing:-.095em;
+}
+
+#dashboardChampionship .championship-hero h2 i,
+#dashboardChampionship .championship-column h3 i{
+    color:#e10600;
+    font-style:normal;
+}
+
+#dashboardChampionship .championship-hero-copy>p{
+    margin:30px 0 0;
+    max-width:390px;
+    color:#777;
+    font-size:12px;
+    line-height:1.55;
+}
+
+#dashboardChampionship .championship-leader{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) auto;
+    align-items:end;
+    column-gap:50px;
+    width:min(760px,100%);
+    margin-top:72px;
+    padding-top:20px;
+    border-top:1px solid #222;
+}
+
+#dashboardChampionship .championship-leader span{
+    grid-column:1/-1;
+    margin-bottom:18px;
+    color:#e10600;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:2.4px;
+}
+
+#dashboardChampionship .championship-leader strong{
+    font-size:clamp(30px,3vw,52px);
+    line-height:1;
+    letter-spacing:-2.5px;
+}
+
+#dashboardChampionship .championship-leader b{
+    font-size:clamp(30px,3.5vw,58px);
+    line-height:.9;
+    letter-spacing:-3px;
+    white-space:nowrap;
+}
+
+#dashboardChampionship .championship-leader small{
+    color:#666;
+    font-size:8px;
+    letter-spacing:2px;
+    margin-left:5px;
+}
+
+#dashboardChampionship .championship-history{
+    width:89vw;
+    max-width:1600px;
+    margin:92px auto 0;
+    box-sizing:border-box;
+    border-top:1px solid #1c1c1c;
+    padding-top:34px;
+}
+
+#dashboardChampionship .championship-history-heading{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 230px;
+    align-items:end;
+    gap:40px;
+}
+
+#dashboardChampionship .championship-history-heading h3{
+    margin:20px 0 18px;
+    font-size:clamp(42px,4.5vw,72px);
+    line-height:.86;
+    letter-spacing:-.085em;
+}
+
+#dashboardChampionship .championship-history-heading h3 i{
+    color:#e10600;
+    font-style:normal;
+}
+
+#dashboardChampionship .championship-history-heading p{
+    max-width:620px;
+    margin:0;
+    color:#666;
+    font-size:11px;
+    line-height:1.6;
+}
+
+#dashboardChampionship .championship-driver-control{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:100%;
+}
+
+#dashboardChampionship .championship-driver-control span{
+    color:#e10600;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:2.2px;
+}
+
+#dashboardChampionship .championship-driver-control select{
+    width:100%;
+    min-height:42px;
+    padding:0 34px 0 12px;
+    border:1px solid #292929;
+    border-radius:0;
+    outline:none;
+    background:#0d0d0d;
+    color:#f5f5f5;
+    font:700 10px/1 inherit;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    cursor:pointer;
+}
+
+#dashboardChampionship .championship-driver-control select:focus{
+    border-color:#e10600;
+}
+
+#dashboardChampionship .championship-history-content{
+    margin-top:34px;
+    min-height:420px;
+}
+
+#dashboardChampionship .position-history-header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:30px;
+    padding-bottom:20px;
+    border-bottom:1px solid #1c1c1c;
+}
+
+#dashboardChampionship .position-history-header h3{
+    margin:12px 0 8px;
+    font-size:clamp(25px,2.3vw,38px);
+    line-height:1;
+    letter-spacing:-.055em;
+    text-transform:uppercase;
+}
+
+#dashboardChampionship .position-history-header p{
+    margin:0;
+    color:#666;
+    font-size:9px;
+    letter-spacing:1.2px;
+    text-transform:uppercase;
+}
+
+#dashboardChampionship .position-history-stats{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    gap:30px;
+}
+
+#dashboardChampionship .position-history-stats div{
+    min-width:82px;
+}
+
+#dashboardChampionship .position-history-stats span{
+    display:block;
+    margin-bottom:7px;
+    color:#555;
+    font-size:7px;
+    font-weight:900;
+    letter-spacing:1.7px;
+}
+
+#dashboardChampionship .position-history-stats strong{
+    display:block;
+    color:#f5f5f5;
+    font-size:25px;
+    line-height:1;
+    letter-spacing:-1px;
+}
+
+#dashboardChampionship .position-history-chart-wrap{
+    width:100%;
+    margin-top:24px;
+    overflow:hidden;
+    background:linear-gradient(180deg,#0a0a0a 0%,#080808 100%);
+    border-top:1px solid #151515;
+    border-bottom:1px solid #151515;
+}
+
+#dashboardChampionship .position-history-chart{
+    display:block;
+    width:100%;
+    height:auto;
+    min-height:360px;
+}
+
+#dashboardChampionship .history-grid-line{
+    stroke:#1c1c1c;
+    stroke-width:1;
+}
+
+#dashboardChampionship .history-axis-label,
+#dashboardChampionship .history-round-label{
+    fill:#555;
+    font-family:inherit;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+}
+
+#dashboardChampionship .history-line{
+    fill:none;
+    stroke:#e10600;
+    stroke-width:4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;
+}
+
+#dashboardChampionship .history-point{
+    fill:#f5f5f5;
+    stroke:#e10600;
+    stroke-width:3;
+    vector-effect:non-scaling-stroke;
+}
+
+#dashboardChampionship .history-dnf-line{
+    stroke:#2a2a2a;
+    stroke-dasharray:4 5;
+}
+
+#dashboardChampionship .history-dnf-label{
+    fill:#777;
+    font-size:9px;
+}
+
+#dashboardChampionship .history-status-point{
+    fill:#111;
+    stroke:#777;
+    stroke-width:2;
+    vector-effect:non-scaling-stroke;
+}
+
+#dashboardChampionship .position-history-note{
+    margin-top:12px;
+    color:#555;
+    font-size:8px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+}
+
+#dashboardChampionship .position-history-loading{
+    display:flex;
+    align-items:center;
+    min-height:180px;
+    color:#555;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:2px;
+}
+
+#dashboardChampionship .championship-standings{
+    display:grid;
+    grid-template-columns:1.08fr .92fr;
+    gap:4%;
+    width:89vw;
+    max-width:1600px;
+    margin:105px auto 0;
+    box-sizing:border-box;
+}
+
+#dashboardChampionship .championship-column{
+    min-width:0;
+}
+
+#dashboardChampionship .championship-column h3{
+    margin:22px 0 48px;
+    font-size:clamp(48px,5vw,78px);
+    line-height:.86;
+    letter-spacing:-.085em;
+}
+
+#dashboardChampionship .championship-standing-list{
+    width:100%;
+}
+
+#dashboardChampionship .championship-standing-row{
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr) 90px;
+    align-items:center;
+    gap:20px;
+    min-height:76px;
+    border-top:1px solid #1c1c1c;
+    box-sizing:border-box;
+}
+
+#dashboardChampionship .championship-standing-row:last-child{
+    border-bottom:1px solid #1c1c1c;
+}
+
+#dashboardChampionship .championship-standing-pos{
+    color:#555;
+    font:9px monospace;
+    letter-spacing:1.5px;
+}
+
+#dashboardChampionship .championship-standing-driver{
+    min-width:0;
+}
+
+#dashboardChampionship .championship-standing-driver strong{
+    display:block;
+    font-size:15px;
+    line-height:1.1;
+    letter-spacing:-.3px;
+    text-transform:uppercase;
+}
+
+#dashboardChampionship .championship-standing-driver span{
+    display:block;
+    margin-top:5px;
+    color:#555;
+    font-size:8px;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+}
+
+#dashboardChampionship .championship-standing-row>b{
+    text-align:right;
+    font-size:19px;
+    line-height:1;
+    letter-spacing:-1px;
+    white-space:nowrap;
+}
+
+#dashboardChampionship .championship-standing-row>b small{
+    margin-left:5px;
+    color:#555;
+    font-size:7px;
+    letter-spacing:1.4px;
+}
+
+#dashboardChampionship .championship-standing-row{
+    position:relative;
+}
+
+#dashboardChampionship .championship-standing-row:before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:2px;
+    background:var(--team-color,#555);
+    opacity:.9;
+}
+
+#dashboardChampionship .championship-standing-driver strong{
+    color:var(--team-color,#f5f5f5);
+}
+
+#dashboardChampionship .team-mercedes{--team-color:#27f4d2}
+#dashboardChampionship .team-ferrari{--team-color:#e10600}
+#dashboardChampionship .team-mclaren{--team-color:#ff8700}
+#dashboardChampionship .team-redbull{--team-color:#3674d9}
+#dashboardChampionship .team-red-bull-racing{--team-color:#3674d9}
+#dashboardChampionship .team-racingbulls{--team-color:#4b8df8}
+#dashboardChampionship .team-racing-bulls{--team-color:#4b8df8}
+#dashboardChampionship .team-alpine{--team-color:#4fa3ff}
+#dashboardChampionship .team-haas{--team-color:#b8b8b8}
+#dashboardChampionship .team-haas-f1-team{--team-color:#b8b8b8}
+#dashboardChampionship .team-audi{--team-color:#e31b23}
+#dashboardChampionship .team-williams{--team-color:#4f8cff}
+#dashboardChampionship .team-astonmartin{--team-color:#22966f}
+#dashboardChampionship .team-aston-martin{--team-color:#22966f}
+#dashboardChampionship .team-cadillac{--team-color:#c6a15b}
+#dashboardChampionship .team-unknown{--team-color:#777}
+
+
+@media(max-width:900px){
+    #dashboardChampionship .championship-history{
+        width:90vw;
+        margin-top:75px;
+    }
+
+    #dashboardChampionship .championship-history-heading{
+        grid-template-columns:1fr;
+        gap:28px;
+    }
+
+    #dashboardChampionship .championship-driver-control{
+        max-width:320px;
+    }
+
+    #dashboardChampionship .position-history-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    #dashboardChampionship .position-history-stats{
+        justify-content:flex-start;
+    }
+}
+
+@media(max-width:600px){
+    #dashboardChampionship .championship-history{
+        width:90vw;
+        margin-top:60px;
+    }
+
+    #dashboardChampionship .championship-history-heading h3{
+        font-size:43px;
+    }
+
+    #dashboardChampionship .championship-history-content{
+        min-height:0;
+    }
+
+    #dashboardChampionship .position-history-stats{
+        width:100%;
+        gap:18px;
+    }
+
+    #dashboardChampionship .position-history-stats div{
+        min-width:68px;
+    }
+
+    #dashboardChampionship .position-history-stats strong{
+        font-size:21px;
+    }
+
+    #dashboardChampionship .position-history-chart-wrap{
+        overflow-x:auto;
+    }
+
+    #dashboardChampionship .position-history-chart{
+        width:900px;
+        max-width:none;
+        min-height:300px;
+    }
+}
+
+@media(max-width:900px){
+    #dashboardChampionship .dashboard-heading,
+    #dashboardChampionship .championship-hero-copy,
+    #dashboardChampionship .championship-standings{
+        width:90vw!important;
+    }
+    #dashboardChampionship .championship-hero{
+        min-height:540px;
+    }
+    #dashboardChampionship .championship-hero-watermark{
+        right:-2vw;
+    }
+    #dashboardChampionship .championship-standings{
+        display:block;
+        margin-top:80px;
+    }
+    #dashboardChampionship .championship-column{
+        margin-bottom:80px;
+    }
+}
+
+@media(max-width:600px){
+    #dashboardChampionship .championship-hero-copy{
+        padding-top:50px;
+        padding-bottom:55px;
+    }
+    #dashboardChampionship .championship-hero{
+        min-height:520px;
+    }
+    #dashboardChampionship .championship-hero h2{
+        font-size:64px;
+    }
+    #dashboardChampionship .championship-hero-watermark{
+        top:36%;
+        font-size:210px;
+    }
+    #dashboardChampionship .championship-leader{
+        grid-template-columns:1fr auto;
+        gap:20px;
+        margin-top:55px;
+    }
+    #dashboardChampionship .championship-leader strong{
+        font-size:28px;
+    }
+    #dashboardChampionship .championship-leader b{
+        font-size:32px;
+    }
+    #dashboardChampionship .championship-standings{
+        margin-top:65px;
+    }
+    #dashboardChampionship .championship-column h3{
+        font-size:48px;
+        margin-bottom:35px;
+    }
+    #dashboardChampionship .championship-standing-row{
+        grid-template-columns:30px minmax(0,1fr) 65px;
+        min-height:70px;
+        gap:10px;
+    }
+    #dashboardChampionship .championship-standing-row>b{
+        font-size:17px;
+    }
+}
+
+/* =====================================================
+   CHAMPIONSHIP ROW ACCENT REFINEMENT
+   Scoped only to the Championship dashboard.
+===================================================== */
+#dashboardChampionship .championship-hero:after{
+    display:none;
+}
+
+#dashboardChampionship .championship-standing-row:before{
+    left:60px;
+    width:5px;
+    border-radius:3px;
+    opacity:1;
+}
+
+#dashboardChampionship .championship-standing-pos{
+    padding-right:0;
+}
+
+@media(max-width:600px){
+    #dashboardChampionship .championship-standing-row:before{
+        left:40px;
+        width:4px;
+        border-radius:2px;
+    }
+}
+
+
+/* =====================================================
+   CHAMPIONSHIP STANDING COLUMN ORDER / SPACING
+   Accent bar -> position -> driver/team -> points
+===================================================== */
+#dashboardChampionship .championship-standing-row{
+    grid-template-columns:6px 32px minmax(0,1fr) 78px;
+    column-gap:8px;
+}
+
+#dashboardChampionship .championship-standing-row:before{
+    display:none;
+}
+
+#dashboardChampionship .championship-standing-accent{
+    display:block;
+    width:6px;
+    height:54px;
+    border-radius:3px;
+    background:var(--team-color,#555);
+    grid-column:1;
+    grid-row:1;
+    justify-self:start;
+}
+
+#dashboardChampionship .championship-standing-pos{
+    grid-column:2;
+    grid-row:1;
+}
+
+#dashboardChampionship .championship-standing-driver{
+    grid-column:3;
+    grid-row:1;
+}
+
+#dashboardChampionship .championship-standing-row>b{
+    grid-column:4;
+    grid-row:1;
+}
+
+@media(max-width:600px){
+    #dashboardChampionship .championship-standing-row{
+        grid-template-columns:5px 27px minmax(0,1fr) 65px;
+        column-gap:6px;
+    }
+
+    #dashboardChampionship .championship-standing-accent{
+        width:5px;
+        height:48px;
+        border-radius:2px;
+    }
+}
+
+#dashboardChampionship .championship-standings{
+    column-gap:2.5%;
+}
+
+/* =====================================================
+   RACE CLASSIFICATION + QUALIFYING
+===================================================== */
+
+#raceClassificationSection,
+#qualifyingSection{
+    position:relative;
+}
+
+.classification-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+}
+
+.classification-card{
+    position:relative;
+    min-height:145px;
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+    overflow:hidden;
+    background:#111111;
+    border:1px solid var(--border);
+}
+
+.classification-card::before,
+.qualifying-card::before,
+.qualifying-row::before,
+.classification-row::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:var(--team-color,#333333);
+}
+
+.classification-card.team-mercedes::before,
+.qualifying-card.team-mercedes::before,
+.qualifying-row.team-mercedes::before,
+.classification-row.team-mercedes::before{background:var(--mercedes);}
+
+.classification-card.team-ferrari::before,
+.qualifying-card.team-ferrari::before,
+.qualifying-row.team-ferrari::before,
+.classification-row.team-ferrari::before{background:var(--ferrari);}
+
+.classification-card.team-redbull::before,
+.qualifying-card.team-redbull::before,
+.qualifying-row.team-redbull::before,
+.classification-row.team-redbull::before{background:var(--redbull);}
+
+.classification-card.team-mclaren::before,
+.qualifying-card.team-mclaren::before,
+.qualifying-row.team-mclaren::before,
+.classification-row.team-mclaren::before{background:var(--mclaren);}
+
+.classification-position{
+    position:absolute;
+    top:14px;
+    right:20px;
+    color:#292929;
+    font-size:42px;
+    font-weight:900;
+    line-height:1;
+}
+
+.classification-driver{
+    position:relative;
+    z-index:2;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.classification-driver span{
+    color:#555555;
+    font:9px monospace;
+}
+
+.classification-driver strong{
+    color:#eeeeee;
+    font-size:16px;
+    letter-spacing:-.4px;
+}
+
+.classification-driver small{
+    color:#666666;
+    font-size:9px;
+}
+
+.classification-status{
+    position:absolute;
+    top:18px;
+    left:24px;
+    color:#555555;
+    font:8px monospace;
+    letter-spacing:1px;
+}
+
+.classification-remaining,
+.qualifying-remaining{
+    margin-top:10px;
+    border-top:1px solid var(--border);
+}
+
+.classification-row{
+    position:relative;
+    min-height:68px;
+    display:grid;
+    grid-template-columns:58px minmax(0,1fr) 150px;
+    align-items:center;
+    gap:14px;
+    padding:0 18px 0 20px;
+    border-bottom:1px solid var(--border);
+    background:#0d0d0d;
+}
+
+.classification-row-position{
+    color:#555555;
+    font:9px monospace;
+    letter-spacing:1.5px;
+}
+
+.classification-row div{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+
+.classification-row strong{
+    color:#eeeeee;
+    font-size:13px;
+}
+
+.classification-row div span{
+    color:#555555;
+    font-size:8px;
+    letter-spacing:1px;
+}
+
+.classification-row > span:last-child{
+    color:#888888;
+    font:10px monospace;
+    text-align:right;
+}
+
+.data-more-button{
+    display:block;
+    margin:22px auto 0;
+    min-width:120px;
+    padding:11px 18px;
+    border:1px solid #303030;
+    background:#111111;
+    color:#888888;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:2px;
+    cursor:pointer;
+    transition:background .2s ease,border-color .2s ease,color .2s ease;
+}
+
+.data-more-button:hover{
+    background:#181818;
+    border-color:#555555;
+    color:#ffffff;
+}
+
+#polePositionCard{
+    margin-bottom:10px;
+}
+
+.pole-position-card{
+    position:relative;
+    min-height:245px;
+    overflow:hidden;
+    background:#111111;
+    border:1px solid var(--border);
+}
+
+.pole-position-card > img{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 15%;
+    opacity:.92;
+    pointer-events:none;
+    user-select:none;
+}
+
+.pole-position-fade{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(90deg,#111111 0%,rgba(17,17,17,.96) 35%,rgba(17,17,17,.38) 70%,rgba(17,17,17,.08) 100%);
+}
+
+.pole-position-card::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:4px;
+    background:#333333;
+    z-index:4;
+}
+
+.pole-position-card.team-mercedes::before{background:var(--mercedes);}
+.pole-position-card.team-ferrari::before{background:var(--ferrari);}
+.pole-position-card.team-redbull::before{background:var(--redbull);}
+.pole-position-card.team-mclaren::before{background:var(--mclaren);}
+
+.pole-position-content{
+    position:absolute;
+    left:38px;
+    bottom:30px;
+    z-index:5;
+}
+
+.pole-position-label{
+    color:#555555;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+
+.pole-position-content h3{
+    margin:9px 0 4px;
+    color:#f1f1f1;
+    font-size:28px;
+    letter-spacing:-1px;
+}
+
+.pole-position-content p{
+    color:#666666;
+    font-size:10px;
+}
+
+.pole-position-time{
+    position:absolute;
+    right:34px;
+    bottom:28px;
+    z-index:5;
+    color:#f5f5f5;
+    font:700 clamp(30px,4vw,52px) monospace;
+    letter-spacing:-2px;
+}
+
+.qualifying-visible{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+}
+
+.qualifying-card{
+    position:relative;
+    min-height:105px;
+    padding:22px 24px;
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr) auto;
+    align-items:center;
+    gap:14px;
+    background:#111111;
+    border:1px solid var(--border);
+}
+
+.qualifying-position{
+    color:#555555;
+    font:9px monospace;
+    letter-spacing:1.5px;
+}
+
+.qualifying-card div{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.qualifying-card strong{
+    color:#eeeeee;
+    font-size:14px;
+}
+
+.qualifying-card small{
+    color:#666666;
+    font-size:9px;
+}
+
+.qualifying-card b{
+    color:#eeeeee;
+    font:700 16px monospace;
+}
+
+.qualifying-remaining{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+}
+
+.qualifying-row{
+    position:relative;
+    min-height:64px;
+    display:grid;
+    grid-template-columns:48px minmax(0,1fr) 130px;
+    align-items:center;
+    gap:12px;
+    padding:0 18px 0 20px;
+    background:#0d0d0d;
+    border-bottom:1px solid var(--border);
+}
+
+.qualifying-row > span:first-child{
+    color:#555555;
+    font:9px monospace;
+    letter-spacing:1.5px;
+}
+
+.qualifying-row div{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+}
+
+.qualifying-row strong{
+    color:#eeeeee;
+    font-size:12px;
+}
+
+.qualifying-row small{
+    color:#555555;
+    font-size:8px;
+}
+
+.qualifying-row > span:not(:first-child){
+    color:#888888;
+    font:9px monospace;
+    text-align:right;
+}
+
+.upcoming-classification,
+.upcoming-qualifying{
+    opacity:.7;
+}
+
+@media(max-width:700px){
+    .classification-grid,
+    .qualifying-visible{
+        grid-template-columns:1fr;
+    }
+
+    .classification-row{
+        grid-template-columns:42px minmax(0,1fr) 90px;
+        gap:10px;
+    }
+
+    .qualifying-row{
+        grid-template-columns:36px minmax(0,1fr) 88px;
+        gap:8px;
+    }
+
+
+    .pole-position-card{
+        min-height:220px;
+    }
+
+    .pole-position-content{
+        left:28px;
+        bottom:24px;
+    }
+
+    .pole-position-content h3{
+        font-size:23px;
+    }
+
+    .pole-position-time{
+        right:20px;
+        bottom:22px;
+        font-size:28px;
+    }
+}
+
+/* =====================================================
+   RACE CENTER RESULT / QUALIFYING VISIBILITY FIX
+===================================================== */
+#raceClassificationRemaining[hidden],
+#qualifyingRemaining[hidden]{
+    display:none !important;
+}
+
+#raceClassificationSection .classification-grid{
+    margin-top:10px;
+}
+
+#raceClassificationSection .data-more-button{
+    margin-top:22px;
+}
+
+#qualifyingSection .data-more-button{
+    margin-top:22px;
+}
+
+
+/* =====================================================
+   RACE RESULT / QUALIFYING FINAL REFINEMENT
+===================================================== */
+#raceClassificationSection .race-visible-positions{
+    margin-top:10px;
+}
+
+#raceClassificationSection .race-visible-positions .classification-row:first-child{
+    border-top:1px solid var(--border);
+}
+
+#raceClassificationSection .race-visible-positions,
+#raceClassificationSection .classification-remaining{
+    display:flex;
+    flex-direction:column;
+}
+
+#raceClassificationSection .classification-card{
+    display:none;
+}
+
+/* Pole-position image uses the same split visual treatment as Fastest Lap. */
+#polePositionCard{
+    margin-bottom:10px;
+}
+
+#polePositionCard .pole-position-card{
+    position:relative;
+    min-height:275px;
+    display:grid;
+    grid-template-columns:1fr .85fr;
+    overflow:hidden;
+    background:#111111;
+    border:1px solid var(--border);
+}
+
+#polePositionCard .pole-position-card > img{
+    position:absolute;
+    left:50%;
+    top:0;
+    width:50%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 15%;
+    opacity:.95;
+    z-index:1;
+}
+
+#polePositionCard .pole-position-fade{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    background:linear-gradient(90deg,#111111 0%,rgba(17,17,17,.98) 42%,rgba(17,17,17,.55) 62%,rgba(17,17,17,.08) 100%);
+}
+
+#polePositionCard .pole-position-content{
+    position:absolute;
+    left:42px;
+    bottom:38px;
+    z-index:5;
+}
+
+#polePositionCard .pole-position-time{
+    position:absolute;
+    right:34px;
+    bottom:28px;
+    z-index:5;
+    color:#f5f5f5;
+    font:700 clamp(30px,4vw,52px) monospace;
+    letter-spacing:-2px;
+}
+
+@media(max-width:700px){
+    #polePositionCard .pole-position-card{
+        grid-template-columns:1fr;
+        min-height:440px;
+    }
+
+    #polePositionCard .pole-position-card > img{
+        left:0;
+        top:45%;
+        width:100%;
+        height:55%;
+        object-position:center 30%;
+    }
+
+    #polePositionCard .pole-position-fade{
+        background:linear-gradient(180deg,#111111 0%,rgba(17,17,17,.72) 48%,rgba(17,17,17,.08) 100%);
+    }
+
+    #polePositionCard .pole-position-content{
+        left:28px;
+        bottom:auto;
+        top:28px;
+    }
+
+    #polePositionCard .pole-position-time{
+        right:20px;
+        bottom:22px;
+        font-size:28px;
+    }
+}
+
+
+/* =====================================================
+   RACE / QUALIFYING TEAM COLOR SYSTEM
+   Uses OpenF1 team_colour when available, with class fallbacks.
+===================================================== */
+.classification-card::before,
+.classification-row::before,
+.qualifying-card::before,
+.qualifying-row::before,
+.pole-position-card::before{
+    background:var(--team-color,#333333);
+}
+
+.classification-card.team-mercedes::before,
+.classification-row.team-mercedes::before,
+.qualifying-card.team-mercedes::before,
+.qualifying-row.team-mercedes::before,
+.pole-position-card.team-mercedes::before{background:var(--mercedes);}
+.classification-card.team-ferrari::before,
+.classification-row.team-ferrari::before,
+.qualifying-card.team-ferrari::before,
+.qualifying-row.team-ferrari::before,
+.pole-position-card.team-ferrari::before{background:var(--ferrari);}
+.classification-card.team-redbull::before,
+.classification-row.team-redbull::before,
+.qualifying-card.team-redbull::before,
+.qualifying-row.team-redbull::before,
+.pole-position-card.team-redbull::before{background:var(--redbull);}
+.classification-card.team-mclaren::before,
+.classification-row.team-mclaren::before,
+.qualifying-card.team-mclaren::before,
+.qualifying-row.team-mclaren::before,
+.pole-position-card.team-mclaren::before{background:var(--mclaren);}
+
+/* Pole-position visual matches the Fastest Lap transition. */
+#polePositionCard .pole-position-card{
+    grid-template-columns:1fr .85fr;
+}
+
+#polePositionCard .pole-position-card > img{
+    left:50%;
+    width:50%;
+    object-position:center 15%;
+    opacity:.95;
+}
+
+#polePositionCard .pole-position-fade{
+    background:linear-gradient(90deg,#111111 0%,rgba(17,17,17,.55) 18%,rgba(17,17,17,.08) 58%,rgba(17,17,17,.15) 100%);
+}
+
+#polePositionCard .pole-position-time-box{
+    position:absolute;
+    right:28px;
+    bottom:25px;
+    z-index:6;
+    display:flex;
+    align-items:center;
+    padding:13px 16px;
+    background:rgba(8,8,8,.88);
+    border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(8px);
+}
+
+#polePositionCard .pole-position-time{
+    position:static;
+    color:#f5f5f5;
+    font:700 clamp(30px,4vw,52px) monospace;
+    letter-spacing:-2px;
+}
+
+@media(max-width:700px){
+    #polePositionCard .pole-position-card > img{
+        left:0;
+        width:100%;
+        object-position:center 30%;
+    }
+
+    #polePositionCard .pole-position-fade{
+        background:linear-gradient(180deg,#111111 0%,rgba(17,17,17,.72) 48%,rgba(17,17,17,.08) 100%);
+    }
+
+    #polePositionCard .pole-position-time-box{
+        right:20px;
+        bottom:22px;
+        padding:10px 12px;
+    }
+
+    #polePositionCard .pole-position-time{
+        font-size:28px;
+    }
+}
+
+/* =====================================================
+   POLE POSITION / FASTEST LAP VISUAL MATCH
+   Keep the pole-position image on the right half and use
+   the same dark-to-image transition used by Fastest Lap.
+===================================================== */
+#polePositionCard .pole-position-card{
+    grid-template-columns:1fr 1fr;
+    background:#111111;
+}
+
+#polePositionCard .pole-position-card > img{
+    left:50%;
+    right:auto;
+    top:0;
+    width:50%;
+    height:100%;
+    object-fit:cover;
+    object-position:center 15%;
+    opacity:.95;
+}
+
+#polePositionCard .pole-position-fade{
+    left:50%;
+    right:0;
+    top:0;
+    bottom:0;
+    background:
+        linear-gradient(
+            90deg,
+            #111111 0%,
+            rgba(17,17,17,.55) 18%,
+            rgba(17,17,17,.08) 58%,
+            rgba(17,17,17,.15) 100%
+        );
+}
+
+#polePositionCard .pole-position-content{
+    left:42px;
+    bottom:38px;
+    z-index:5;
+}
+
+#polePositionCard .pole-position-time-box{
+    right:28px;
+    bottom:25px;
+    z-index:6;
+}
+
+@media(max-width:700px){
+    #polePositionCard .pole-position-card{
+        grid-template-columns:1fr;
+        min-height:440px;
+    }
+
+    #polePositionCard .pole-position-card > img{
+        left:0;
+        top:45%;
+        width:100%;
+        height:55%;
+        object-position:center 30%;
+    }
+
+    #polePositionCard .pole-position-fade{
+        left:0;
+        right:0;
+        top:45%;
+        bottom:0;
+        background:
+            linear-gradient(
+                180deg,
+                #111111 0%,
+                rgba(17,17,17,.55) 25%,
+                rgba(17,17,17,.08) 70%,
+                rgba(17,17,17,.15) 100%
+            );
+    }
+}
+
+
+/* =====================================================
+   STARTING GRID VS FINISH
+===================================================== */
+
+#gridFinishSection{
+    position:relative;
+}
+
+.grid-finish-table{
+    border-top:1px solid var(--border);
+    background:#0d0d0d;
+}
+
+.grid-finish-head,
+.grid-finish-row{
+    display:grid;
+    grid-template-columns:70px minmax(0,1fr) 55px 80px 100px;
+    align-items:center;
+    gap:12px;
+}
+
+.grid-finish-head{
+    min-height:38px;
+    padding:0 20px;
+    color:#4d4d4d;
+    font:8px monospace;
+    letter-spacing:1.8px;
+    border-bottom:1px solid var(--border);
+}
+
+.grid-finish-row{
+    position:relative;
+    min-height:72px;
+    padding:0 20px;
+    border-bottom:1px solid var(--border);
+    background:#0d0d0d;
+}
+
+.grid-finish-row::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:3px;
+    background:var(--team-color,#333);
+}
+
+.grid-finish-row.team-mercedes::before{background:var(--mercedes);}
+.grid-finish-row.team-ferrari::before{background:var(--ferrari);}
+.grid-finish-row.team-redbull::before{background:var(--redbull);}
+.grid-finish-row.team-mclaren::before{background:var(--mclaren);}
+
+.grid-finish-position{
+    color:#666;
+    font:700 11px monospace;
+}
+
+.grid-finish-position.finish{
+    color:#eee;
+}
+
+.grid-finish-driver{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    min-width:0;
+}
+
+.grid-finish-driver strong{
+    color:#eee;
+    font-size:13px;
+}
+
+.grid-finish-driver span{
+    color:#555;
+    font-size:8px;
+    letter-spacing:1px;
+}
+
+.grid-finish-arrow{
+    color:#444;
+    font-size:13px;
+    text-align:center;
+}
+
+.grid-move{
+    justify-self:end;
+    min-width:48px;
+    text-align:right;
+    font:700 10px monospace;
+}
+
+.grid-move.gain{
+    color:#9bbf9b;
+}
+
+.grid-move.loss{
+    color:#c47b7b;
+}
+
+.grid-move.neutral,
+.grid-move.status{
+    color:#666;
+}
+
+#gridFinishRemaining[hidden]{
+    display:none !important;
+}
+
+.grid-finish-summary{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:22px;
+}
+
+.grid-finish-highlight{
+    min-height:112px;
+    padding:20px 22px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    background:#111;
+    border:1px solid var(--border);
+}
+
+.grid-finish-highlight span{
+    color:#555;
+    font:800 8px monospace;
+    letter-spacing:2px;
+}
+
+.grid-finish-highlight strong{
+    margin-top:9px;
+    color:#eee;
+    font-size:17px;
+}
+
+.grid-finish-highlight small{
+    margin-top:5px;
+    color:#666;
+    font:9px monospace;
+}
+
+.grid-finish-highlight.loss strong{
+    color:#d0a0a0;
+}
+
+/* =====================================================
+   BACK TO TOP
+===================================================== */
+
+.back-to-top {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    width: 46px;
+    height: 46px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #3a3a3a;
+    background: #111111;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 19px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease,
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #e10600;
+    border-color: #e10600;
+    color: #ffffff;
+}
+
+@media(max-width:600px) {
+    .back-to-top {
+        right: 18px;
+        bottom: 18px;
+        width: 42px;
+        height: 42px;
+        font-size: 17px;
+    }
+}
