@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>F1 / 26 — Race Dashboard</title>
+    <title>F1 26 - Race Dashboard</title>
 
     <link
         rel="icon"
@@ -73,17 +73,51 @@
         </div>
 
         <div class="navbar-dashboard">
-        <nav class="dashboard-nav" aria-label="Dashboard sections">
-            <button class="dashboard-tab active" data-dashboard="overview" type="button">Overview</button>
-            <button class="dashboard-tab" data-dashboard="drivers" type="button">Drivers</button>
-            <button class="dashboard-tab" data-dashboard="teams" type="button">Teams</button>
-            <button class="dashboard-tab" data-dashboard="championship" type="button">Championship</button>
-            <button class="dashboard-tab" data-dashboard="race" type="button">Race Center</button>
-        </nav>
+            <nav class="dashboard-nav" aria-label="Dashboard sections">
+                <button class="dashboard-tab active" data-dashboard="overview" type="button">Overview</button>
+                <button class="dashboard-tab" data-dashboard="drivers" type="button">Drivers</button>
+                <button class="dashboard-tab" data-dashboard="teams" type="button">Teams</button>
+                <button class="dashboard-tab" data-dashboard="championship" type="button">Championship</button>
+                <button class="dashboard-tab" data-dashboard="race" type="button">Race Center</button>
+            </nav>
         </div>
 
         <div class="season">
             2026 SEASON
+        </div>
+
+        <button class="mobile-nav-toggle" type="button" aria-label="Open dashboard navigation" aria-expanded="false" aria-controls="mobileDashboardMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <div class="mobile-dashboard-menu" id="mobileDashboardMenu" aria-hidden="true">
+            <div class="mobile-dashboard-menu-inner">
+                <div class="mobile-dashboard-menu-label">2026 SEASON</div>
+                <nav aria-label="Mobile dashboard sections">
+                    <button class="mobile-dashboard-tab active" data-dashboard="overview" type="button">
+                        <span class="mobile-dashboard-index">01</span>
+                        <span>Overview</span>
+                    </button>
+                    <button class="mobile-dashboard-tab" data-dashboard="drivers" type="button">
+                        <span class="mobile-dashboard-index">02</span>
+                        <span>Drivers</span>
+                    </button>
+                    <button class="mobile-dashboard-tab" data-dashboard="teams" type="button">
+                        <span class="mobile-dashboard-index">03</span>
+                        <span>Teams</span>
+                    </button>
+                    <button class="mobile-dashboard-tab" data-dashboard="championship" type="button">
+                        <span class="mobile-dashboard-index">04</span>
+                        <span>Championship</span>
+                    </button>
+                    <button class="mobile-dashboard-tab" data-dashboard="race" type="button">
+                        <span class="mobile-dashboard-index">05</span>
+                        <span>Race Center</span>
+                    </button>
+                </nav>
+            </div>
         </div>
 
     </header>
