@@ -1816,6 +1816,74 @@ function phase2CalendarDayLabel(event) {
   return event.type === "qualifying" ? "QUAL" : "RACE";
 }
 
+const phase2TrackTimezones = {
+  Melbourne: "Australia/Melbourne",
+  Shanghai: "Asia/Shanghai",
+  Suzuka: "Asia/Tokyo",
+  Montreal: "America/Toronto",
+  "Monte Carlo": "Europe/Monaco",
+  Catalunya: "Europe/Madrid",
+  Spielberg: "Europe/Vienna",
+  Silverstone: "Europe/London",
+  "Spa-Francorchamps": "Europe/Brussels",
+  Hungaroring: "Europe/Budapest",
+  Zandvoort: "Europe/Amsterdam",
+  Monza: "Europe/Rome",
+  Madring: "Europe/Madrid",
+  Baku: "Asia/Baku",
+  "Kuala Lumpur": "Asia/Bahrain",
+  Singapore: "Asia/Singapore",
+  Austin: "America/Chicago",
+  "Mexico City": "America/Mexico_City",
+  Interlagos: "America/Sao_Paulo",
+  "Las Vegas": "America/Los_Angeles",
+  Lusail: "Asia/Qatar",
+  "Yas Marina Circuit": "Asia/Dubai"
+};
+
+function phase2TrackTimezone(event) {
+  return phase2TrackTimezones[event.race?.shortName] || phase2TrackTimezones[event.race?.location] || "UTC";
+}
+
+function phase2FormatEventTime(event, timeZone) {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false
+  }).format(event.date);
+}
+
+function phase2FormatEventDate(event, timeZone) {
+  return new Intl.DateTimeFormat("en-IN", {
+    timeZone,
+    day: "2-digit",
+    month: "short",
+    year: "numeric"
+  }).format(event.date);
+}
+
+function phase2CalendarEventTime(event) {
+  const trackTimezone = phase2TrackTimezone(event);
+  const trackTime = phase2FormatEventTime(event, trackTimezone);
+  const istTime = phase2FormatEventTime(event, "Asia/Kolkata");
+  const trackDate = phase2FormatEventDate(event, trackTimezone);
+  const trackLabel = event.race?.location || event.race?.shortName || "Track";
+  const sessionLabel = phase2CalendarDayLabel(event);
+
+  return `
+    <div class="season-calendar-time-row">
+      <span class="season-calendar-time-session">${sessionLabel}</span>
+      <strong>${phase2Escape(trackLabel)}</strong>
+    </div>
+    <div class="season-calendar-time-zone-row">
+      <span><b>TRACK</b>${trackTime}</span>
+      <span><b>IST</b>${istTime}</span>
+    </div>
+    <div class="season-calendar-time-meta">${phase2Escape(trackDate)}</div>
+  `;
+}
+
 function phase2RenderCalendarMonth(year, month, eventsByDay) {
   const first = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -1835,6 +1903,15 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
     const raceEvent = events.find((event) => event.type === "race");
     const qualifyingEvent = events.find((event) => event.type === "qualifying");
     const classes = ["season-calendar-day"];
+    const gridPosition = startOffset + day - 1;
+    const columnIndex = gridPosition % 7;
+    const rowIndex = Math.floor(gridPosition / 7);
+
+    if (columnIndex === 0) classes.push("calendar-edge-left");
+    if (columnIndex === 6) classes.push("calendar-edge-right");
+    if (columnIndex <= 1) classes.push("calendar-near-left");
+    if (columnIndex >= 5) classes.push("calendar-near-right");
+    if (rowIndex >= 4) classes.push("calendar-edge-bottom");
 
     if (isCurrentMonth && today.getDate() === day) classes.push("today");
     if (raceEvent?.status === "completed" || qualifyingEvent?.status === "completed") classes.push("has-completed");
@@ -1848,10 +1925,14 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
       ? events.map((event) => `${event.race.name} ${phase2CalendarDayLabel(event)} ${event.status}`).join(", ")
       : `No Formula 1 event on ${monthName} ${day}`;
 
+    const timeDetails = events.map((event) => `<div class="season-calendar-event-detail">${phase2CalendarEventTime(event)}</div>`).join("");
+    const hasTimeDetails = events.length > 0;
+
     cells += `
-      <div class="${classes.join(" ")}" aria-label="${phase2Escape(accessible)}">
+      <div class="${classes.join(" ")}${hasTimeDetails ? " has-event-details" : ""}" data-calendar-col="${columnIndex}" aria-label="${phase2Escape(accessible)}" tabindex="${hasTimeDetails ? "0" : "-1"}">
         <span class="season-calendar-date">${day}</span>
         <div class="season-calendar-events">${labels.join("")}</div>
+        ${hasTimeDetails ? `<div class="season-calendar-time-details" aria-hidden="true">${timeDetails}</div>` : ""}
       </div>
     `;
   }
@@ -1895,6 +1976,9 @@ function phase2RenderCalendarModal() {
   });
 
   calendar.innerHTML = months.join("");
+  calendar.querySelectorAll(".season-calendar-day.has-event-details").forEach((dayCell) => {
+    dayCell.style.setProperty("--calendar-offset", `${-(Number(dayCell.dataset.calendarCol) || 0) * 100}%`);
+  });
 
   const completedRaces = races.filter((race) => race.status === "COMPLETED").length;
   const upcomingRaces = races.length - completedRaces;
@@ -1911,6 +1995,39 @@ function phase2RenderCalendarModal() {
   const upcomingLabel = document.getElementById("calendarUpcomingLegend");
   if (completedLabel) completedLabel.textContent = `${completedRaces} ROUNDS / ${completedEvents} EVENTS`;
   if (upcomingLabel) upcomingLabel.textContent = `${upcomingRaces} ROUNDS / ${upcomingEvents} EVENTS`;
+
+  calendar.addEventListener("click", (event) => {
+    if (!window.matchMedia("(max-width: 700px)").matches) return;
+    const dayCell = event.target.closest(".season-calendar-day");
+    if (!dayCell || dayCell.classList.contains("has-event-details")) return;
+    calendar.querySelectorAll(".season-calendar-day.is-open").forEach((openCell) => {
+      openCell.classList.remove("is-open");
+      openCell.querySelector(".season-calendar-time-details")?.setAttribute("aria-hidden", "true");
+    });
+  });
+
+  calendar.querySelectorAll(".season-calendar-day.has-event-details").forEach((dayCell) => {
+    dayCell.addEventListener("click", () => {
+      if (window.matchMedia("(max-width: 700px)").matches) {
+        const wasOpen = dayCell.classList.contains("is-open");
+        calendar.querySelectorAll(".season-calendar-day.is-open").forEach((openCell) => {
+          if (openCell !== dayCell) {
+            openCell.classList.remove("is-open");
+            openCell.querySelector(".season-calendar-time-details")?.setAttribute("aria-hidden", "true");
+          }
+        });
+        dayCell.classList.toggle("is-open", !wasOpen);
+        dayCell.querySelector(".season-calendar-time-details")?.setAttribute("aria-hidden", String(wasOpen));
+      }
+    });
+
+    dayCell.addEventListener("keydown", (event) => {
+      if ((event.key === "Enter" || event.key === " ") && window.matchMedia("(max-width: 700px)").matches) {
+        event.preventDefault();
+        dayCell.click();
+      }
+    });
+  });
 }
 
 let phase2CalendarScrollY = 0;
