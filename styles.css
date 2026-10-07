@@ -186,7 +186,8 @@ main {
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .nav-button:hover {
@@ -274,16 +275,69 @@ main {
   color: #ffffff;
 }
 
-.race-button.active {
-  background: var(--red);
+.race-button.completed {
+  background: #101010;
+  border-color: #282828;
+  color: #777777;
+}
 
-  border-color: var(--red);
-
-  color: #ffffff;
+.race-button.completed .race-state {
+  background: #3b3b3b;
 }
 
 .race-button.upcoming {
-  opacity: 0.8;
+  background: #0d151e;
+  border-color: #263746;
+  color: #8197aa;
+}
+
+.race-button.upcoming .race-number {
+  color: #61788b;
+}
+
+.race-button.upcoming .race-state {
+  background: #5d8db5;
+  box-shadow: 0 0 7px rgba(93, 141, 181, 0.35);
+}
+
+.race-button.completed:hover {
+  background: #171717;
+  border-color: #444444;
+  color: #ffffff;
+}
+
+.race-button.upcoming:hover {
+  background: #111d29;
+  border-color: #355064;
+  color: #ffffff;
+}
+
+.race-button.completed.active {
+    background: #e10600;
+    border-color: #e10600;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(225,6,0,0.4);
+}
+
+.race-button.upcoming.active {
+    background: #1677ff;
+    border-color: #1677ff;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(22,119,255,0.4);
+}
+
+.race-button.completed.active:hover {
+    background: #e10600;
+    border-color: #e10600;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(225,6,0,0.5);
+}
+
+.race-button.upcoming.active:hover {
+    background: #1677ff;
+    border-color: #1677ff;
+    color: #ffffff;
+    box-shadow: 0 0 16px rgba(22,119,255,0.5);
 }
 
 .race-button.live {
@@ -7218,6 +7272,7 @@ body {
   }
 
   #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+    color: #fff;
     font-size: 20px !important;
   }
 

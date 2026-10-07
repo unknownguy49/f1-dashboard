@@ -792,12 +792,18 @@ async function selectRace(index) {
   if (selectedButton) {
     selectedButton.classList.add("active");
 
-    selectedButton.scrollIntoView({
-      behavior: "smooth",
+    const centerSelectedButton = () => {
+      const left = selectedButton.offsetLeft;
+      const target = left - (raceTrack.clientWidth - selectedButton.offsetWidth) / 2;
 
-      block: "nearest",
+      raceTrack.scrollTo({
+        left: Math.max(0, Math.min(target, raceTrack.scrollWidth - raceTrack.clientWidth)),
+        behavior: "smooth",
+      });
+    };
 
-      inline: "center",
+    requestAnimationFrame(() => {
+      requestAnimationFrame(centerSelectedButton);
     });
   }
 
@@ -2157,6 +2163,16 @@ function setDashboardTab(name) {
   document.querySelectorAll(".dashboard-tab, .mobile-dashboard-tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.dashboard === name);
   });
+
+  if (name === "race" && races.length && !document.querySelector(".race-button.active")) {
+    const latestCompleted = phase2LatestRace();
+    const defaultRace = latestCompleted || phase2NextRace() || races[0];
+    const defaultIndex = races.indexOf(defaultRace);
+
+    if (defaultIndex >= 0) {
+      selectRace(defaultIndex);
+    }
+  }
   document.querySelectorAll(".dashboard-panel").forEach((panel) => {
     panel.classList.toggle(
       "active",
