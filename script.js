@@ -265,6 +265,8 @@ async function loadOpenF1Calendar() {
         meetingKey: meeting.meeting_key,
         sessionKey: raceSession?.session_key || null,
         qualifyingSessionKey: qualifyingSession?.session_key || null,
+        qualifyingDateStart: qualifyingSession?.date_start || null,
+        qualifyingDateEnd: qualifyingSession?.date_end || null,
         round: index + 1,
         name: meeting.meeting_name,
         shortName,
@@ -1794,6 +1796,178 @@ function phase2DriverImage(name) {
     : null;
 }
 
+function phase2CalendarEvent(race, type) {
+  const start = type === "qualifying" ? race.qualifyingDateStart : race.dateStart;
+  if (!start) return null;
+
+  const date = new Date(start);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return {
+    race,
+    type,
+    date,
+    key: `${race.meetingKey || race.round}-${type}`,
+    status: race.status === "COMPLETED" ? "completed" : "upcoming",
+  };
+}
+
+function phase2CalendarDayLabel(event) {
+  return event.type === "qualifying" ? "QUAL" : "RACE";
+}
+
+function phase2RenderCalendarMonth(year, month, eventsByDay) {
+  const first = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = (first.getDay() + 6) % 7;
+  const monthName = new Intl.DateTimeFormat("en-US", { month: "long" }).format(first);
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+  let cells = "";
+  for (let i = 0; i < startOffset; i++) {
+    cells += `<div class="season-calendar-day season-calendar-day-empty" aria-hidden="true"></div>`;
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    const events = eventsByDay.get(key) || [];
+    const raceEvent = events.find((event) => event.type === "race");
+    const qualifyingEvent = events.find((event) => event.type === "qualifying");
+    const classes = ["season-calendar-day"];
+
+    if (isCurrentMonth && today.getDate() === day) classes.push("today");
+    if (raceEvent?.status === "completed" || qualifyingEvent?.status === "completed") classes.push("has-completed");
+    if (raceEvent?.status === "upcoming" || qualifyingEvent?.status === "upcoming") classes.push("has-upcoming");
+
+    const labels = [];
+    if (qualifyingEvent) labels.push(`<span class="season-calendar-event qualifying ${qualifyingEvent.status}" title="${phase2Escape(qualifyingEvent.race.shortName || qualifyingEvent.race.name)} qualifying">Q</span>`);
+    if (raceEvent) labels.push(`<span class="season-calendar-event race ${raceEvent.status}" title="${phase2Escape(raceEvent.race.shortName || raceEvent.race.name)} race">R</span>`);
+
+    const accessible = events.length
+      ? events.map((event) => `${event.race.name} ${phase2CalendarDayLabel(event)} ${event.status}`).join(", ")
+      : `No Formula 1 event on ${monthName} ${day}`;
+
+    cells += `
+      <div class="${classes.join(" ")}" aria-label="${phase2Escape(accessible)}">
+        <span class="season-calendar-date">${day}</span>
+        <div class="season-calendar-events">${labels.join("")}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <section class="season-calendar-month">
+      <div class="season-calendar-month-header">
+        <h3>${monthName}</h3>
+        <span>${year}</span>
+      </div>
+      <div class="season-calendar-weekdays">
+        ${["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((day) => `<span>${day}</span>`).join("")}
+      </div>
+      <div class="season-calendar-grid">${cells}</div>
+    </section>
+  `;
+}
+
+function phase2RenderCalendarModal() {
+  const modal = document.getElementById("calendarModal");
+  const calendar = document.getElementById("seasonCalendar");
+  const summary = document.getElementById("calendarModalSummary");
+  if (!modal || !calendar || !Array.isArray(races) || !races.length) return;
+
+  const events = races.flatMap((race) => [
+    phase2CalendarEvent(race, "qualifying"),
+    phase2CalendarEvent(race, "race"),
+  ]).filter(Boolean).sort((a, b) => a.date - b.date);
+
+  const eventsByDay = new Map();
+  events.forEach((event) => {
+    const key = `${event.date.getFullYear()}-${String(event.date.getMonth() + 1).padStart(2, "0")}-${String(event.date.getDate()).padStart(2, "0")}`;
+    if (!eventsByDay.has(key)) eventsByDay.set(key, []);
+    eventsByDay.get(key).push(event);
+  });
+
+  const monthKeys = [...new Set(events.map((event) => `${event.date.getFullYear()}-${event.date.getMonth()}`))];
+  const months = monthKeys.map((key) => {
+    const [year, month] = key.split("-").map(Number);
+    return phase2RenderCalendarMonth(year, month, eventsByDay);
+  });
+
+  calendar.innerHTML = months.join("");
+
+  const completedRaces = races.filter((race) => race.status === "COMPLETED").length;
+  const upcomingRaces = races.length - completedRaces;
+  const completedEvents = events.filter((event) => event.status === "completed").length;
+  const upcomingEvents = events.length - completedEvents;
+
+  summary.innerHTML = `
+    <div><span>ROUNDS</span><strong>${String(races.length).padStart(2, "0")}</strong></div>
+    <div><span>COMPLETED</span><strong>${String(completedRaces).padStart(2, "0")}</strong></div>
+    <div><span>REMAINING</span><strong>${String(upcomingRaces).padStart(2, "0")}</strong></div>
+  `;
+
+  const completedLabel = document.getElementById("calendarCompletedLegend");
+  const upcomingLabel = document.getElementById("calendarUpcomingLegend");
+  if (completedLabel) completedLabel.textContent = `${completedRaces} ROUNDS / ${completedEvents} EVENTS`;
+  if (upcomingLabel) upcomingLabel.textContent = `${upcomingRaces} ROUNDS / ${upcomingEvents} EVENTS`;
+}
+
+let phase2CalendarScrollY = 0;
+
+function phase2OpenCalendarModal() {
+  const modal = document.getElementById("calendarModal");
+  if (!modal) return;
+
+  phase2RenderCalendarModal();
+  phase2CalendarScrollY = window.scrollY || window.pageYOffset || 0;
+  document.documentElement.classList.add("calendar-modal-open");
+  document.body.classList.add("calendar-modal-open");
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${phase2CalendarScrollY}px`;
+  document.body.style.left = "0";
+  document.body.style.right = "0";
+  document.body.style.width = "100%";
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.getElementById("calendarModalClose")?.focus();
+}
+
+function phase2CloseCalendarModal() {
+  const modal = document.getElementById("calendarModal");
+  if (!modal) return;
+
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  document.documentElement.classList.remove("calendar-modal-open");
+  document.body.classList.remove("calendar-modal-open");
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.left = "";
+  document.body.style.right = "";
+  document.body.style.width = "";
+  window.scrollTo(0, phase2CalendarScrollY);
+}
+
+function phase2BindCalendarModal() {
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#overviewCalendarButton")) {
+      phase2OpenCalendarModal();
+      return;
+    }
+
+    if (event.target.closest("[data-calendar-close]")) {
+      phase2CloseCalendarModal();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      phase2CloseCalendarModal();
+    }
+  });
+}
+
 function phase2RenderNextRaceCountdown(next) {
   const countdown = document.getElementById("overviewNextCountdown");
   if (!countdown) return;
@@ -2294,7 +2468,19 @@ function phase2Render() {
         <article class="overview-race-story overview-race-next">
             <div class="overview-next-number">${String(next?.round || "—").padStart(2, "0")}</div>
             <div class="overview-race-copy">
-                <span>NEXT ROUND / ${E(next?.shortName || "")}</span>
+                <div class="overview-next-heading">
+                    <span>NEXT ROUND / ${E(next?.shortName || "")}</span>
+                    <button
+                        class="overview-calendar-button"
+                        id="overviewCalendarButton"
+                        type="button"
+                        aria-label="Open 2026 season calendar"
+                        title="View 2026 season calendar"
+                    >
+                        <span aria-hidden="true">▦</span>
+                        <span>CALENDAR</span>
+                    </button>
+                </div>
                 <h4>${E(next?.name || "SEASON COMPLETE")}</h4>
                 <p>${E(next?.location || "—")} / ${E(next?.date || "—")}</p>
                 <div class="overview-next-countdown" id="overviewNextCountdown" aria-live="polite"></div>
@@ -2453,6 +2639,7 @@ function phase2TeamColor(name) {
   return "#a1a1a1";
 }
 async function phase2Initialize() {
+  phase2BindCalendarModal();
   setDashboardTab("overview");
 
   document.querySelector(".f1-logo")?.addEventListener("click", () => {

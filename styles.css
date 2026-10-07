@@ -5065,6 +5065,483 @@ main.dashboard-mode .drivers-roster-row {
    BACK TO TOP
 ===================================================== */
 
+
+/* =====================================================
+   OVERVIEW SEASON CALENDAR MODAL
+   ===================================================== */
+
+html.calendar-modal-open,
+body.calendar-modal-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+#dashboardOverview .overview-next-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-width: 0;
+}
+
+#dashboardOverview .overview-next-heading > span {
+  min-width: 0;
+  color: #e10600;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+#dashboardOverview .overview-calendar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  border: 1px solid #303030;
+  background: #101010;
+  color: #bdbdbd;
+  padding: 8px 11px;
+  font: 800 8px/1 Arial, sans-serif;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease;
+}
+
+#dashboardOverview .overview-calendar-button span:first-child {
+  color: #e10600;
+  font-size: 13px;
+  line-height: 0.8;
+}
+
+#dashboardOverview .overview-calendar-button:hover,
+#dashboardOverview .overview-calendar-button:focus-visible {
+  border-color: #e10600;
+  color: #fff;
+  background: #151515;
+  outline: none;
+}
+
+.calendar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.calendar-modal.open {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.calendar-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.calendar-modal-panel {
+  position: relative;
+  width: min(1120px, 100%);
+  max-height: min(820px, calc(100vh - 64px));
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #e10600 #080808;
+  background: #0b0b0b;
+  border: 1px solid #292929;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.65);
+  transform: translateY(16px);
+  transition: transform 0.25s ease;
+}
+
+.calendar-modal-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.calendar-modal-panel::-webkit-scrollbar-track {
+  background: #080808;
+}
+
+.calendar-modal-panel::-webkit-scrollbar-thumb {
+  background: #e10600;
+  box-shadow:
+    0 0 4px rgba(225, 6, 0, 0.9),
+    0 0 10px rgba(225, 6, 0, 0.55);
+}
+
+.calendar-modal.open .calendar-modal-panel {
+  transform: translateY(0);
+}
+
+.calendar-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  padding: 34px 38px 26px;
+  border-bottom: 1px solid #222;
+}
+
+.calendar-modal-header .eyebrow {
+  color: #e10600;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+}
+
+.calendar-modal-header h2 {
+  margin: 10px 0 9px;
+  color: #f1f1f1;
+  font-size: clamp(38px, 4vw, 58px);
+  line-height: 0.86;
+  letter-spacing: -2.8px;
+}
+
+.calendar-modal-header h2 i {
+  color: #e10600;
+  font-style: italic;
+}
+
+.calendar-modal-header p {
+  margin: 0;
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 0.2px;
+}
+
+.calendar-modal-close {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border: 1px solid #303030;
+  background: #101010;
+  color: #aaa;
+  font-size: 25px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.calendar-modal-close:hover,
+.calendar-modal-close:focus-visible {
+  border-color: #e10600;
+  color: #fff;
+  outline: none;
+}
+
+.calendar-modal-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #222;
+}
+
+.calendar-modal-summary > div {
+  padding: 15px 38px;
+  border-right: 1px solid #222;
+}
+
+.calendar-modal-summary > div:last-child {
+  border-right: 0;
+}
+
+.calendar-modal-summary span,
+.calendar-modal-section-heading span {
+  display: block;
+  color: #555;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1.8px;
+}
+
+.calendar-modal-summary strong {
+  display: block;
+  margin-top: 5px;
+  color: #eee;
+  font: 700 17px/1 monospace;
+}
+
+.calendar-modal-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+}
+
+.calendar-modal-section {
+  min-width: 0;
+  max-height: 470px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #333 transparent;
+}
+
+.calendar-modal-section + .calendar-modal-section {
+  border-left: 1px solid #222;
+}
+
+.calendar-modal-section-heading {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 17px 24px 13px;
+  background: #0b0b0b;
+  border-bottom: 1px solid #222;
+}
+
+.calendar-modal-section-heading span {
+  color: #e10600;
+}
+
+.calendar-modal-section-heading strong {
+  color: #555;
+  font: 700 11px/1 monospace;
+}
+
+.calendar-modal-list {
+  padding: 0 24px 24px;
+}
+
+.calendar-modal-race {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 15px;
+  padding: 18px 0;
+  border-bottom: 1px solid #1d1d1d;
+}
+
+.calendar-modal-race:last-child {
+  border-bottom: 0;
+}
+
+.calendar-modal-race-round {
+  color: #454545;
+  font: 700 11px/1 monospace;
+  padding-top: 3px;
+}
+
+.calendar-modal-race-main {
+  min-width: 0;
+}
+
+.calendar-modal-race-topline {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 6px;
+}
+
+.calendar-modal-race-topline span {
+  color: #555;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.calendar-modal-race.upcoming .calendar-modal-race-topline span {
+  color: #e10600;
+}
+
+.calendar-modal-race-topline strong {
+  color: #777;
+  font: 700 8px/1 monospace;
+  white-space: nowrap;
+}
+
+.calendar-modal-race h3 {
+  margin: 0 0 5px;
+  color: #ddd;
+  font-size: 15px;
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+}
+
+.calendar-modal-race p {
+  margin: 0;
+  color: #555;
+  font-size: 8px;
+  letter-spacing: 0.5px;
+}
+
+.calendar-modal-empty {
+  padding: 35px 0;
+  color: #555;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+@media (max-width: 700px) {
+  .calendar-modal {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .calendar-modal-panel {
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+  }
+
+  .calendar-modal-header {
+    padding: 24px 20px 19px;
+    gap: 15px;
+  }
+
+  .calendar-modal-header h2 {
+    font-size: clamp(35px, 11vw, 48px);
+    letter-spacing: -2.2px;
+  }
+
+  .calendar-modal-header p {
+    max-width: 240px;
+    line-height: 1.4;
+  }
+
+  .calendar-modal-close {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10002;
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .calendar-modal-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .calendar-modal-summary > div {
+    padding: 12px 15px;
+  }
+
+  .calendar-modal-columns {
+    display: block;
+  }
+
+  .calendar-modal-section {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .calendar-modal-section + .calendar-modal-section {
+    border-left: 0;
+    border-top: 1px solid #222;
+  }
+
+  .calendar-modal-section-heading {
+    padding: 15px 20px 11px;
+  }
+
+  .calendar-modal-list {
+    padding: 0 20px 18px;
+  }
+
+  .calendar-modal-race {
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    padding: 15px 0;
+  }
+
+  .calendar-modal-race-topline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .calendar-modal-race-topline strong {
+    font-size: 7px;
+  }
+
+  .calendar-modal-race h3 {
+    font-size: 14px;
+  }
+
+  #dashboardOverview .overview-next-heading {
+    position: relative;
+    display: block;
+    min-height: 38px;
+    padding-right: 42px;
+  }
+
+  #dashboardOverview .overview-next-heading > span {
+    display: block;
+    padding-top: 3px;
+  }
+
+  #dashboardOverview .overview-calendar-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 38px;
+    height: 38px;
+    box-sizing: border-box;
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+    font-size: 0;
+    letter-spacing: 0;
+  }
+
+  #dashboardOverview .overview-calendar-button span:first-child {
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  #dashboardOverview .overview-next .overview-race-copy h4 {
+    padding-right: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardOverview .overview-calendar-button span:last-child {
+    display: none;
+  }
+
+  #dashboardOverview .overview-calendar-button {
+    width: 30px;
+    justify-content: center;
+    padding: 7px 0;
+  }
+
+  .calendar-modal-header {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .calendar-modal-summary > div {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  .calendar-modal-list {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .calendar-modal-section-heading {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}
+
 .back-to-top {
   position: fixed;
   right: 28px;
@@ -6756,10 +7233,10 @@ body {
 ===================================================== */
 @media (min-width: 701px) {
   #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
-    top: 28px;
+    top: 112px;
     right: 24px;
     bottom: auto;
-    font-size: 38px;
+    font-size: 34px;
   }
 
   #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
@@ -6790,5 +7267,360 @@ body {
   #dashboardOverview .overview-race-story.overview-race-next {
     height: 248px !important;
     min-height: 248px !important;
+  }
+}
+
+/* =====================================================
+   TRUE SEASON CALENDAR GRID
+   ===================================================== */
+.calendar-modal-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.season-calendar-legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 38px;
+  border-bottom: 1px solid #222;
+  background: #0d0d0d;
+}
+
+.season-calendar-legend-group,
+.season-calendar-session-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #777;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+}
+
+.season-calendar-legend-group strong {
+  color: #444;
+  font: 700 8px/1 monospace;
+  letter-spacing: 0;
+}
+
+.season-calendar-status-dot {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  border-radius: 50%;
+  flex: 0 0 7px;
+}
+
+.season-calendar-status-dot.completed {
+  background: #777;
+}
+
+.season-calendar-status-dot.upcoming {
+  background: #e10600;
+  box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.12);
+}
+
+.season-calendar-session-key {
+  margin-left: auto;
+  color: #555;
+}
+
+.season-calendar-session-key b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  margin-right: 3px;
+  border: 1px solid #333;
+  color: #aaa;
+  font: 800 7px/1 Arial, sans-serif;
+}
+
+.season-calendar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  padding: 30px 38px 38px;
+  overflow-y: auto;
+  max-height: 500px;
+  scrollbar-width: thin;
+  scrollbar-color: #e10600 #080808;
+}
+
+.season-calendar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.season-calendar::-webkit-scrollbar-track {
+  background: #080808;
+}
+
+.season-calendar::-webkit-scrollbar-thumb {
+  background: #e10600;
+  box-shadow:
+    0 0 4px rgba(225, 6, 0, 0.9),
+    0 0 10px rgba(225, 6, 0, 0.55);
+}
+
+.season-calendar-month {
+  min-width: 0;
+}
+
+.season-calendar-month-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid #292929;
+}
+
+.season-calendar-month-header h3 {
+  margin: 0;
+  color: #eee;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  text-transform: uppercase;
+}
+
+.season-calendar-month-header span {
+  color: #444;
+  font: 700 8px/1 monospace;
+}
+
+.season-calendar-weekdays,
+.season-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.season-calendar-weekdays {
+  margin-bottom: 3px;
+}
+
+.season-calendar-weekdays span {
+  color: #444;
+  text-align: center;
+  font: 800 6px/1.2 Arial, sans-serif;
+  letter-spacing: 0.7px;
+}
+
+.season-calendar-day {
+  position: relative;
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px 4px 5px;
+  border: 1px solid transparent;
+  text-align: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.season-calendar-day:hover {
+  background: #121212;
+  border-color: #252525;
+}
+
+.season-calendar-day.today {
+  border-color: #333;
+}
+
+.season-calendar-date {
+  display: block;
+  color: #777;
+  font: 700 12px/1 monospace;
+}
+
+.season-calendar-day.has-completed .season-calendar-date {
+  color: #bbb;
+}
+
+.season-calendar-day.has-upcoming .season-calendar-date {
+  color: #fff;
+}
+
+.season-calendar-events {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.season-calendar-event {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 20px;
+  font: 900 9px/1 Arial, sans-serif;
+  letter-spacing: 0.2px;
+}
+
+.season-calendar-event.completed {
+  background: #2a2a2a;
+  color: #aaa;
+  border: 1px solid #3a3a3a;
+}
+
+.season-calendar-event.upcoming {
+  background: #e10600;
+  color: #fff;
+  border: 1px solid #e10600;
+}
+
+.season-calendar-event.qualifying {
+  border-radius: 2px;
+}
+
+.season-calendar-event.race {
+  border-radius: 50%;
+}
+
+@media (max-width: 900px) {
+  .season-calendar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .season-calendar-legend {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    gap: 10px 18px;
+  }
+
+  .season-calendar-session-key {
+    width: 100%;
+    margin-left: 0;
+    padding-top: 2px;
+  }
+
+  .season-calendar {
+    grid-template-columns: 1fr;
+    gap: 25px;
+    padding: 20px 16px 28px;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .season-calendar-month-header h3 {
+    font-size: 15px;
+  }
+
+  .season-calendar-day {
+    min-height: 66px;
+    padding: 9px 3px 5px;
+  }
+
+  .season-calendar-date {
+    font-size: 14px;
+  }
+
+  .season-calendar-event {
+    width: 30px;
+    height: 23px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 380px) {
+  .season-calendar-legend {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .season-calendar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* =====================================================
+   MOBILE CALENDAR UX FIXES — DO NOT AFFECT DESKTOP
+===================================================== */
+@media (max-width: 700px) {
+  /* Keep the calendar control compact and aligned with the round label. */
+  #dashboardOverview .overview-next-heading {
+    min-height: 32px;
+    padding-right: 38px;
+  }
+
+  #dashboardOverview .overview-calendar-button,
+  #dashboardOverview .overview-calendar-button:focus-visible {
+    top: -2px;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0;
+    border-radius: 2px;
+  }
+
+  #dashboardOverview .overview-calendar-button span:first-child {
+    font-size: 13px;
+  }
+
+  /* The panel's desktop entrance transform creates a containing block for
+     position:fixed. Remove it on mobile so the close button is truly viewport-fixed. */
+  .calendar-modal-panel,
+  .calendar-modal.open .calendar-modal-panel {
+    transform: none !important;
+  }
+
+  .calendar-modal-close {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10002;
+    width: 36px;
+    height: 36px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardOverview .overview-next-heading {
+    padding-right: 36px;
+  }
+
+  #dashboardOverview .overview-calendar-button,
+  #dashboardOverview .overview-calendar-button:focus-visible {
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
+  }
+}
+
+/* =====================================================
+   MOBILE NEXT-ROUND CALENDAR BUTTON — TOP RIGHT OF CARD
+   Mobile only. Desktop remains untouched.
+===================================================== */
+@media (max-width: 700px) {
+  #dashboardOverview .overview-race-story.overview-race-next {
+    position: relative !important;
+  }
+
+  #dashboardOverview .overview-next-heading {
+    position: static !important;
+    min-height: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  #dashboardOverview .overview-calendar-button,
+  #dashboardOverview .overview-calendar-button:focus-visible {
+    position: absolute !important;
+    top: 10px !important;
+    right: 0 !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 }

@@ -547,6 +547,63 @@
 
 
 
+    <!-- =================================================
+         SEASON CALENDAR MODAL
+    ================================================== -->
+
+    <div
+        class="calendar-modal"
+        id="calendarModal"
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="calendarModalTitle"
+    >
+        <div class="calendar-modal-backdrop" data-calendar-close></div>
+
+        <div class="calendar-modal-panel">
+            <div class="calendar-modal-header">
+                <div>
+                    <span class="eyebrow">2026 / THE CALENDAR</span>
+                    <h2 id="calendarModalTitle">SEASON<br><i>CALENDAR.</i></h2>
+                    <p>Race and qualifying dates across the 2026 season.</p>
+                </div>
+
+                <button
+                    class="calendar-modal-close"
+                    id="calendarModalClose"
+                    type="button"
+                    aria-label="Close season calendar"
+                    data-calendar-close
+                >
+                    ×
+                </button>
+            </div>
+
+            <div class="calendar-modal-summary" id="calendarModalSummary"></div>
+
+            <div class="season-calendar-legend">
+                <div class="season-calendar-legend-group">
+                    <span class="season-calendar-status-dot completed"></span>
+                    <span>COMPLETED</span>
+                    <strong id="calendarCompletedLegend"></strong>
+                </div>
+                <div class="season-calendar-legend-group">
+                    <span class="season-calendar-status-dot upcoming"></span>
+                    <span>UPCOMING</span>
+                    <strong id="calendarUpcomingLegend"></strong>
+                </div>
+                <div class="season-calendar-session-key">
+                    <span><b>Q</b> QUALIFYING</span>
+                    <span><b>R</b> RACE</span>
+                </div>
+            </div>
+
+            <div class="season-calendar" id="seasonCalendar"></div>
+        </div>
+    </div>
+
+
     <button
         class="back-to-top"
         id="backToTop"
