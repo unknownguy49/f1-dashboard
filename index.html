@@ -78,6 +78,7 @@
                 <button class="dashboard-tab" data-dashboard="drivers" type="button">Drivers</button>
                 <button class="dashboard-tab" data-dashboard="teams" type="button">Teams</button>
                 <button class="dashboard-tab" data-dashboard="championship" type="button">Championship</button>
+                <button class="dashboard-tab" data-dashboard="replay" type="button">Race Replay</button>
                 <button class="dashboard-tab" data-dashboard="race" type="button">Race Center</button>
             </nav>
         </div>
@@ -112,8 +113,12 @@
                         <span class="mobile-dashboard-index">04</span>
                         <span>Championship</span>
                     </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="race" type="button">
+                    <button class="mobile-dashboard-tab" data-dashboard="replay" type="button">
                         <span class="mobile-dashboard-index">05</span>
+                        <span>Race Replay</span>
+                    </button>
+                    <button class="mobile-dashboard-tab" data-dashboard="race" type="button">
+                        <span class="mobile-dashboard-index">06</span>
                         <span>Race Center</span>
                     </button>
                 </nav>
@@ -169,6 +174,83 @@
                 <p>Driver and constructor championship standings.</p>
             </div>
             <div id="championshipContent" class="dashboard-loading">LOADING CHAMPIONSHIP DATA</div>
+        </section>
+
+        <section class="dashboard-panel" id="dashboardReplay">
+            <div class="dashboard-heading replay-heading">
+                <div>
+                    <span class="eyebrow">TELEMETRY LAB</span>
+                    <h1>Race Replay</h1>
+                </div>
+                <p>Replay completed 2026 races using historical OpenF1 car location, position and lap telemetry.</p>
+            </div>
+
+            <section class="replay-shell" id="replayShell">
+                <div class="replay-toolbar">
+                    <div class="replay-race-select-wrap">
+                        <span class="replay-control-label">RACE</span>
+                        <select id="replayRaceSelect" class="replay-select" aria-label="Select completed race"></select>
+                    </div>
+                    <div class="replay-driver-select-wrap">
+                        <span class="replay-control-label">DRIVERS · MAX 5</span>
+                        <div class="replay-driver-picker" id="replayDriverPicker">
+                            <button class="replay-select replay-driver-picker-button" id="replayDriverPickerButton" type="button" aria-expanded="false" aria-controls="replayDriverMenu">TOP 5</button>
+                            <div class="replay-driver-menu" id="replayDriverMenu" hidden></div>
+                        </div>
+                    </div>
+                    <div class="replay-load-status" id="replayLoadStatus">SELECT A COMPLETED RACE</div>
+                </div>
+
+                <div class="replay-main-grid">
+                    <section class="replay-track-panel">
+                        <div class="replay-panel-head">
+                            <div>
+                                <span class="eyebrow">LIVE TELEMETRY REPLAY</span>
+                                <h2 id="replayTrackTitle">Select a race</h2>
+                            </div>
+                            <div class="replay-finish-state" id="replayFinishState" hidden>LEADER FINISH</div>
+                            <div class="replay-clock" id="replayClock">00:00.000</div>
+                        </div>
+                        <div class="replay-canvas-wrap">
+                            <canvas id="replayCanvas" aria-label="Race replay circuit and driver positions"></canvas>
+                            <div class="replay-canvas-empty" id="replayCanvasEmpty">SELECT A COMPLETED RACE TO LOAD TELEMETRY</div>
+                        </div>
+                        <div class="replay-legend" id="replayLegend"></div>
+                    </section>
+
+                    <aside class="replay-data-panel">
+                        <div class="replay-data-head">
+                            <span class="eyebrow">TIMING</span>
+                            <strong id="replayLapLabel">LAP —</strong>
+                        </div>
+                        <div class="replay-timing-driver" id="replayTimingDriver">TOP 5</div>
+                        <div class="replay-timing-grid">
+                            <div><span>LAP TIME</span><strong id="replayLapTime">—</strong></div>
+                            <div><span>SECTOR 1</span><strong id="replaySector1">—</strong></div>
+                            <div><span>SECTOR 2</span><strong id="replaySector2">—</strong></div>
+                            <div><span>SECTOR 3</span><strong id="replaySector3">—</strong></div>
+                        </div>
+                        <div class="replay-position-card" id="replayPositionCard">
+                            <span>POSITION</span><strong>—</strong>
+                        </div>
+                        <div class="replay-driver-list" id="replayDriverList"></div>
+                    </aside>
+                </div>
+
+                <div class="replay-controls">
+                    <button class="replay-button" id="replayRewind" type="button">↶ <span>REWIND</span></button>
+                    <button class="replay-button replay-play" id="replayPlay" type="button">PLAY</button>
+                    <div class="replay-speed-group" role="group" aria-label="Replay speed">
+                        <button class="replay-speed active" data-speed="1" type="button">1×</button>
+                        <button class="replay-speed" data-speed="2" type="button">2×</button>
+                        <button class="replay-speed" data-speed="4" type="button">4×</button>
+                    </div>
+                    <div class="replay-progress-wrap">
+                        <input id="replayProgress" type="range" min="0" max="1" step="0.001" value="0" aria-label="Replay position">
+                        <div class="replay-progress-meta"><span id="replayProgressStart">START</span><span id="replayProgressEnd">FINISH</span></div>
+                    </div>
+                </div>
+            </section>
         </section>
 
         <section class="dashboard-panel" id="dashboardRace">

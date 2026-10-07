@@ -2159,6 +2159,821 @@ function phase2TeamClass(name) {
   return "unknown";
 }
 
+
+/* =====================================================
+   RACE REPLAY
+===================================================== */
+
+const replayState = {
+  race: null,
+  drivers: [],
+  driverByNumber: new Map(),
+  positions: [],
+  positionByDriver: new Map(),
+  lapsByDriver: new Map(),
+  locations: new Map(),
+  locationLoading: new Set(),
+  locationRetryAt: new Map(),
+  trackPoints: [],
+  startTime: 0,
+  endTime: 0,
+  currentTime: 0,
+  speed: 1,
+  playing: false,
+  loading: false,
+  animationFrame: null,
+  lastFrameTime: 0,
+  requestId: 0,
+  selectedDrivers: [],
+  startingGrid: new Map(),
+  finishTime: 0,
+  trackStartPoint: null,
+  trackStartDirection: null,
+  locationRangeStart: 0,
+  locationRangeEnd: 0,
+};
+
+const replayElements = {
+  raceSelect: document.getElementById("replayRaceSelect"),
+  driverPicker: document.getElementById("replayDriverPicker"),
+  driverPickerButton: document.getElementById("replayDriverPickerButton"),
+  driverMenu: document.getElementById("replayDriverMenu"),
+  loadStatus: document.getElementById("replayLoadStatus"),
+  trackTitle: document.getElementById("replayTrackTitle"),
+  canvas: document.getElementById("replayCanvas"),
+  canvasEmpty: document.getElementById("replayCanvasEmpty"),
+  legend: document.getElementById("replayLegend"),
+  lapLabel: document.getElementById("replayLapLabel"),
+  timingDriver: document.getElementById("replayTimingDriver"),
+  lapTime: document.getElementById("replayLapTime"),
+  sector1: document.getElementById("replaySector1"),
+  sector2: document.getElementById("replaySector2"),
+  sector3: document.getElementById("replaySector3"),
+  positionCard: document.getElementById("replayPositionCard"),
+  driverList: document.getElementById("replayDriverList"),
+  rewind: document.getElementById("replayRewind"),
+  play: document.getElementById("replayPlay"),
+  progress: document.getElementById("replayProgress"),
+  progressStart: document.getElementById("replayProgressStart"),
+  progressEnd: document.getElementById("replayProgressEnd"),
+  clock: document.getElementById("replayClock"),
+  finishState: document.getElementById("replayFinishState"),
+};
+
+function replayEscape(value) {
+  return String(value ?? "—").replace(/[&<>'"]/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+  }[char]));
+}
+
+function replayTeamColor(team) {
+  return phase2TeamColor ? phase2TeamColor(team) : "unknown";
+}
+
+function replayDriverColor(driver) {
+  const direct = String(driver?.team_colour || "").replace(/^#/, "");
+  if (/^[0-9a-fA-F]{6}$/.test(direct)) return `#${direct}`;
+  const colors = {
+    mercedes: "#00d2be", ferrari: "#e10600", mclaren: "#ff8700", redbull: "#3671c6",
+    racingbulls: "#6a91e8", astonmartin: "#358c73", alpine: "#ff86ba", williams: "#36a8ed",
+    audi: "#d40000", haas: "#9e9e9e", unknown: "#bdbdbd",
+  };
+  return colors[replayTeamColor(driver?.team_name)] || colors.unknown;
+}
+
+function replayFormatClock(ms) {
+  if (!Number.isFinite(ms) || ms < 0) return "00:00.000";
+  const totalSeconds = ms / 1000;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  const millis = Math.floor(ms % 1000);
+  if (hours) return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(millis).padStart(3, "0")}`;
+}
+
+function replayFormatLapTime(seconds) {
+  if (!Number.isFinite(Number(seconds)) || Number(seconds) <= 0) return "—";
+  return formatLapTime(Number(seconds));
+}
+
+function replayTimestamp(value) {
+  const time = new Date(value).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function replayBinarySearch(points, timestamp) {
+  if (!points?.length) return null;
+  if (timestamp <= points[0].time) return points[0];
+  if (timestamp >= points[points.length - 1].time) return points[points.length - 1];
+  let low = 0;
+  let high = points.length - 1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (points[mid].time < timestamp) low = mid + 1;
+    else high = mid - 1;
+  }
+  const after = points[low];
+  const before = points[low - 1];
+  if (!before || !after) return before || after;
+  const span = after.time - before.time;
+  const ratio = span > 0 ? (timestamp - before.time) / span : 0;
+  return {
+    time: timestamp,
+    x: before.x + (after.x - before.x) * ratio,
+    y: before.y + (after.y - before.y) * ratio,
+    z: before.z + (after.z - before.z) * ratio,
+  };
+}
+
+function replayLatestPosition(driverNumber, timestamp) {
+  const points = replayState.positionByDriver.get(Number(driverNumber)) || [];
+  if (!points.length) return null;
+  let low = 0;
+  let high = points.length - 1;
+  let result = null;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (points[mid].time <= timestamp) {
+      result = points[mid];
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return Number.isFinite(result?.position) ? result.position : null;
+}
+
+function replayActiveLap(driverNumber, timestamp) {
+  const laps = replayState.lapsByDriver.get(Number(driverNumber)) || [];
+  if (!laps.length) return null;
+  let low = 0;
+  let high = laps.length - 1;
+  let result = null;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (laps[mid].start <= timestamp) {
+      result = laps[mid];
+      low = mid + 1;
+    } else high = mid - 1;
+  }
+  return result;
+}
+
+function replayNormalizePoints(points) {
+  const valid = points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
+  if (!valid.length) return { points: [], bounds: null };
+  const xs = valid.map((point) => point.x);
+  const ys = valid.map((point) => point.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const padX = Math.max((maxX - minX) * 0.08, 1);
+  const padY = Math.max((maxY - minY) * 0.08, 1);
+  return {
+    points: valid,
+    bounds: { minX: minX - padX, maxX: maxX + padX, minY: minY - padY, maxY: maxY + padY },
+  };
+}
+
+function replayBuildTrack() {
+  let best = null;
+
+  for (const driver of replayState.drivers) {
+    const points = replayState.locations.get(Number(driver.driver_number));
+    const laps = replayState.lapsByDriver.get(Number(driver.driver_number)) || [];
+    if (!points?.length || laps.length < 3) continue;
+
+    const candidates = laps
+      .map((lap, index) => ({ lap, nextLap: laps[index + 1] }))
+      .filter(({ lap, nextLap }) => lap?.start && nextLap?.start && nextLap.start > lap.start && Number(lap.lap_number) > 1);
+
+    for (const { lap, nextLap } of candidates) {
+      const lapPoints = points.filter((point) => point.time >= lap.start && point.time < nextLap.start);
+      if (lapPoints.length < 25) continue;
+      if (!best || lapPoints.length > best.length) best = lapPoints;
+    }
+  }
+
+  if (!best) {
+    for (const points of replayState.locations.values()) {
+      if (points?.length && (!best || points.length > best.length)) best = points;
+    }
+  }
+
+  if (!best?.length) {
+    replayState.trackPoints = [];
+    return;
+  }
+
+  const step = Math.max(1, Math.ceil(best.length / 1200));
+  replayState.trackPoints = best.filter((_, index) => index % step === 0);
+  replayState.trackStartPoint = replayState.trackPoints[0] || null;
+  const next = replayState.trackPoints[1];
+  replayState.trackStartDirection = next && replayState.trackStartPoint
+    ? { x: next.x - replayState.trackStartPoint.x, y: next.y - replayState.trackStartPoint.y }
+    : null;
+}
+
+function replayRaceTimeRange() {
+  const lapStarts = [];
+  const locationStarts = [];
+  const locationEnds = [];
+
+  replayState.lapsByDriver.forEach((laps) => {
+    const firstRaceLap = laps.find((lap) => Number(lap.lap_number) === 1 && Number.isFinite(lap.start));
+    if (firstRaceLap) lapStarts.push(firstRaceLap.start);
+  });
+
+  replayState.locations.forEach((points) => {
+    if (!points?.length) return;
+    locationStarts.push(points[0].time);
+    locationEnds.push(points[points.length - 1].time);
+  });
+
+  const startCandidates = lapStarts.length ? lapStarts : locationStarts;
+  const start = Math.min(...startCandidates.filter(Number.isFinite));
+
+  const finalRows = replayCurrentLeaderboard(Math.max(...replayState.positions.map((row) => row.time).filter(Number.isFinite), start || 0));
+  const leader = finalRows.find((item) => item.position === 1)?.driver;
+  let finish = 0;
+
+  if (leader) {
+    const leaderLaps = replayState.lapsByDriver.get(Number(leader.driver_number)) || [];
+    const lastLap = leaderLaps.reduce((best, lap) => !best || Number(lap.lap_number) > Number(best.lap_number) ? lap : best, null);
+    if (lastLap?.start && Number(lastLap.lap_duration) > 0) {
+      finish = lastLap.start + Number(lastLap.lap_duration) * 1000;
+    }
+  }
+
+  const fallbackEnd = Math.max(...locationEnds.filter(Number.isFinite), ...replayState.positions.map((row) => row.time).filter(Number.isFinite), start || 0);
+  const end = finish > start ? finish : fallbackEnd;
+
+  if (Number.isFinite(start) && Number.isFinite(end) && end > start) {
+    replayState.startTime = start;
+    replayState.endTime = end;
+    replayState.finishTime = end;
+    replayState.locationRangeStart = Math.min(...locationStarts.filter(Number.isFinite), start);
+    replayState.locationRangeEnd = Math.max(...locationEnds.filter(Number.isFinite), end);
+    replayState.currentTime = start;
+  }
+}
+
+function replayDriverName(driver) {
+  return driver?.name_acronym || driver?.name || driver?.full_name || driver?.broadcast_name || `#${driver?.driver_number ?? "—"}`;
+}
+
+function replayDriverFullName(driver) {
+  return driver?.full_name || driver?.name || driver?.broadcast_name || replayDriverName(driver);
+}
+
+function replayDriverPosition(driver, timestamp) {
+  const direct = replayLatestPosition(driver.driver_number, timestamp);
+  if (direct !== null && direct !== undefined) return Number(direct);
+  const lap = replayActiveLap(driver.driver_number, timestamp);
+  return lap?.position ?? null;
+}
+
+function replayCurrentLeaderboard(timestamp) {
+  const rows = replayState.drivers
+    .map((driver) => ({
+      driver,
+      position: replayDriverPosition(driver, timestamp),
+    }))
+    .filter((item) => Number.isFinite(item.position) && item.position > 0)
+    .sort((a, b) => a.position - b.position);
+
+  if (rows.length) return rows;
+
+  return replayState.drivers
+    .map((driver) => ({
+      driver,
+      position: replayState.startingGrid.get(Number(driver.driver_number)) || null,
+    }))
+    .filter((item) => Number.isFinite(item.position))
+    .sort((a, b) => a.position - b.position);
+}
+
+function replayVisibleDrivers(timestamp) {
+  const leaderboard = replayCurrentLeaderboard(timestamp);
+  if (!replayState.selectedDrivers.length) return leaderboard.slice(0, 5).map((item) => item.driver);
+  return replayState.selectedDrivers
+    .map((number) => replayState.driverByNumber.get(Number(number)))
+    .filter(Boolean);
+}
+
+function replaySelectionLabel() {
+  if (!replayState.selectedDrivers.length) return "TOP 5";
+  const names = replayState.selectedDrivers
+    .map((number) => replayState.driverByNumber.get(Number(number)))
+    .filter(Boolean)
+    .map(replayDriverName);
+  return names.length <= 2 ? names.join(" · ") : `${names.length} DRIVERS SELECTED`;
+}
+
+function replayDraw() {
+  const canvas = replayElements.canvas;
+  if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.max(1, Math.floor(rect.width * dpr));
+  const height = Math.max(1, Math.floor(rect.height * dpr));
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const w = rect.width, h = rect.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#090909";
+  ctx.fillRect(0, 0, w, h);
+  if (!replayState.trackPoints.length) return;
+
+  const normalized = replayNormalizePoints(replayState.trackPoints);
+  if (!normalized.bounds) return;
+  const b = normalized.bounds;
+  const pad = 42;
+  const scale = Math.min((w - pad * 2) / (b.maxX - b.minX), (h - pad * 2) / (b.maxY - b.minY));
+  const offsetX = (w - (b.maxX - b.minX) * scale) / 2;
+  const offsetY = (h - (b.maxY - b.minY) * scale) / 2;
+  const project = (point) => ({
+    x: offsetX + (point.x - b.minX) * scale,
+    y: h - (offsetY + (point.y - b.minY) * scale),
+  });
+
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  replayState.trackPoints.forEach((point, index) => {
+    const p = project(point);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.strokeStyle = "#292929";
+  ctx.lineWidth = 12;
+  ctx.stroke();
+  ctx.strokeStyle = "#777";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  if (replayState.trackPoints.length > 2) {
+    const first = project(replayState.trackPoints[0]);
+    const second = project(replayState.trackPoints[1]);
+    const dx = second.x - first.x;
+    const dy = second.y - first.y;
+    const length = Math.hypot(dx, dy) || 1;
+    const nx = -dy / length;
+    const ny = dx / length;
+    ctx.beginPath();
+    ctx.moveTo(first.x - nx * 18, first.y - ny * 18);
+    ctx.lineTo(first.x + nx * 18, first.y + ny * 18);
+    ctx.strokeStyle = "#e10600";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  const visible = replayVisibleDrivers(replayState.currentTime);
+  const markerData = [];
+  visible.forEach((driver) => {
+    const location = replayBinarySearch(replayState.locations.get(Number(driver.driver_number)) || [], replayState.currentTime);
+    if (!location) return;
+    const point = project(location);
+    const color = replayDriverColor(driver);
+    markerData.push({ driver, point, color, position: replayDriverPosition(driver, replayState.currentTime) });
+  });
+
+  markerData.forEach(({ driver, point, color, position }) => {
+    const label = `${position ? `P${position} ` : ""}${replayDriverName(driver)}`;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = "#050505";
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = color;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.font = "800 8px Arial";
+    ctx.textAlign = "center";
+    const textWidth = ctx.measureText(label).width;
+    const labelX = point.x;
+    const labelY = point.y - 17;
+    ctx.fillStyle = "rgba(5,5,5,.92)";
+    ctx.fillRect(labelX - textWidth / 2 - 5, labelY - 9, textWidth + 10, 14);
+    ctx.fillStyle = color;
+    ctx.fillRect(labelX - textWidth / 2 - 5, labelY - 9, 2, 14);
+    ctx.fillStyle = "#f4f4f4";
+    ctx.fillText(label, labelX, labelY + 1);
+  });
+
+  replayRenderLegend(markerData);
+}
+
+function replayRenderLegend(markerData = []) {
+  if (!replayElements.legend) return;
+  replayElements.legend.innerHTML = markerData.map(({ driver, color, position }) => `
+    <div class="replay-legend-item" style="--replay-color:${color}"><i style="--replay-color:${color}"></i><strong>${replayEscape(position ? `P${position}` : "—")}</strong><span>${replayEscape(replayDriverName(driver))}</span><small>${replayEscape(replayDriverFullName(driver))}</small></div>
+  `).join("");
+}
+
+function replayRenderTiming() {
+  const visible = replayVisibleDrivers(replayState.currentTime);
+  const selected = replayState.selectedDrivers.length ? replayState.driverByNumber.get(Number(replayState.selectedDrivers[0])) : visible[0];
+  const timingDriver = selected || visible[0];
+  const lap = timingDriver ? replayActiveLap(timingDriver.driver_number, replayState.currentTime) : null;
+  const position = timingDriver ? replayDriverPosition(timingDriver, replayState.currentTime) : null;
+
+  replayElements.lapLabel.textContent = lap?.lap_number ? `LAP ${lap.lap_number}` : "LAP —";
+  replayElements.timingDriver.textContent = timingDriver ? `${replayDriverName(timingDriver)} · ${replayDriverFullName(timingDriver)}` : "TOP 5";
+  replayElements.lapTime.textContent = replayFormatLapTime(lap?.lap_duration);
+  replayElements.sector1.textContent = replayFormatLapTime(lap?.duration_sector_1);
+  replayElements.sector2.textContent = replayFormatLapTime(lap?.duration_sector_2);
+  replayElements.sector3.textContent = replayFormatLapTime(lap?.duration_sector_3);
+  replayElements.positionCard.innerHTML = `<span>POSITION</span><strong>${position ? `P${position}` : "—"}</strong>`;
+  replayElements.clock.textContent = replayFormatClock(replayState.currentTime - replayState.startTime);
+
+  const leaderboard = replayCurrentLeaderboard(replayState.currentTime);
+  replayElements.driverList.innerHTML = leaderboard.map(({ driver, position }) => {
+    const selected = replayState.selectedDrivers.includes(Number(driver.driver_number));
+    const active = timingDriver && Number(driver.driver_number) === Number(timingDriver.driver_number);
+    return `<button type="button" class="replay-driver-row${active ? " active" : ""}${selected ? " selected" : ""}" style="--replay-color:${replayDriverColor(driver)}" data-replay-driver="${Number(driver.driver_number)}"><i style="--replay-color:${replayDriverColor(driver)}"></i><span><b>${position ? `P${position}` : "—"}</b> ${replayEscape(replayDriverName(driver))}</span><strong>${selected ? "SELECTED" : ""}</strong></button>`;
+  }).join("");
+
+  replayRenderDriverMenu();
+  replayElements.finishState.hidden = !(replayState.finishTime && replayState.currentTime >= replayState.finishTime);
+  if (!replayElements.finishState.hidden) replayElements.finishState.textContent = `LEADER FINISH · ${new Date(replayState.finishTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`;
+}
+
+function replaySetStatus(text) {
+  if (replayElements.loadStatus) replayElements.loadStatus.textContent = text;
+}
+
+async function replayFetchLocations(driverNumbers, requestId, waitForAll = false) {
+  const requested = [...new Set(driverNumbers.map(Number).filter(Number.isFinite))];
+  const now = Date.now();
+  const queue = requested.filter((number) => !replayState.locations.has(number) && !replayState.locationLoading.has(number) && (replayState.locationRetryAt.get(number) || 0) <= now);
+  queue.forEach((number) => replayState.locationLoading.add(number));
+
+  const getReady = () => requested.filter((number) => (replayState.locations.get(number) || []).length > 0);
+  const getMissing = () => requested.filter((number) => !(replayState.locations.get(number) || []).length);
+
+  const updateLocationStatus = (retrying = 0) => {
+    if (!replayElements.loadStatus) return;
+    const ready = getReady().length;
+    const missing = getMissing().length;
+    const loading = requested.filter((number) => replayState.locationLoading.has(number)).length;
+    if (!missing) {
+      replaySetStatus(`${ready}/${requested.length} DRIVERS · TELEMETRY READY`);
+      return;
+    }
+    if (retrying) {
+      replaySetStatus(`${ready}/${requested.length} TELEMETRY · RETRYING ${retrying}`);
+      return;
+    }
+    replaySetStatus(`${ready}/${requested.length} TELEMETRY · LOADING${loading ? ` ${loading}` : ""}`);
+  };
+
+  updateLocationStatus();
+
+  const loadOne = async (number) => {
+    if (replayState.locations.has(number) || requestId !== replayState.requestId) return true;
+    let lastError = null;
+    for (let attempt = 0; attempt < 3 && requestId === replayState.requestId; attempt += 1) {
+      try {
+        const rows = await fetchOpenF1("location", {
+          session_key: replayState.race.sessionKey,
+          driver_number: number,
+        });
+        const seen = new Set();
+        const points = rows
+          .map((row) => ({
+            time: replayTimestamp(row.date),
+            x: Number(row.x),
+            y: Number(row.y),
+            z: Number(row.z),
+          }))
+          .filter((point) => point.time && Number.isFinite(point.x) && Number.isFinite(point.y))
+          .filter((point) => {
+            const key = `${point.time}|${point.x}|${point.y}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .sort((a, b) => a.time - b.time);
+
+        if (points.length) {
+          replayState.locations.set(number, points);
+          replayState.locationRetryAt.delete(number);
+          return true;
+        }
+        lastError = new Error("OpenF1 returned no location samples");
+      } catch (error) {
+        lastError = error;
+      }
+      if (attempt < 2 && requestId === replayState.requestId) {
+        await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1)));
+      }
+    }
+    replayState.locationRetryAt.set(number, Date.now() + 8000);
+    console.warn(`Replay location load pending for driver ${number}`, lastError);
+    return false;
+  };
+
+  const workers = [async () => {
+    while (queue.length && requestId === replayState.requestId) {
+      const number = queue.shift();
+      try {
+        await loadOne(number);
+      } finally {
+        replayState.locationLoading.delete(number);
+        updateLocationStatus();
+        replayBuildTrack();
+        replayDraw();
+      }
+    }
+  }, async () => {
+    while (queue.length && requestId === replayState.requestId) {
+      const number = queue.shift();
+      try {
+        await loadOne(number);
+      } finally {
+        replayState.locationLoading.delete(number);
+        updateLocationStatus();
+        replayBuildTrack();
+        replayDraw();
+      }
+    }
+  }];
+
+  await Promise.all(workers.map((worker) => worker()));
+
+  if (waitForAll && requestId === replayState.requestId) {
+    let missing = getMissing();
+    let retryRound = 0;
+    while (missing.length && requestId === replayState.requestId) {
+      retryRound += 1;
+      updateLocationStatus(missing.length);
+      for (const number of missing) {
+        if (requestId !== replayState.requestId) break;
+        replayState.locationLoading.add(number);
+        try {
+          await loadOne(number);
+        } finally {
+          replayState.locationLoading.delete(number);
+        }
+        updateLocationStatus(missing.length);
+        replayBuildTrack();
+        replayDraw();
+        if ((replayState.locations.get(number) || []).length) break;
+      }
+      missing = getMissing();
+      if (missing.length && requestId === replayState.requestId) {
+        await new Promise((resolve) => setTimeout(resolve, Math.min(12000, 2500 + retryRound * 1000)));
+      }
+    }
+  }
+
+  updateLocationStatus();
+  return getReady();
+}
+
+async function replayLoadRace(race) {
+  if (!race?.sessionKey || race.status !== "COMPLETED") return;
+  const requestId = ++replayState.requestId;
+  replayState.playing = false;
+  replayState.loading = true;
+  replayState.race = race;
+  replayState.locations = new Map();
+  replayState.locationLoading = new Set();
+  replayState.locationRetryAt = new Map();
+  replayState.positions = [];
+  replayState.positionByDriver = new Map();
+  replayState.lapsByDriver = new Map();
+  replayState.trackPoints = [];
+  replayState.selectedDrivers = [];
+  replayState.startingGrid = new Map();
+  replayState.finishTime = 0;
+  replayState.trackStartPoint = null;
+  replayState.trackStartDirection = null;
+  replayElements.play.textContent = "PLAY";
+  replayElements.canvasEmpty.hidden = false;
+  replayElements.canvasEmpty.textContent = "LOADING OPENF1 TELEMETRY";
+  replaySetStatus(`LOADING ${race.shortName.toUpperCase()}`);
+  replayElements.trackTitle.textContent = race.name;
+
+  try {
+    const [drivers, positions, laps, startingGrid] = await Promise.all([
+      fetchOpenF1("drivers", { session_key: race.sessionKey }),
+      fetchOpenF1("position", { session_key: race.sessionKey }),
+      fetchOpenF1("laps", { session_key: race.sessionKey }),
+      fetchOpenF1("starting_grid", { session_key: race.sessionKey }).catch(() => []),
+    ]);
+    if (requestId !== replayState.requestId) return;
+
+    replayState.drivers = drivers.filter((driver) => Number.isFinite(Number(driver.driver_number)));
+    replayState.driverByNumber = new Map(replayState.drivers.map((driver) => [Number(driver.driver_number), driver]));
+    replayState.startingGrid = new Map(startingGrid.map((row) => [Number(row.driver_number), Number(row.position)]).filter(([driver, position]) => Number.isFinite(driver) && Number.isFinite(position)));
+    replayState.positions = positions.map((row) => ({ time: replayTimestamp(row.date), driver_number: Number(row.driver_number), position: Number(row.position) })).filter((row) => row.time && row.driver_number && Number.isFinite(row.position)).sort((a, b) => a.time - b.time);
+    replayState.positionByDriver = new Map();
+    replayState.positions.forEach((row) => {
+      if (!replayState.positionByDriver.has(row.driver_number)) replayState.positionByDriver.set(row.driver_number, []);
+      replayState.positionByDriver.get(row.driver_number).push(row);
+    });
+    replayState.lapsByDriver = new Map();
+    laps.forEach((row) => {
+      const driverNumber = Number(row.driver_number);
+      const start = replayTimestamp(row.date_start);
+      if (!driverNumber || !start) return;
+      if (!replayState.lapsByDriver.has(driverNumber)) replayState.lapsByDriver.set(driverNumber, []);
+      replayState.lapsByDriver.get(driverNumber).push({ ...row, start, lap_number: Number(row.lap_number) });
+    });
+    replayState.lapsByDriver.forEach((items) => items.sort((a, b) => a.start - b.start));
+
+    const timeValues = replayState.positions.map((row) => row.time).concat(laps.map((row) => replayTimestamp(row.date_start)).filter(Boolean));
+    replayState.startTime = Math.min(replayTimestamp(race.dateStart), ...(timeValues.length ? timeValues : [Date.now()]));
+    replayState.endTime = Math.max(replayTimestamp(race.dateEnd), ...(timeValues.length ? timeValues : [replayState.startTime + 1]));
+    if (!Number.isFinite(replayState.startTime) || replayState.startTime <= 0) replayState.startTime = timeValues[0] || Date.now();
+    if (!Number.isFinite(replayState.endTime) || replayState.endTime <= replayState.startTime) replayState.endTime = timeValues.at(-1) || replayState.startTime + 1;
+    replayState.currentTime = replayState.startTime;
+
+    replayRaceTimeRange();
+
+    const gridTop = [...replayState.startingGrid.entries()]
+      .filter(([driver, position]) => replayState.driverByNumber.has(Number(driver)) && Number.isFinite(position))
+      .sort((a, b) => a[1] - b[1])
+      .slice(0, 5)
+      .map(([driver]) => Number(driver));
+    const positionTop = replayState.drivers
+      .map((driver) => ({ driver, position: replayDriverPosition(driver, replayState.startTime + 1000) }))
+      .filter((item) => Number.isFinite(item.position))
+      .sort((a, b) => a.position - b.position)
+      .slice(0, 5)
+      .map((item) => Number(item.driver.driver_number));
+    const fallback = replayState.drivers.slice(0, 5).map((driver) => Number(driver.driver_number));
+    const locationDrivers = [...new Set([...(positionTop.length === 5 ? positionTop : []), ...gridTop, ...fallback])].slice(0, 5);
+    await replayFetchLocations(locationDrivers, requestId, true);
+    if (requestId !== replayState.requestId) return;
+
+    replayRaceTimeRange();
+    replayBuildTrack();
+    if (!replayState.startTime || !replayState.endTime || replayState.endTime <= replayState.startTime) {
+      throw new Error("OpenF1 telemetry has no usable race timeline");
+    }
+
+    replayState.loading = false;
+    replayElements.canvasEmpty.hidden = replayState.trackPoints.length > 0;
+    replayElements.progress.value = "0";
+    replayElements.progressStart.textContent = new Date(replayState.startTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    replayElements.progressEnd.textContent = new Date(replayState.endTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    replayPopulateDriverSelect();
+    replayRenderTiming();
+    replayDraw();
+    const readyDrivers = locationDrivers.filter((number) => (replayState.locations.get(Number(number)) || []).length > 0).length;
+    replaySetStatus(readyDrivers === locationDrivers.length ? `${readyDrivers}/${locationDrivers.length} DRIVERS · TELEMETRY READY` : `${readyDrivers}/${locationDrivers.length} TELEMETRY · LOADING`);
+  } catch (error) {
+    replayState.loading = false;
+    replayElements.canvasEmpty.hidden = false;
+    replayElements.canvasEmpty.textContent = "OPENF1 TELEMETRY UNAVAILABLE";
+    replaySetStatus("TELEMETRY UNAVAILABLE");
+    console.error("Race replay load failed:", error);
+  }
+}
+
+function replayPopulateRaceSelect() {
+  if (!replayElements.raceSelect) return;
+  const completed = races.filter((race) => race.status === "COMPLETED" && race.sessionKey);
+  replayElements.raceSelect.innerHTML = completed.length
+    ? completed.map((race) => `<option value="${race.sessionKey}">${replayEscape(race.shortName)} · ROUND ${String(race.round).padStart(2, "0")}</option>`).join("")
+    : `<option value="">NO COMPLETED RACES</option>`;
+  if (completed.length && !replayState.race) replayElements.raceSelect.value = completed.at(-1).sessionKey;
+}
+
+function replayRenderDriverMenu() {
+  if (!replayElements.driverMenu) return;
+  const selected = new Set(replayState.selectedDrivers.map(Number));
+  replayElements.driverMenu.innerHTML = replayState.drivers
+    .slice()
+    .sort((a, b) => replayDriverName(a).localeCompare(replayDriverName(b)))
+    .map((driver) => {
+      const number = Number(driver.driver_number);
+      const checked = selected.has(number);
+      return `<label class="replay-driver-option${checked ? " checked" : ""}"><input type="checkbox" data-replay-select-driver="${number}" ${checked ? "checked" : ""}><i style="--replay-color:${replayDriverColor(driver)}"></i><span>${replayEscape(replayDriverName(driver))}</span><small>#${number}</small></label>`;
+    }).join("");
+
+  replayElements.driverPickerButton.textContent = replaySelectionLabel();
+}
+
+function replayPopulateDriverSelect() {
+  replayState.selectedDrivers = [];
+  replayRenderDriverMenu();
+}
+
+function replayToggleDriver(number) {
+  number = Number(number);
+  if (!Number.isFinite(number)) return;
+  const current = replayState.selectedDrivers.slice();
+  const index = current.indexOf(number);
+  if (index >= 0) {
+    current.splice(index, 1);
+  } else {
+    if (current.length >= 5) return;
+    current.push(number);
+  }
+  replayState.selectedDrivers = current;
+  replayRenderDriverMenu();
+  replayRenderTiming();
+  replayDraw();
+}
+
+function replaySelectRaceBySession(sessionKey) {
+  const race = races.find((item) => String(item.sessionKey) === String(sessionKey));
+  if (race) replayLoadRace(race);
+}
+
+function replayAnimationFrame(now) {
+  if (!replayState.playing) return;
+  if (!replayState.lastFrameTime) replayState.lastFrameTime = now;
+  const delta = Math.min(100, now - replayState.lastFrameTime);
+  replayState.lastFrameTime = now;
+  replayState.currentTime += delta * replayState.speed;
+  if (replayState.currentTime >= replayState.endTime) {
+    replayState.currentTime = replayState.endTime;
+    replayState.playing = false;
+    replayElements.play.textContent = "PLAY";
+  }
+  const range = Math.max(1, replayState.endTime - replayState.startTime);
+  replayElements.progress.value = String((replayState.currentTime - replayState.startTime) / range);
+  const visibleNumbers = replayVisibleDrivers(replayState.currentTime).map((driver) => driver.driver_number);
+  replayFetchLocations(visibleNumbers, replayState.requestId).catch(console.error);
+  replayRenderTiming();
+  replayDraw();
+  if (replayState.playing) replayState.animationFrame = requestAnimationFrame(replayAnimationFrame);
+}
+
+function replayTogglePlay() {
+  if (!replayState.race || replayState.loading || !replayState.trackPoints.length) return;
+  if (replayState.currentTime >= replayState.endTime) replayState.currentTime = replayState.startTime;
+  replayState.playing = !replayState.playing;
+  replayElements.play.textContent = replayState.playing ? "PAUSE" : "PLAY";
+  replayState.lastFrameTime = 0;
+  cancelAnimationFrame(replayState.animationFrame);
+  if (replayState.playing) replayState.animationFrame = requestAnimationFrame(replayAnimationFrame);
+}
+
+function replayBind() {
+  if (!replayElements.raceSelect) return;
+  replayPopulateRaceSelect();
+  replayElements.raceSelect.addEventListener("change", () => replaySelectRaceBySession(replayElements.raceSelect.value));
+  replayElements.driverPickerButton.addEventListener("click", () => {
+    const open = !replayElements.driverMenu.hidden;
+    replayElements.driverMenu.hidden = open;
+    replayElements.driverPickerButton.setAttribute("aria-expanded", String(!open));
+  });
+  replayElements.driverMenu.addEventListener("change", (event) => {
+    const input = event.target.closest("[data-replay-select-driver]");
+    if (!input) return;
+    const number = Number(input.dataset.replaySelectDriver);
+    if (input.checked && replayState.selectedDrivers.length >= 5) {
+      input.checked = false;
+      return;
+    }
+    replayToggleDriver(number);
+    if (replayState.selectedDrivers.includes(number)) {
+      replayFetchLocations([number], replayState.requestId).catch(console.error);
+    }
+  });
+  document.addEventListener("click", (event) => {
+    if (!replayElements.driverPicker?.contains(event.target)) {
+      replayElements.driverMenu.hidden = true;
+      replayElements.driverPickerButton.setAttribute("aria-expanded", "false");
+    }
+  });
+  replayElements.play.addEventListener("click", replayTogglePlay);
+  replayElements.rewind.addEventListener("click", () => {
+    replayState.currentTime = Math.max(replayState.startTime, replayState.currentTime - 10000);
+    replayElements.progress.value = String((replayState.currentTime - replayState.startTime) / Math.max(1, replayState.endTime - replayState.startTime));
+    replayRenderTiming();
+    replayDraw();
+  });
+  replayElements.progress.addEventListener("input", () => {
+    replayState.currentTime = replayState.startTime + Number(replayElements.progress.value) * (replayState.endTime - replayState.startTime);
+    replayRenderTiming();
+    replayDraw();
+  });
+  document.querySelectorAll(".replay-speed").forEach((button) => button.addEventListener("click", () => {
+    replayState.speed = Number(button.dataset.speed) || 1;
+    document.querySelectorAll(".replay-speed").forEach((item) => item.classList.toggle("active", item === button));
+  }));
+  replayElements.driverList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-replay-driver]");
+    if (!button) return;
+    replayToggleDriver(Number(button.dataset.replayDriver));
+    replayFetchLocations(replayState.selectedDrivers, replayState.requestId).catch(console.error);
+  });
+  window.addEventListener("resize", () => replayDraw());
+}
+
 function setDashboardTab(name) {
   document.querySelectorAll(".dashboard-tab, .mobile-dashboard-tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.dashboard === name);
@@ -2172,6 +2987,12 @@ function setDashboardTab(name) {
     if (defaultIndex >= 0) {
       selectRace(defaultIndex);
     }
+  }
+  if (name === "replay" && races.length) {
+    replayPopulateRaceSelect();
+    const completed = races.filter((race) => race.status === "COMPLETED" && race.sessionKey);
+    const selected = completed.find((race) => String(race.sessionKey) === String(replayElements.raceSelect?.value)) || completed.at(-1);
+    if (selected && (!replayState.race || replayState.race.sessionKey !== selected.sessionKey)) replayLoadRace(selected);
   }
   document.querySelectorAll(".dashboard-panel").forEach((panel) => {
     panel.classList.toggle(
@@ -2772,6 +3593,7 @@ function phase2TeamColor(name) {
   return "#a1a1a1";
 }
 async function phase2Initialize() {
+  replayBind();
   phase2BindCalendarModal();
   setDashboardTab("overview");
 
