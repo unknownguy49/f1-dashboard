@@ -1759,6 +1759,7 @@ const phase2State = {
   loading: false,
   positionHistoryLoaded: false,
   positionHistoryLoading: false,
+  nextRaceCountdownTimer: null,
 };
 
 function phase2Escape(value) {
@@ -1791,6 +1792,58 @@ function phase2DriverImage(name) {
   return typeof driverImages !== "undefined"
     ? driverImages[name] || null
     : null;
+}
+
+function phase2RenderNextRaceCountdown(next) {
+  const countdown = document.getElementById("overviewNextCountdown");
+  if (!countdown) return;
+
+  if (phase2State.nextRaceCountdownTimer) {
+    clearInterval(phase2State.nextRaceCountdownTimer);
+    phase2State.nextRaceCountdownTimer = null;
+  }
+
+  if (!next?.dateStart) {
+    countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>SEASON COMPLETE</strong>`;
+    countdown.classList.add("complete");
+    return;
+  }
+
+  const target = new Date(next.dateStart).getTime();
+  if (!Number.isFinite(target)) {
+    countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>DATE TBC</strong>`;
+    countdown.classList.add("complete");
+    return;
+  }
+
+  const update = () => {
+    const remaining = Math.max(0, target - Date.now());
+    const totalSeconds = Math.floor(remaining / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    countdown.classList.remove("complete");
+    countdown.innerHTML = `
+      <span class="overview-countdown-label">NEXT RACE IN</span>
+      <div class="overview-countdown-grid" aria-label="Countdown to next race">
+        <div class="overview-countdown-unit"><strong>${String(days).padStart(2, "0")}</strong><span>DAYS</span></div>
+        <div class="overview-countdown-unit"><strong>${String(hours).padStart(2, "0")}</strong><span>HOURS</span></div>
+        <div class="overview-countdown-unit"><strong>${String(minutes).padStart(2, "0")}</strong><span>MINUTES</span></div>
+        <div class="overview-countdown-unit"><strong>${String(seconds).padStart(2, "0")}</strong><span>SECONDS</span></div>
+      </div>
+    `;
+
+    if (remaining <= 0) {
+      clearInterval(phase2State.nextRaceCountdownTimer);
+      phase2State.nextRaceCountdownTimer = null;
+      countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>STARTING NOW</strong>`;
+    }
+  };
+
+  update();
+  phase2State.nextRaceCountdownTimer = setInterval(update, 1000);
 }
 
 function phase2TeamClass(name) {
@@ -2180,22 +2233,24 @@ function phase2Render() {
   const E = phase2Escape,
     P = phase2Points,
     I = phase2DriverImage;
-  const standings = (items, limit = items.length) =>
-    `<div class="overview-standings">${items
+  const standings = (items, limit = items.length) => {
+    return `<div class="overview-standings">${items
       .slice(0, limit)
       .map(
         (d, i) =>
-          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(d.name)}</strong><small>${E(d.team || "")}</small></div><b>${P(d.points)}</b></div>`,
+          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(d.name)}</strong><small>${E(d.team || "")}</small></div><div class="overview-standing-score"><b>${P(d.points)} <small>PTS</small></b></div></div>`,
       )
       .join("")}</div>`;
-  const teamStandings = (items, limit = 5) =>
-    `<div class="overview-standings overview-teams">${items
+  };
+  const teamStandings = (items, limit = 5) => {
+    return `<div class="overview-standings overview-teams">${items
       .slice(0, limit)
       .map(
         (t, i) =>
-          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(t.name)}</strong><small>${i === 0 ? "LEADER" : "POSITION " + (i + 1)}</small></div><b>${P(t.points)}</b></div>`,
+          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(t.name)}</strong></div><div class="overview-standing-score"><b>${P(t.points)} <small>PTS</small></b></div></div>`,
       )
       .join("")}</div>`;
+  };
   const heroImage = I(leader?.name);
   const latestImage = phase2RaceImage(latest);
 
@@ -2242,6 +2297,7 @@ function phase2Render() {
                 <span>NEXT ROUND / ${E(next?.shortName || "")}</span>
                 <h4>${E(next?.name || "SEASON COMPLETE")}</h4>
                 <p>${E(next?.location || "—")} / ${E(next?.date || "—")}</p>
+                <div class="overview-next-countdown" id="overviewNextCountdown" aria-live="polite"></div>
             </div>
             <div class="overview-next-arrow">↗</div>
         </article>
@@ -2263,12 +2319,14 @@ function phase2Render() {
         </div>
     </section>`;
 
-  const driverFeatures=phase2State.drivers.slice(0,3).map((d,i)=>`<article class="drivers-feature-row drivers-feature-${i+1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i+1).padStart(2,"0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i===0?"CHAMPIONSHIP LEADER":"TITLE CONTENDER"} / ${E(d.team)}</span><h3>${E(d.name)}</h3></div>${I(d.name)?`<img src="${E(I(d.name))}" alt="${E(d.name)}">`:``}<strong class="drivers-feature-points">${P(d.points)}<small>PTS</small></strong></article>`).join("");
+  phase2RenderNextRaceCountdown(next);
+
+  const driverFeatures=phase2State.drivers.slice(0,3).map((d,i)=>`<article class="drivers-feature-row drivers-feature-${i+1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i+1).padStart(2,"0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i===0?"CHAMPIONSHIP LEADER":"TITLE CONTENDER"} / ${E(d.team)}</span><h3>${E(d.name)}</h3></div>${I(d.name)?`<img src="${E(I(d.name))}" alt="${E(d.name)}">`:``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`).join("");
   const remainingDrivers = phase2State.drivers
     .slice(3)
     .map(
       (d, i) =>
-        `<article class="drivers-roster-row"><span class="drivers-roster-pos">${String(i + 4).padStart(2, "0")}</span><div class="drivers-roster-driver"><span>${E(d.team)}</span><h4>${E(d.name)}</h4></div><div class="drivers-roster-number">#${E(d.number)}</div><strong>${P(d.points)} <small>PTS</small></strong></article>`,
+        `<article class="drivers-roster-row"><span class="drivers-roster-pos">${String(i + 4).padStart(2, "0")}</span><div class="drivers-roster-driver"><span>${E(d.team)}</span><h4>${E(d.name)}</h4></div><div class="drivers-roster-number">#${E(d.number)}</div><strong class="drivers-roster-score"><span>${P(d.points)} <small>PTS</small></span></strong></article>`,
     )
     .join("");
   document.getElementById("driversContent").innerHTML =
@@ -2280,20 +2338,20 @@ function phase2Render() {
         const pair = phase2State.drivers
           .filter((d) => d.team === t.name)
           .slice(0, 2);
-        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "CONSTRUCTOR / POSITION " + (i + 1)}</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span>${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score">${P(t.points)}<small>PTS</small></strong></article>`;
+        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">CONSTRUCTOR</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span>${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score"><span>${P(t.points)}<small>PTS</small></span></strong></article>`;
       })
       .join("")}</section>`;
 
   const championshipDrivers = phase2State.drivers
     .map(
       (d, i) =>
-        `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b>${P(d.points)}<small>PTS</small></b></article>`,
+        `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`,
     )
     .join("");
   const championshipTeams = phase2State.teams
     .map(
       (t, i) =>
-        `<article class="championship-standing-row championship-team-row team-${phase2TeamClass(t.name)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(t.name)}</strong><span>${i === 0 ? "LEADER" : "POSITION " + (i + 1)}</span></div><b>${P(t.points)}<small>PTS</small></b></article>`,
+        `<article class="championship-standing-row championship-team-row team-${phase2TeamClass(t.name)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(t.name)}</strong></div><b class="championship-standing-score"><span>${P(t.points)}<small>PTS</small></span></b></article>`,
     )
     .join("");
   document.getElementById("championshipContent").innerHTML = `

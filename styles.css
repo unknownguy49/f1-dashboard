@@ -6575,3 +6575,220 @@ body {
         white-space:nowrap;
     }
 }
+
+/* =====================================================
+   NEXT RACE COUNTDOWN
+   Countdown is part of the next-round card itself.
+===================================================== */
+#dashboardOverview .overview-next-countdown {
+  display: block;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #292929;
+}
+
+#dashboardOverview .overview-countdown-label {
+  display: block;
+  color: #e10600;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+#dashboardOverview .overview-countdown-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+}
+
+#dashboardOverview .overview-countdown-unit {
+  min-width: 0;
+  padding: 0 12px;
+  border-left: 1px solid #292929;
+}
+
+#dashboardOverview .overview-countdown-unit:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+#dashboardOverview .overview-countdown-unit strong {
+  display: block;
+  color: #e10600;
+  font: 900 clamp(32px, 3.1vw, 48px)/0.86 "Courier New", monospace;
+  font-style: normal;
+  letter-spacing: -2px;
+  white-space: nowrap;
+}
+
+#dashboardOverview .overview-countdown-unit span {
+  display: block;
+  margin-top: 7px;
+  color: #777;
+  font-size: 7px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  white-space: nowrap;
+}
+
+#dashboardOverview .overview-next-countdown.complete .overview-countdown-grid {
+  display: block;
+}
+
+#dashboardOverview .overview-next-countdown.complete .overview-countdown-grid strong {
+  color: #777;
+}
+
+@media (max-width: 700px) {
+  #dashboardOverview .overview-race-story.overview-race-last {
+    height: 230px !important;
+    min-height: 230px !important;
+    margin-bottom: 34px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy {
+    top: 52% !important;
+    bottom: auto !important;
+    transform: translateY(-4%) !important;
+    padding-right: 0 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next {
+    height: 200px !important;
+    min-height: 200px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-top: 1px solid #e10600 !important;
+    border-bottom: 1px solid #e10600 !important;
+    overflow: visible !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    bottom: auto !important;
+    padding: 24px 42px 22px 0 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy h4 {
+    margin: 0 0 8px !important;
+    font-size: clamp(29px, 8vw, 34px) !important;
+    line-height: .96 !important;
+    letter-spacing: -2px !important;
+    white-space: nowrap !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy p {
+    margin: 0 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-next-countdown {
+    margin-top: 20px !important;
+    padding-top: 16px !important;
+    border-top: 1px solid #292929 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-label {
+    font-size: 7px !important;
+    letter-spacing: 1.8px !important;
+    margin-bottom: 9px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit {
+    padding: 0 7px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit:first-child {
+    padding-left: 0 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+    font-size: clamp(21px, 6.4vw, 28px) !important;
+    line-height: .9 !important;
+    letter-spacing: -1.5px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit span {
+    margin-top: 6px !important;
+    font-size: 5px !important;
+    letter-spacing: 1px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+    position: absolute !important;
+    right: 0 !important;
+    bottom: 22px !important;
+    font-size: 30px !important;
+    line-height: 1 !important;
+  }
+}
+
+@media (max-width: 400px) {
+  #dashboardOverview .overview-race-story.overview-race-next {
+    height: 292px !important;
+    min-height: 292px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit {
+    padding: 0 5px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+    font-size: 20px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit span {
+    font-size: 4.5px !important;
+    letter-spacing: .8px !important;
+  }
+}
+
+
+/* =====================================================
+   V26 RACE PULSE SPACING / COUNTDOWN REFINEMENT
+===================================================== */
+@media (min-width: 701px) {
+  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+    top: 28px;
+    right: 24px;
+    bottom: auto;
+    font-size: 38px;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+    font-size: clamp(29px, 2.7vw, 43px);
+  }
+}
+
+@media (max-width: 700px) {
+  #dashboardOverview .overview-race-story.overview-race-last {
+    margin-bottom: 48px !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next {
+    height: 252px !important;
+    min-height: 252px !important;
+    border-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+    right: 0 !important;
+    bottom: 20px !important;
+    font-size: 30px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  #dashboardOverview .overview-race-story.overview-race-next {
+    height: 248px !important;
+    min-height: 248px !important;
+  }
+}
