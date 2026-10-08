@@ -313,31 +313,31 @@ main {
 }
 
 .race-button.completed.active {
-    background: #e10600;
-    border-color: #e10600;
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(225,6,0,0.4);
+  background: #e10600;
+  border-color: #e10600;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(225, 6, 0, 0.4);
 }
 
 .race-button.upcoming.active {
-    background: #1677ff;
-    border-color: #1677ff;
-    color: #ffffff;
-    box-shadow: 0 0 12px rgba(22,119,255,0.4);
+  background: #1677ff;
+  border-color: #1677ff;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(22, 119, 255, 0.4);
 }
 
 .race-button.completed.active:hover {
-    background: #e10600;
-    border-color: #e10600;
-    color: #ffffff;
-    box-shadow: 0 0 16px rgba(225,6,0,0.5);
+  background: #e10600;
+  border-color: #e10600;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(225, 6, 0, 0.5);
 }
 
 .race-button.upcoming.active:hover {
-    background: #1677ff;
-    border-color: #1677ff;
-    color: #ffffff;
-    box-shadow: 0 0 16px rgba(22,119,255,0.5);
+  background: #1677ff;
+  border-color: #1677ff;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(22, 119, 255, 0.5);
 }
 
 .race-button.live {
@@ -3065,7 +3065,7 @@ main.overview-fullscreen #dashboardOverview .overview-hero-copy {
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    }
+  }
   .drivers-roster-row {
     grid-template-columns: 32px minmax(0, 1fr) 70px;
     gap: 10px;
@@ -3602,7 +3602,7 @@ main.dashboard-mode .drivers-roster-row {
   width: 89vw;
   max-width: 1600px;
   margin: 0 auto;
-  padding:58px 0 70px;
+  padding: 58px 0 70px;
   box-sizing: border-box;
 }
 
@@ -5129,7 +5129,6 @@ main.dashboard-mode .drivers-roster-row {
    BACK TO TOP
 ===================================================== */
 
-
 /* =====================================================
    OVERVIEW SEASON CALENDAR MODAL
    ===================================================== */
@@ -5165,7 +5164,9 @@ body.calendar-modal-open {
   background: #101010;
   color: #bdbdbd;
   padding: 8px 11px;
-  font: 800 8px/1 Arial, sans-serif;
+  font:
+    800 8px/1 Arial,
+    sans-serif;
   letter-spacing: 1.5px;
   cursor: pointer;
   transition:
@@ -5199,7 +5200,9 @@ body.calendar-modal-open {
   visibility: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
 }
 
 .calendar-modal.open {
@@ -5704,9 +5707,9 @@ body.calendar-modal-open {
 }
 
 @media (min-width: 901px) {
-    main.dashboard-mode #dashboardOverview .overview-hero-copy {
-        padding-top: 64px !important;
-    }
+  main.dashboard-mode #dashboardOverview .overview-hero-copy {
+    padding-top: 64px !important;
+  }
 }
 /* =====================================================
    FINAL RESPONSIVE OVERRIDES
@@ -5822,8 +5825,8 @@ body.calendar-modal-open {
     right: 1%;
     top: 24px;
     font-size: clamp(145px, 25vw, 235px);
-    line-height: .8;
-    letter-spacing: -.08em;
+    line-height: 0.8;
+    letter-spacing: -0.08em;
     white-space: nowrap;
   }
 
@@ -5831,7 +5834,7 @@ body.calendar-modal-open {
     max-width: 76%;
     margin: 15px 0 0;
     font-size: clamp(47px, 9vw, 80px);
-    line-height: .87;
+    line-height: 0.87;
   }
 
   #dashboardTeams .rev-teams-intro > p {
@@ -5858,7 +5861,7 @@ body.calendar-modal-open {
   #dashboardTeams .rev-team-title h3 {
     margin: 7px 0 8px;
     font-size: clamp(29px, 6.5vw, 48px);
-    line-height: .92;
+    line-height: 0.92;
   }
 
   #dashboardTeams .rev-team-pair {
@@ -5874,7 +5877,7 @@ body.calendar-modal-open {
     min-width: 0;
     padding-right: 0;
     font-size: clamp(30px, 5vw, 48px);
-    line-height: .9;
+    line-height: 0.9;
     white-space: nowrap;
   }
 
@@ -5945,7 +5948,7 @@ body.calendar-modal-open {
 
   .dashboard-panel:not(#dashboardRace) .dashboard-heading h1 {
     font-size: clamp(44px, 14vw, 62px);
-    line-height: .9;
+    line-height: 0.9;
     letter-spacing: -3px;
   }
 
@@ -5964,14 +5967,14 @@ body.calendar-modal-open {
     right: 1%;
     top: 34px;
     font-size: clamp(118px, 33vw, 175px);
-    line-height: .76;
+    line-height: 0.76;
   }
 
   #dashboardTeams .rev-teams-intro h2 {
     max-width: 84%;
     margin-top: 12px;
     font-size: clamp(42px, 13.5vw, 60px);
-    line-height: .86;
+    line-height: 0.86;
   }
 
   #dashboardTeams .rev-teams-intro > p {
@@ -5994,7 +5997,7 @@ body.calendar-modal-open {
   #dashboardTeams .rev-team-title h3 {
     margin: 5px 0 7px;
     font-size: clamp(24px, 8vw, 34px);
-    letter-spacing: -.055em;
+    letter-spacing: -0.055em;
   }
 
   #dashboardTeams .rev-team-pair {
@@ -6078,8 +6081,8 @@ body.calendar-modal-open {
     right: 0;
     top: 10px;
     font-size: clamp(135px, 35vw, 205px);
-    line-height: .82;
-    letter-spacing: -.08em;
+    line-height: 0.82;
+    letter-spacing: -0.08em;
   }
 }
 
@@ -6189,7 +6192,9 @@ body.calendar-modal-open {
     width: 15px;
     height: 1px;
     background: #d8d8d8;
-    transition: transform .2s ease, opacity .2s ease;
+    transition:
+      transform 0.2s ease,
+      opacity 0.2s ease;
   }
 
   .navbar.mobile-nav-open .mobile-nav-toggle {
@@ -6220,9 +6225,12 @@ body.calendar-modal-open {
     pointer-events: none;
     border-top: 1px solid #202020;
     border-bottom: 1px solid #292929;
-    background: rgba(8, 8, 8, .98);
-    box-shadow: 0 18px 36px rgba(0, 0, 0, .45);
-    transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    background: rgba(8, 8, 8, 0.98);
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.45);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease,
+      visibility 0.18s ease;
   }
 
   .navbar.mobile-nav-open .mobile-dashboard-menu {
@@ -6286,7 +6294,7 @@ body.calendar-modal-open {
     background: var(--red);
     transform: scaleY(0);
     transform-origin: center;
-    transition: transform .18s ease;
+    transition: transform 0.18s ease;
   }
 
   .mobile-dashboard-tab.active {
@@ -6437,7 +6445,6 @@ body {
   }
 }
 
-
 /* =====================================================
    OVERVIEW MOBILE REFINEMENT — LEADER + NEXT ROUND
    Desktop remains unchanged except for removal of leader team label in markup.
@@ -6530,13 +6537,18 @@ body {
     overflow: hidden;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy {
     left: 0;
     right: 0;
     bottom: 18px;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy h4 {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy
+    h4 {
     font-size: clamp(31px, 8.2vw, 36px);
     line-height: 0.94;
     letter-spacing: -2.2px;
@@ -6616,12 +6628,16 @@ body {
     object-position: center 38% !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-overlay {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-overlay {
     position: absolute !important;
     inset: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy {
     position: absolute !important;
     left: 0 !important;
     right: 0 !important;
@@ -6629,20 +6645,29 @@ body {
     z-index: 3 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy > span {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy
+    > span {
     display: block !important;
     margin-bottom: 9px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy h4 {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy
+    h4 {
     margin: 0 0 8px !important;
     font-size: clamp(30px, 8vw, 36px) !important;
-    line-height: .94 !important;
+    line-height: 0.94 !important;
     letter-spacing: -2.1px !important;
     white-space: nowrap !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy p {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy
+    p {
     margin: 0 !important;
   }
 
@@ -6659,7 +6684,9 @@ body {
     border-bottom: 1px solid #e10600 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy {
     position: absolute !important;
     left: 0 !important;
     right: 42px !important;
@@ -6667,24 +6694,35 @@ body {
     padding: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy > span {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy
+    > span {
     display: block !important;
     margin-bottom: 7px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy h4 {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy
+    h4 {
     margin: 0 0 6px !important;
     font-size: clamp(28px, 7.7vw, 34px) !important;
-    line-height: .95 !important;
+    line-height: 0.95 !important;
     letter-spacing: -2px !important;
     white-space: nowrap !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy p {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy
+    p {
     margin: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-arrow {
     position: absolute !important;
     right: 0 !important;
     bottom: 18px !important;
@@ -6692,7 +6730,9 @@ body {
     line-height: 1 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-number {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-number {
     display: none !important;
   }
 }
@@ -6750,8 +6790,8 @@ body {
     max-width: 100% !important;
     margin: 14px 0 18px !important;
     font-size: clamp(54px, 15vw, 70px) !important;
-    line-height: .79 !important;
-    letter-spacing: -.09em !important;
+    line-height: 0.79 !important;
+    letter-spacing: -0.09em !important;
   }
 
   #dashboardDrivers .drivers-hero-copy p {
@@ -6777,8 +6817,8 @@ body {
 
   #dashboardDrivers .drivers-section-intro h3 {
     font-size: clamp(38px, 11vw, 50px) !important;
-    line-height: .84 !important;
-    letter-spacing: -.075em !important;
+    line-height: 0.84 !important;
+    letter-spacing: -0.075em !important;
     margin: 13px 0 17px !important;
   }
 
@@ -6818,23 +6858,23 @@ body {
   #dashboardDrivers .drivers-feature-copy h3 {
     max-width: 100% !important;
     font-size: clamp(29px, 8vw, 36px) !important;
-    line-height: .86 !important;
-    letter-spacing: -.065em !important;
+    line-height: 0.86 !important;
+    letter-spacing: -0.065em !important;
     margin: 10px 0 0 !important;
   }
 
   #dashboardDrivers .drivers-feature-row > img {
     width: 135px !important;
     right: -7% !important;
-    opacity: .48 !important;
+    opacity: 0.48 !important;
   }
 
   #dashboardDrivers .drivers-feature-points {
     right: 0 !important;
     top: 50% !important;
     font-size: clamp(31px, 8vw, 37px) !important;
-    line-height: .88 !important;
-    letter-spacing: -.065em !important;
+    line-height: 0.88 !important;
+    letter-spacing: -0.065em !important;
   }
 
   #dashboardDrivers .drivers-feature-points small {
@@ -6871,7 +6911,7 @@ body {
 
   #dashboardDrivers .drivers-roster-driver h4 {
     font-size: 17px !important;
-    line-height: .95 !important;
+    line-height: 0.95 !important;
     letter-spacing: -1px !important;
   }
 
@@ -6930,7 +6970,6 @@ body {
     padding-bottom: 24px !important;
   }
 }
-
 
 /* =====================================================
    TEAMS — MOBILE INWARD CONTENT RAIL
@@ -7051,8 +7090,8 @@ body {
     max-width: 100% !important;
     min-width: 0 !important;
     font-size: clamp(40px, 10.5vw, 44px) !important;
-    line-height: .88 !important;
-    letter-spacing: -.07em !important;
+    line-height: 0.88 !important;
+    letter-spacing: -0.07em !important;
     overflow-wrap: anywhere !important;
     word-break: normal !important;
   }
@@ -7075,46 +7114,46 @@ body {
 
 /* CHAMPIONSHIP MOBILE - add a bit more space at the start of the page so the hero doesn't feel cramped. */
 @media (max-width: 600px) {
-  #dashboardChampionship .dashboard-heading {   
+  #dashboardChampionship .dashboard-heading {
     margin-top: 12px !important;
   }
 }
 
 /* RACE CENTER - table overflow fix for mobile */
 @media (max-width: 600px) {
-    #gridFinishSection .grid-finish-table{
-        width:100%;
-        max-width:100%;
-        min-width:0;
-        overflow:hidden;
-        box-sizing:border-box;
-    }
+  #gridFinishSection .grid-finish-table {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
 
-    #gridFinishSection .grid-finish-head,
-    #gridFinishSection .grid-finish-row{
-        width:100%;
-        max-width:100%;
-        min-width:0;
-        box-sizing:border-box;
-        grid-template-columns:32px minmax(0,1fr) 28px 38px 52px;
-        gap:6px;
-        padding-left:12px;
-        padding-right:12px;
-    }
+  #gridFinishSection .grid-finish-head,
+  #gridFinishSection .grid-finish-row {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    grid-template-columns: 32px minmax(0, 1fr) 28px 38px 52px;
+    gap: 6px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
 
-    #gridFinishSection .grid-finish-driver{
-        min-width:0;
-    }
+  #gridFinishSection .grid-finish-driver {
+    min-width: 0;
+  }
 
-    #gridFinishSection .grid-finish-driver strong{
-        min-width:0;
-        overflow-wrap:anywhere;
-    }
+  #gridFinishSection .grid-finish-driver strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 
-    #gridFinishSection .grid-move{
-        min-width:0;
-        white-space:nowrap;
-    }
+  #gridFinishSection .grid-move {
+    min-width: 0;
+    white-space: nowrap;
+  }
 }
 
 /* =====================================================
@@ -7157,7 +7196,9 @@ body {
 #dashboardOverview .overview-countdown-unit strong {
   display: block;
   color: #e10600;
-  font: 900 clamp(32px, 3.1vw, 48px)/0.86 "Courier New", monospace;
+  font:
+    900 clamp(32px, 3.1vw, 48px)/0.86 "Courier New",
+    monospace;
   font-style: normal;
   letter-spacing: -2px;
   white-space: nowrap;
@@ -7177,7 +7218,10 @@ body {
   display: block;
 }
 
-#dashboardOverview .overview-next-countdown.complete .overview-countdown-grid strong {
+#dashboardOverview
+  .overview-next-countdown.complete
+  .overview-countdown-grid
+  strong {
   color: #777;
 }
 
@@ -7188,7 +7232,9 @@ body {
     margin-bottom: 34px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-last .overview-race-copy {
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy {
     top: 52% !important;
     bottom: auto !important;
     transform: translateY(-4%) !important;
@@ -7205,7 +7251,9 @@ body {
     overflow: visible !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy {
     position: absolute !important;
     left: 0 !important;
     right: 0 !important;
@@ -7214,55 +7262,79 @@ body {
     padding: 24px 42px 22px 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy h4 {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy
+    h4 {
     margin: 0 0 8px !important;
     font-size: clamp(29px, 8vw, 34px) !important;
-    line-height: .96 !important;
+    line-height: 0.96 !important;
     letter-spacing: -2px !important;
     white-space: nowrap !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-race-copy p {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-race-copy
+    p {
     margin: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-countdown {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-countdown {
     margin-top: 20px !important;
     padding-top: 16px !important;
     border-top: 1px solid #292929 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-label {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-label {
     font-size: 7px !important;
     letter-spacing: 1.8px !important;
     margin-bottom: 9px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-grid {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit {
     padding: 0 7px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit:first-child {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit:first-child {
     padding-left: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit
+    strong {
     font-size: clamp(21px, 6.4vw, 28px) !important;
-    line-height: .9 !important;
+    line-height: 0.9 !important;
     letter-spacing: -1.5px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit span {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit
+    span {
     margin-top: 6px !important;
     font-size: 5px !important;
     letter-spacing: 1px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-arrow {
     position: absolute !important;
     right: 0 !important;
     bottom: 22px !important;
@@ -7277,34 +7349,46 @@ body {
     min-height: 292px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit {
     padding: 0 5px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit
+    strong {
     color: #fff;
     font-size: 20px !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit span {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit
+    span {
     font-size: 4.5px !important;
-    letter-spacing: .8px !important;
+    letter-spacing: 0.8px !important;
   }
 }
-
 
 /* =====================================================
    V26 RACE PULSE SPACING / COUNTDOWN REFINEMENT
 ===================================================== */
 @media (min-width: 701px) {
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-arrow {
     top: 112px;
     right: 24px;
     bottom: auto;
     font-size: 34px;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-countdown-unit strong {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-countdown-unit
+    strong {
     font-size: clamp(29px, 2.7vw, 43px);
   }
 }
@@ -7321,7 +7405,9 @@ body {
     margin-top: 0 !important;
   }
 
-  #dashboardOverview .overview-race-story.overview-race-next .overview-next-arrow {
+  #dashboardOverview
+    .overview-race-story.overview-race-next
+    .overview-next-arrow {
     right: 0 !important;
     bottom: 20px !important;
     font-size: 30px !important;
@@ -7411,7 +7497,9 @@ body {
   margin-right: 4px;
   border: 1px solid #333;
   color: #aaa;
-  font: 800 7px/1 Arial, sans-serif;
+  font:
+    800 7px/1 Arial,
+    sans-serif;
 }
 
 .season-calendar {
@@ -7480,7 +7568,9 @@ body {
 .season-calendar-weekdays span {
   color: #444;
   text-align: center;
-  font: 800 6px/1.2 Arial, sans-serif;
+  font:
+    800 6px/1.2 Arial,
+    sans-serif;
   letter-spacing: 0.7px;
 }
 
@@ -7491,7 +7581,9 @@ body {
   padding: 8px 4px 5px;
   border: 1px solid transparent;
   text-align: center;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .season-calendar-day:hover {
@@ -7530,7 +7622,9 @@ body {
   justify-content: center;
   width: 24px;
   height: 20px;
-  font: 900 9px/1 Arial, sans-serif;
+  font:
+    900 9px/1 Arial,
+    sans-serif;
   letter-spacing: 0.2px;
 }
 
@@ -7720,7 +7814,6 @@ body {
   outline-offset: -1px;
 }
 
-
 /* Keep desktop time cards fully inside the calendar/modal bounds. */
 @media (min-width: 701px) {
   .season-calendar-day.calendar-edge-left .season-calendar-time-details {
@@ -7756,11 +7849,14 @@ body {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.12s ease, visibility 0.12s ease;
+  transition:
+    opacity 0.12s ease,
+    visibility 0.12s ease;
 }
 
 .season-calendar-day.has-event-details:hover .season-calendar-time-details,
-.season-calendar-day.has-event-details:focus-within .season-calendar-time-details,
+.season-calendar-day.has-event-details:focus-within
+  .season-calendar-time-details,
 .season-calendar-day.has-event-details.is-open .season-calendar-time-details {
   opacity: 1;
   visibility: visible;
@@ -7783,7 +7879,9 @@ body {
   flex: 1 1 auto;
   overflow: hidden;
   color: #ddd;
-  font: 800 10px/1.2 Arial, sans-serif;
+  font:
+    800 10px/1.2 Arial,
+    sans-serif;
   letter-spacing: 0.25px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -7806,7 +7904,9 @@ body {
   box-sizing: border-box;
   border: 1px solid #444;
   color: #fff;
-  font: 900 8px/1.1 Arial, sans-serif;
+  font:
+    900 8px/1.1 Arial,
+    sans-serif;
   letter-spacing: 0.2px;
   text-align: center;
   white-space: normal;
@@ -7832,7 +7932,9 @@ body {
 
 .season-calendar-time-zone-row b {
   color: #777;
-  font: 800 8px/1 Arial, sans-serif;
+  font:
+    800 8px/1 Arial,
+    sans-serif;
   letter-spacing: 0.8px;
 }
 
@@ -7841,7 +7943,9 @@ body {
   padding-top: 8px;
   border-top: 1px solid #222;
   color: #777;
-  font: 700 9px/1.3 Arial, sans-serif;
+  font:
+    700 9px/1.3 Arial,
+    sans-serif;
   letter-spacing: 0.2px;
   white-space: normal;
 }
@@ -7868,7 +7972,10 @@ body {
     visibility: hidden;
     max-height: 0;
     overflow: hidden;
-    transition: opacity 0.12s ease, max-height 0.12s ease, visibility 0.12s ease;
+    transition:
+      opacity 0.12s ease,
+      max-height 0.12s ease,
+      visibility 0.12s ease;
   }
 
   .season-calendar-day.has-event-details.is-open .season-calendar-time-details {
@@ -7980,7 +8087,6 @@ body {
   }
 }
 
-
 /* =====================================================
    FINAL CALENDAR EDGE + MULTI-SESSION DETAIL FIX
 ===================================================== */
@@ -7995,8 +8101,10 @@ body {
     transform: translateX(-100%);
   }
 
-  .season-calendar-day.calendar-near-left.calendar-edge-bottom .season-calendar-time-details,
-  .season-calendar-day.calendar-near-right.calendar-edge-bottom .season-calendar-time-details {
+  .season-calendar-day.calendar-near-left.calendar-edge-bottom
+    .season-calendar-time-details,
+  .season-calendar-day.calendar-near-right.calendar-edge-bottom
+    .season-calendar-time-details {
     top: auto;
     bottom: calc(100% - 1px);
   }
@@ -8049,7 +8157,10 @@ body {
 
 .replay-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(240px, 310px) 150px minmax(180px, 1fr);
+  grid-template-columns: minmax(220px, 280px) minmax(240px, 310px) 150px minmax(
+      180px,
+      1fr
+    );
   gap: 10px;
   align-items: end;
   margin-bottom: 12px;
@@ -8078,7 +8189,9 @@ body {
   border-radius: 0;
   background: #101010;
   color: #eee;
-  font: 800 10px/1 Arial, sans-serif;
+  font:
+    800 10px/1 Arial,
+    sans-serif;
   letter-spacing: 1px;
   text-transform: uppercase;
   cursor: none;
@@ -8095,7 +8208,9 @@ body {
   justify-content: flex-end;
   padding: 0 4px;
   color: #666;
-  font: 800 8px/1 Arial, sans-serif;
+  font:
+    800 8px/1 Arial,
+    sans-serif;
   letter-spacing: 1.8px;
 }
 
@@ -8159,7 +8274,9 @@ body {
   display: grid;
   place-items: center;
   color: #4f4f4f;
-  font: 800 9px/1 Arial, sans-serif;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
   letter-spacing: 2px;
   pointer-events: none;
 }
@@ -8197,7 +8314,7 @@ body {
   display: block;
   border-radius: 50%;
   background: var(--replay-color);
-  box-shadow: 0 0 0 2px rgba(255,255,255,.04);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.04);
 }
 
 .replay-legend-item strong {
@@ -8209,8 +8326,10 @@ body {
   min-width: 0;
   overflow: hidden;
   color: #ccc;
-  font: 800 9px/1 Arial, sans-serif;
-  letter-spacing: .8px;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.8px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -8220,8 +8339,10 @@ body {
   margin-top: 4px;
   overflow: hidden;
   color: #555;
-  font: 700 7px/1 Arial, sans-serif;
-  letter-spacing: .7px;
+  font:
+    700 7px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.7px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -8256,7 +8377,7 @@ body {
   color: #ddd;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: .2px;
+  letter-spacing: 0.2px;
 }
 
 .replay-timing-grid {
@@ -8279,14 +8400,16 @@ body {
   border-right: 1px solid var(--border);
 }
 
-.replay-timing-grid div:nth-child(-n+2) {
+.replay-timing-grid div:nth-child(-n + 2) {
   border-bottom: 1px solid var(--border);
 }
 
 .replay-timing-grid span,
 .replay-position-card span {
   color: #555;
-  font: 800 7px/1 Arial, sans-serif;
+  font:
+    800 7px/1 Arial,
+    sans-serif;
   letter-spacing: 1.3px;
 }
 
@@ -8332,8 +8455,10 @@ body {
   border-bottom: 1px solid var(--border);
   background: transparent;
   color: #777;
-  font: 800 9px/1 Arial, sans-serif;
-  letter-spacing: .8px;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.8px;
   text-align: left;
   cursor: none;
 }
@@ -8362,7 +8487,9 @@ body {
   border: 1px solid var(--border);
   background: #101010;
   color: #777;
-  font: 800 8px/1 Arial, sans-serif;
+  font:
+    800 8px/1 Arial,
+    sans-serif;
   letter-spacing: 1.5px;
   cursor: none;
 }
@@ -8406,7 +8533,9 @@ body {
   display: flex;
   justify-content: space-between;
   color: #555;
-  font: 800 7px/1 Arial, sans-serif;
+  font:
+    800 7px/1 Arial,
+    sans-serif;
   letter-spacing: 1px;
 }
 
@@ -8555,7 +8684,7 @@ body {
   overflow-y: auto;
   border: 1px solid #333;
   background: #0d0d0d;
-  box-shadow: 0 16px 40px rgba(0,0,0,.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 .replay-driver-menu[hidden] {
@@ -8565,14 +8694,16 @@ body {
 .replay-driver-option {
   min-height: 42px;
   display: grid;
-  grid-template-columns: 16px 7px minmax(0,1fr) auto;
+  grid-template-columns: 16px 7px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 0 12px;
   border-bottom: 1px solid #202020;
   color: #888;
-  font: 800 9px/1 Arial, sans-serif;
-  letter-spacing: .7px;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
+  letter-spacing: 0.7px;
   cursor: pointer;
 }
 
@@ -8638,7 +8769,9 @@ body {
   padding: 7px 9px;
   border: 1px solid #5b1717;
   color: #e10600;
-  font: 800 8px/1 Arial, sans-serif;
+  font:
+    800 8px/1 Arial,
+    sans-serif;
   letter-spacing: 1.2px;
   white-space: nowrap;
 }
@@ -8724,7 +8857,7 @@ body {
 
   #dashboardReplay .dashboard-heading h1 {
     font-size: clamp(42px, 13vw, 66px);
-    line-height: .92;
+    line-height: 0.92;
   }
 
   #dashboardReplay .dashboard-heading p {
@@ -8885,7 +9018,6 @@ body {
     order: -1;
   }
 }
-
 
 /* Race Replay mobile text containment */
 @media (max-width: 700px) {

@@ -1,729 +1,696 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
 
-<head>
-
-    <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>F1 26 - Race Dashboard</title>
 
-    <link
-        rel="icon"
-        type="image/svg+xml"
-        href="favicon.svg"
-    >
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
-    <link
-        rel="stylesheet"
-        href="styles.css"
-    >
+    <link rel="stylesheet" href="styles.css" />
+  </head>
 
-</head>
-
-
-<body>
-
+  <body>
     <!-- INITIAL ASSET LOADER -->
     <div class="page-loader" id="pageLoader" aria-label="Loading F1 dashboard">
-        <div class="loader-content">
-            <div class="loader-logo">F1<span style="color: #fff; padding-left: 10px;">26</span></div>
-            <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
-            <div class="loader-progress" aria-hidden="true">
-                <div class="loader-progress-bar" id="loaderProgressBar"></div>
-            </div>
-            <div class="loader-meta">
-                <span>LOADING ASSETS</span>
-                <span id="loaderPercentage">0%</span>
-            </div>
+      <div class="loader-content">
+        <div class="loader-logo">
+          F1<span style="color: #fff; padding-left: 10px">26</span>
         </div>
+        <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
+        <div class="loader-progress" aria-hidden="true">
+          <div class="loader-progress-bar" id="loaderProgressBar"></div>
+        </div>
+        <div class="loader-meta">
+          <span>LOADING ASSETS</span>
+          <span id="loaderPercentage">0%</span>
+        </div>
+      </div>
     </div>
-
 
     <!-- Custom desktop laser cursor -->
     <div class="laser-cursor"></div>
     <div class="laser-trail"></div>
-
 
     <!-- =================================================
          NAVBAR
     ================================================== -->
 
     <header class="navbar">
-
-        <div class="brand">
-
-            <div class="f1-logo">
-                <span>F1</span>
-                <span class="logo-year">26</span>
-            </div>
-
-
-            <div class="brand-divider"></div>
-
-
-            <div class="brand-title">
-                RACE DASHBOARD
-            </div>
-
+      <div class="brand">
+        <div class="f1-logo">
+          <span>F1</span>
+          <span class="logo-year">26</span>
         </div>
 
-        <div class="navbar-dashboard">
-            <nav class="dashboard-nav" aria-label="Dashboard sections">
-                <button class="dashboard-tab active" data-dashboard="overview" type="button">Overview</button>
-                <button class="dashboard-tab" data-dashboard="drivers" type="button">Drivers</button>
-                <button class="dashboard-tab" data-dashboard="teams" type="button">Teams</button>
-                <button class="dashboard-tab" data-dashboard="championship" type="button">Championship</button>
-                <button class="dashboard-tab" data-dashboard="replay" type="button">Race Replay</button>
-                <button class="dashboard-tab" data-dashboard="race" type="button">Race Center</button>
-            </nav>
+        <div class="brand-divider"></div>
+
+        <div class="brand-title">RACE DASHBOARD</div>
+      </div>
+
+      <div class="navbar-dashboard">
+        <nav class="dashboard-nav" aria-label="Dashboard sections">
+          <button
+            class="dashboard-tab active"
+            data-dashboard="overview"
+            type="button"
+          >
+            Overview
+          </button>
+          <button class="dashboard-tab" data-dashboard="drivers" type="button">
+            Drivers
+          </button>
+          <button class="dashboard-tab" data-dashboard="teams" type="button">
+            Teams
+          </button>
+          <button
+            class="dashboard-tab"
+            data-dashboard="championship"
+            type="button"
+          >
+            Championship
+          </button>
+          <button class="dashboard-tab" data-dashboard="replay" type="button">
+            Race Replay
+          </button>
+          <button class="dashboard-tab" data-dashboard="race" type="button">
+            Race Center
+          </button>
+        </nav>
+      </div>
+
+      <div class="season">2026 SEASON</div>
+
+      <button
+        class="mobile-nav-toggle"
+        type="button"
+        aria-label="Open dashboard navigation"
+        aria-expanded="false"
+        aria-controls="mobileDashboardMenu"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div
+        class="mobile-dashboard-menu"
+        id="mobileDashboardMenu"
+        aria-hidden="true"
+      >
+        <div class="mobile-dashboard-menu-inner">
+          <div class="mobile-dashboard-menu-label">2026 SEASON</div>
+          <nav aria-label="Mobile dashboard sections">
+            <button
+              class="mobile-dashboard-tab active"
+              data-dashboard="overview"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">01</span>
+              <span>Overview</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="drivers"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">02</span>
+              <span>Drivers</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="teams"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">03</span>
+              <span>Teams</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="championship"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">04</span>
+              <span>Championship</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="replay"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">05</span>
+              <span>Race Replay</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="race"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">06</span>
+              <span>Race Center</span>
+            </button>
+          </nav>
         </div>
-
-        <div class="season">
-            2026 SEASON
-        </div>
-
-        <button class="mobile-nav-toggle" type="button" aria-label="Open dashboard navigation" aria-expanded="false" aria-controls="mobileDashboardMenu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-
-        <div class="mobile-dashboard-menu" id="mobileDashboardMenu" aria-hidden="true">
-            <div class="mobile-dashboard-menu-inner">
-                <div class="mobile-dashboard-menu-label">2026 SEASON</div>
-                <nav aria-label="Mobile dashboard sections">
-                    <button class="mobile-dashboard-tab active" data-dashboard="overview" type="button">
-                        <span class="mobile-dashboard-index">01</span>
-                        <span>Overview</span>
-                    </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="drivers" type="button">
-                        <span class="mobile-dashboard-index">02</span>
-                        <span>Drivers</span>
-                    </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="teams" type="button">
-                        <span class="mobile-dashboard-index">03</span>
-                        <span>Teams</span>
-                    </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="championship" type="button">
-                        <span class="mobile-dashboard-index">04</span>
-                        <span>Championship</span>
-                    </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="replay" type="button">
-                        <span class="mobile-dashboard-index">05</span>
-                        <span>Race Replay</span>
-                    </button>
-                    <button class="mobile-dashboard-tab" data-dashboard="race" type="button">
-                        <span class="mobile-dashboard-index">06</span>
-                        <span>Race Center</span>
-                    </button>
-                </nav>
-            </div>
-        </div>
-
+      </div>
     </header>
 
-
-
     <main>
+      <section class="dashboard-panel active" id="dashboardOverview">
+        <div class="dashboard-heading">
+          <div>
+            <span class="eyebrow">2026 SEASON</span>
+            <h1>Overview</h1>
+          </div>
+          <p>
+            Everything important from the current F1 season, without leaving the
+            dashboard.
+          </p>
+        </div>
+        <div id="overviewContent" class="dashboard-loading">
+          LOADING SEASON DATA
+        </div>
+      </section>
 
+      <section class="dashboard-panel" id="dashboardDrivers">
+        <div class="dashboard-heading">
+          <div>
+            <span class="eyebrow">THE GRID</span>
+            <h1>Drivers</h1>
+          </div>
+          <p>
+            Driver performance and championship position for the 2026 season.
+          </p>
+        </div>
+        <div id="driversContent" class="dashboard-loading">
+          LOADING DRIVER DATA
+        </div>
+      </section>
 
-        <section class="dashboard-panel active" id="dashboardOverview">
-            <div class="dashboard-heading">
-                <div>
-                    <span class="eyebrow">2026 SEASON</span>
-                    <h1>Overview</h1>
-                </div>
-                <p>Everything important from the current F1 season, without leaving the dashboard.</p>
+      <section class="dashboard-panel" id="dashboardTeams">
+        <div class="dashboard-heading">
+          <div>
+            <span class="eyebrow">CONSTRUCTORS</span>
+            <h1>Teams</h1>
+          </div>
+          <p>Constructor standings and race performance across the season.</p>
+        </div>
+        <div id="teamsContent" class="dashboard-loading">LOADING TEAM DATA</div>
+      </section>
+
+      <section class="dashboard-panel" id="dashboardChampionship">
+        <div class="dashboard-heading">
+          <div>
+            <span class="eyebrow">STANDINGS</span>
+            <h1>Championship</h1>
+          </div>
+          <p>Driver and constructor championship standings.</p>
+        </div>
+        <div id="championshipContent" class="dashboard-loading">
+          LOADING CHAMPIONSHIP DATA
+        </div>
+      </section>
+
+      <section class="dashboard-panel" id="dashboardReplay">
+        <div class="dashboard-heading replay-heading">
+          <div>
+            <span class="eyebrow">TELEMETRY LAB</span>
+            <h1>Race Replay</h1>
+          </div>
+          <p>
+            Replay completed 2026 races using historical OpenF1 car location,
+            position and lap telemetry.
+          </p>
+        </div>
+
+        <section class="replay-shell" id="replayShell">
+          <div class="replay-toolbar">
+            <div class="replay-race-select-wrap">
+              <span class="replay-control-label">RACE</span>
+              <select
+                id="replayRaceSelect"
+                class="replay-select"
+                aria-label="Select completed race"
+              ></select>
             </div>
-            <div id="overviewContent" class="dashboard-loading">LOADING SEASON DATA</div>
-        </section>
-
-        <section class="dashboard-panel" id="dashboardDrivers">
-            <div class="dashboard-heading">
-                <div>
-                    <span class="eyebrow">THE GRID</span>
-                    <h1>Drivers</h1>
-                </div>
-                <p>Driver performance and championship position for the 2026 season.</p>
+            <div class="replay-driver-select-wrap">
+              <span class="replay-control-label">DRIVERS · MAX 5</span>
+              <div class="replay-driver-picker" id="replayDriverPicker">
+                <button
+                  class="replay-select replay-driver-picker-button"
+                  id="replayDriverPickerButton"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="replayDriverMenu"
+                >
+                  TOP 5
+                </button>
+                <div
+                  class="replay-driver-menu"
+                  id="replayDriverMenu"
+                  hidden
+                ></div>
+              </div>
             </div>
-            <div id="driversContent" class="dashboard-loading">LOADING DRIVER DATA</div>
-        </section>
-
-        <section class="dashboard-panel" id="dashboardTeams">
-            <div class="dashboard-heading">
-                <div>
-                    <span class="eyebrow">CONSTRUCTORS</span>
-                    <h1>Teams</h1>
-                </div>
-                <p>Constructor standings and race performance across the season.</p>
+            <button
+              class="replay-button replay-load-button"
+              id="replayLoadButton"
+              type="button"
+            >
+              LOAD REPLAY
+            </button>
+            <div class="replay-load-status" id="replayLoadStatus">
+              SELECT A COMPLETED RACE
             </div>
-            <div id="teamsContent" class="dashboard-loading">LOADING TEAM DATA</div>
-        </section>
+          </div>
 
-        <section class="dashboard-panel" id="dashboardChampionship">
-            <div class="dashboard-heading">
+          <div class="replay-main-grid">
+            <section class="replay-track-panel">
+              <div class="replay-panel-head">
                 <div>
-                    <span class="eyebrow">STANDINGS</span>
-                    <h1>Championship</h1>
+                  <span class="eyebrow">LIVE TELEMETRY REPLAY</span>
+                  <h2 id="replayTrackTitle">Select a race</h2>
                 </div>
-                <p>Driver and constructor championship standings.</p>
-            </div>
-            <div id="championshipContent" class="dashboard-loading">LOADING CHAMPIONSHIP DATA</div>
-        </section>
-
-        <section class="dashboard-panel" id="dashboardReplay">
-            <div class="dashboard-heading replay-heading">
-                <div>
-                    <span class="eyebrow">TELEMETRY LAB</span>
-                    <h1>Race Replay</h1>
+                <div class="replay-finish-state" id="replayFinishState" hidden>
+                  LEADER FINISH
                 </div>
-                <p>Replay completed 2026 races using historical OpenF1 car location, position and lap telemetry.</p>
-            </div>
-
-            <section class="replay-shell" id="replayShell">
-                <div class="replay-toolbar">
-                    <div class="replay-race-select-wrap">
-                        <span class="replay-control-label">RACE</span>
-                        <select id="replayRaceSelect" class="replay-select" aria-label="Select completed race"></select>
-                    </div>
-                    <div class="replay-driver-select-wrap">
-                        <span class="replay-control-label">DRIVERS · MAX 5</span>
-                        <div class="replay-driver-picker" id="replayDriverPicker">
-                            <button class="replay-select replay-driver-picker-button" id="replayDriverPickerButton" type="button" aria-expanded="false" aria-controls="replayDriverMenu">TOP 5</button>
-                            <div class="replay-driver-menu" id="replayDriverMenu" hidden></div>
-                        </div>
-                    </div>
-                    <button class="replay-button replay-load-button" id="replayLoadButton" type="button">LOAD REPLAY</button>
-                    <div class="replay-load-status" id="replayLoadStatus">SELECT A COMPLETED RACE</div>
+                <div class="replay-clock" id="replayClock">00:00.000</div>
+              </div>
+              <div class="replay-canvas-wrap">
+                <canvas
+                  id="replayCanvas"
+                  aria-label="Race replay circuit and driver positions"
+                ></canvas>
+                <div class="replay-canvas-empty" id="replayCanvasEmpty">
+                  SELECT A COMPLETED RACE TO LOAD TELEMETRY
                 </div>
-
-                <div class="replay-main-grid">
-                    <section class="replay-track-panel">
-                        <div class="replay-panel-head">
-                            <div>
-                                <span class="eyebrow">LIVE TELEMETRY REPLAY</span>
-                                <h2 id="replayTrackTitle">Select a race</h2>
-                            </div>
-                            <div class="replay-finish-state" id="replayFinishState" hidden>LEADER FINISH</div>
-                            <div class="replay-clock" id="replayClock">00:00.000</div>
-                        </div>
-                        <div class="replay-canvas-wrap">
-                            <canvas id="replayCanvas" aria-label="Race replay circuit and driver positions"></canvas>
-                            <div class="replay-canvas-empty" id="replayCanvasEmpty">SELECT A COMPLETED RACE TO LOAD TELEMETRY</div>
-                        </div>
-                        <div class="replay-legend" id="replayLegend"></div>
-                    </section>
-
-                    <aside class="replay-data-panel">
-                        <div class="replay-data-head">
-                            <span class="eyebrow">TIMING</span>
-                            <strong id="replayLapLabel">LAP —</strong>
-                        </div>
-                        <div class="replay-timing-driver" id="replayTimingDriver">TOP 5</div>
-                        <div class="replay-timing-grid">
-                            <div><span>LAP TIME</span><strong id="replayLapTime">—</strong></div>
-                            <div><span>SECTOR 1</span><strong id="replaySector1">—</strong></div>
-                            <div><span>SECTOR 2</span><strong id="replaySector2">—</strong></div>
-                            <div><span>SECTOR 3</span><strong id="replaySector3">—</strong></div>
-                        </div>
-                        <div class="replay-position-card" id="replayPositionCard">
-                            <span>POSITION</span><strong>—</strong>
-                        </div>
-                        <div class="replay-driver-list" id="replayDriverList"></div>
-                    </aside>
-                </div>
-
-                <div class="replay-controls">
-                    <button class="replay-button" id="replayRewind" type="button">↶ <span>REWIND</span></button>
-                    <button class="replay-button replay-play" id="replayPlay" type="button">PLAY</button>
-                    <div class="replay-speed-group" role="group" aria-label="Replay speed">
-                        <button class="replay-speed active" data-speed="1" type="button">1×</button>
-                        <button class="replay-speed" data-speed="2" type="button">2×</button>
-                        <button class="replay-speed" data-speed="4" type="button">4×</button>
-                    </div>
-                    <div class="replay-progress-wrap">
-                        <input id="replayProgress" type="range" min="0" max="1" step="0.001" value="0" aria-label="Replay position">
-                        <div class="replay-progress-meta"><span id="replayProgressStart">START</span><span id="replayProgressEnd">FINISH</span></div>
-                    </div>
-                </div>
+              </div>
+              <div class="replay-legend" id="replayLegend"></div>
             </section>
+
+            <aside class="replay-data-panel">
+              <div class="replay-data-head">
+                <span class="eyebrow">TIMING</span>
+                <strong id="replayLapLabel">LAP —</strong>
+              </div>
+              <div class="replay-timing-driver" id="replayTimingDriver">
+                TOP 5
+              </div>
+              <div class="replay-timing-grid">
+                <div>
+                  <span>LAP TIME</span><strong id="replayLapTime">—</strong>
+                </div>
+                <div>
+                  <span>SECTOR 1</span><strong id="replaySector1">—</strong>
+                </div>
+                <div>
+                  <span>SECTOR 2</span><strong id="replaySector2">—</strong>
+                </div>
+                <div>
+                  <span>SECTOR 3</span><strong id="replaySector3">—</strong>
+                </div>
+              </div>
+              <div class="replay-position-card" id="replayPositionCard">
+                <span>POSITION</span><strong>—</strong>
+              </div>
+              <div class="replay-driver-list" id="replayDriverList"></div>
+            </aside>
+          </div>
+
+          <div class="replay-controls">
+            <button class="replay-button" id="replayRewind" type="button">
+              ↶ <span>REWIND</span>
+            </button>
+            <button
+              class="replay-button replay-play"
+              id="replayPlay"
+              type="button"
+            >
+              PLAY
+            </button>
+            <div
+              class="replay-speed-group"
+              role="group"
+              aria-label="Replay speed"
+            >
+              <button class="replay-speed active" data-speed="1" type="button">
+                1×
+              </button>
+              <button class="replay-speed" data-speed="2" type="button">
+                2×
+              </button>
+              <button class="replay-speed" data-speed="4" type="button">
+                4×
+              </button>
+            </div>
+            <div class="replay-progress-wrap">
+              <input
+                id="replayProgress"
+                type="range"
+                min="0"
+                max="1"
+                step="0.001"
+                value="0"
+                aria-label="Replay position"
+              />
+              <div class="replay-progress-meta">
+                <span id="replayProgressStart">START</span
+                ><span id="replayProgressEnd">FINISH</span>
+              </div>
+            </div>
+          </div>
         </section>
+      </section>
 
-        <section class="dashboard-panel" id="dashboardRace">
-
+      <section class="dashboard-panel" id="dashboardRace">
         <!-- =================================================
              RACE SELECTOR
         ================================================== -->
 
         <section class="race-navigation">
+          <div class="navigation-header">
+            <div>
+              <span class="eyebrow"> RACE CENTER </span>
 
-            <div class="navigation-header">
-
-                <div>
-
-                    <span class="eyebrow">
-                        RACE CENTER
-                    </span>
-
-                    <h2>
-                        2026 Calendar
-                    </h2>
-
-                </div>
-
-
-                <div class="navigation-controls">
-
-                    <button
-                        class="nav-button"
-                        id="scrollLeft"
-                        type="button"
-                        aria-label="Previous races"
-                    >
-                        ←
-                    </button>
-
-
-                    <button
-                        class="nav-button"
-                        id="scrollRight"
-                        type="button"
-                        aria-label="Next races"
-                    >
-                        →
-                    </button>
-
-                </div>
-
+              <h2>2026 Calendar</h2>
             </div>
 
+            <div class="navigation-controls">
+              <button
+                class="nav-button"
+                id="scrollLeft"
+                type="button"
+                aria-label="Previous races"
+              >
+                ←
+              </button>
 
-            <div class="race-track-wrapper">
-
-                <div
-                    class="race-track"
-                    id="raceTrack"
-                >
-                    <!-- Generated by JavaScript -->
-                </div>
-
+              <button
+                class="nav-button"
+                id="scrollRight"
+                type="button"
+                aria-label="Next races"
+              >
+                →
+              </button>
             </div>
+          </div>
 
+          <div class="race-track-wrapper">
+            <div class="race-track" id="raceTrack">
+              <!-- Generated by JavaScript -->
+            </div>
+          </div>
         </section>
-
-
 
         <!-- =================================================
              INITIAL EMPTY STATE
         ================================================== -->
 
-        <section
-            class="empty-state"
-            id="emptyState"
-        >
+        <section class="empty-state" id="emptyState">
+          <div class="empty-line"></div>
 
-            <div class="empty-line"></div>
+          <div class="empty-content">
+            <span class="eyebrow"> RACE DASHBOARD </span>
 
+            <h1>
+              Select a<br />
+              Grand Prix.
+            </h1>
 
-            <div class="empty-content">
-
-                <span class="eyebrow">
-                    RACE DASHBOARD
-                </span>
-
-
-                <h1>
-                    Select a<br>
-                    Grand Prix.
-                </h1>
-
-
-                <p>
-                    Choose a race above to view its
-                    circuit, podium and fastest lap.
-                </p>
-
-            </div>
-
+            <p>
+              Choose a race above to view its circuit, podium and fastest lap.
+            </p>
+          </div>
         </section>
-
-
 
         <!-- =================================================
              SELECTED RACE
         ================================================== -->
 
-        <section
-            class="race-view"
-            id="raceView"
-            hidden
-        >
-
-
-            <!-- =================================================
+        <section class="race-view" id="raceView" hidden>
+          <!-- =================================================
                  HERO
             ================================================== -->
 
-            <section class="hero">
+          <section class="hero">
+            <div class="hero-content">
+              <span class="eyebrow" id="raceStatusLabel"> — </span>
 
-                <div class="hero-content">
+              <h1 id="trackName">—</h1>
 
-                    <span
-                        class="eyebrow"
-                        id="raceStatusLabel"
-                    >
-                        —
-                    </span>
+              <p id="trackLocation">—</p>
 
+              <div class="race-meta">
+                <div>
+                  <span> ROUND </span>
 
-                    <h1 id="trackName">
-                        —
-                    </h1>
-
-
-                    <p id="trackLocation">
-                        —
-                    </p>
-
-
-                    <div class="race-meta">
-
-                        <div>
-
-                            <span>
-                                ROUND
-                            </span>
-
-                            <strong id="roundNumber">
-                                —
-                            </strong>
-
-                        </div>
-
-
-                        <div>
-
-                            <span>
-                                WEEKEND
-                            </span>
-
-                            <strong id="raceDate">
-                                —
-                            </strong>
-
-                        </div>
-
-
-                        <div>
-
-                            <span>
-                                STATUS
-                            </span>
-
-                            <strong id="raceStatus">
-                                —
-                            </strong>
-
-                        </div>
-
-                    </div>
-
+                  <strong id="roundNumber"> — </strong>
                 </div>
 
+                <div>
+                  <span> WEEKEND </span>
 
-
-                <div class="track-image">
-
-                    <img
-                        id="trackImage"
-                        src=""
-                        alt=""
-                    >
-
-
-                    <div class="track-image-label">
-
-                        <span id="trackShortName">
-                            —
-                        </span>
-
-                    </div>
-
+                  <strong id="raceDate"> — </strong>
                 </div>
 
-            </section>
+                <div>
+                  <span> STATUS </span>
 
+                  <strong id="raceStatus"> — </strong>
+                </div>
+              </div>
+            </div>
 
+            <div class="track-image">
+              <img id="trackImage" src="" alt="" />
 
-            <!-- =================================================
+              <div class="track-image-label">
+                <span id="trackShortName"> — </span>
+              </div>
+            </div>
+          </section>
+
+          <!-- =================================================
                  RACE RESULT
             ================================================== -->
 
-            <section class="section" id="raceClassificationSection">
+          <section class="section" id="raceClassificationSection">
+            <div class="session-selector" id="sessionSelector" hidden>
+              <button
+                class="session-selector-button active"
+                id="raceSessionButton"
+                type="button"
+                data-session="race"
+              >
+                RACE
+              </button>
 
-                <div class="session-selector" id="sessionSelector" hidden>
+              <button
+                class="session-selector-button"
+                id="sprintSessionButton"
+                type="button"
+                data-session="sprint"
+              >
+                SPRINT
+              </button>
+            </div>
 
-                    <button
-                        class="session-selector-button active"
-                        id="raceSessionButton"
-                        type="button"
-                        data-session="race"
-                    >
-                        RACE
-                    </button>
+            <div class="section-heading">
+              <span class="eyebrow">RESULT</span>
 
-                    <button
-                        class="session-selector-button"
-                        id="sprintSessionButton"
-                        type="button"
-                        data-session="sprint"
-                    >
-                        SPRINT
-                    </button>
+              <h2 id="raceClassificationTitle">Race Result</h2>
+            </div>
 
-                </div>
+            <div class="podium" id="podium">
+              <!-- Generated by JavaScript -->
+            </div>
 
-                <div class="section-heading">
+            <div class="classification-grid" id="raceClassificationVisible">
+              <!-- Generated by JavaScript -->
+            </div>
 
-                    <span class="eyebrow">RESULT</span>
+            <div
+              class="classification-remaining"
+              id="raceClassificationRemaining"
+              hidden
+            >
+              <!-- Generated by JavaScript -->
+            </div>
 
-                    <h2 id="raceClassificationTitle">Race Result</h2>
+            <button
+              class="data-more-button"
+              id="raceClassificationMore"
+              type="button"
+            >
+              VIEW MORE
+            </button>
+          </section>
 
-                </div>
-
-                <div
-                    class="podium"
-                    id="podium"
-                >
-                    <!-- Generated by JavaScript -->
-                </div>
-
-                <div class="classification-grid" id="raceClassificationVisible">
-                    <!-- Generated by JavaScript -->
-                </div>
-
-                <div class="classification-remaining" id="raceClassificationRemaining" hidden>
-                    <!-- Generated by JavaScript -->
-                </div>
-
-                <button class="data-more-button" id="raceClassificationMore" type="button">VIEW MORE</button>
-
-            </section>
-
-
-            <!-- =================================================
+          <!-- =================================================
                  QUALIFYING
             ================================================== -->
 
-            <section class="section" id="qualifyingSection">
+          <section class="section" id="qualifyingSection">
+            <div class="section-heading">
+              <span class="eyebrow">QUALIFYING</span>
 
-                <div class="section-heading">
+              <h2>Qualifying Results</h2>
+            </div>
 
-                    <span class="eyebrow">QUALIFYING</span>
+            <div id="polePositionCard">
+              <!-- Generated by JavaScript -->
+            </div>
 
-                    <h2>Qualifying Results</h2>
+            <div class="qualifying-visible" id="qualifyingVisible">
+              <!-- Generated by JavaScript -->
+            </div>
 
-                </div>
+            <div class="qualifying-remaining" id="qualifyingRemaining" hidden>
+              <!-- Generated by JavaScript -->
+            </div>
 
-                <div id="polePositionCard">
-                    <!-- Generated by JavaScript -->
-                </div>
+            <button class="data-more-button" id="qualifyingMore" type="button">
+              VIEW MORE
+            </button>
+          </section>
 
-                <div class="qualifying-visible" id="qualifyingVisible">
-                    <!-- Generated by JavaScript -->
-                </div>
-
-                <div class="qualifying-remaining" id="qualifyingRemaining" hidden>
-                    <!-- Generated by JavaScript -->
-                </div>
-
-                <button class="data-more-button" id="qualifyingMore" type="button">VIEW MORE</button>
-
-            </section>
-
-
-            <!-- =================================================
+          <!-- =================================================
                  STARTING GRID VS FINISH
             ================================================== -->
 
-            <section class="section" id="gridFinishSection" hidden>
+          <section class="section" id="gridFinishSection" hidden>
+            <div class="section-heading">
+              <span class="eyebrow"> RACE MOVEMENT </span>
 
-                <div class="section-heading">
+              <h2>Starting Grid → Finish</h2>
+            </div>
 
-                    <span class="eyebrow">
-                        RACE MOVEMENT
-                    </span>
+            <div class="grid-finish-table">
+              <div class="grid-finish-head">
+                <span>GRID</span>
+                <span>DRIVER</span>
+                <span></span>
+                <span>FINISH</span>
+                <span>CHANGE</span>
+              </div>
 
-                    <h2>
-                        Starting Grid → Finish
-                    </h2>
+              <div id="gridFinishVisible"></div>
 
-                </div>
+              <div id="gridFinishRemaining" hidden></div>
+            </div>
 
-                <div class="grid-finish-table">
+            <button class="data-more-button" id="gridFinishMore" type="button">
+              VIEW MORE
+            </button>
 
-                    <div class="grid-finish-head">
-                        <span>GRID</span>
-                        <span>DRIVER</span>
-                        <span></span>
-                        <span>FINISH</span>
-                        <span>CHANGE</span>
-                    </div>
+            <div class="grid-finish-summary" id="gridFinishSummary"></div>
+          </section>
 
-                    <div id="gridFinishVisible"></div>
-
-                    <div id="gridFinishRemaining" hidden></div>
-
-                </div>
-
-                <button class="data-more-button" id="gridFinishMore" type="button">VIEW MORE</button>
-
-                <div class="grid-finish-summary" id="gridFinishSummary"></div>
-
-            </section>
-
-
-            <!-- =================================================
+          <!-- =================================================
                  FASTEST LAP
             ================================================== -->
 
-            <section class="section">
+          <section class="section">
+            <div class="section-heading">
+              <span class="eyebrow"> PACE </span>
 
-                <div class="section-heading">
+              <h2>Fastest Lap</h2>
+            </div>
 
-                    <span class="eyebrow">
-                        PACE
-                    </span>
-
-                    <h2>
-                        Fastest Lap
-                    </h2>
-
-                </div>
-
-
-                <div class="fastest-lap-card" id="fastestLapCard">
-                    <!-- Generated by JavaScript -->
-                </div>
-
-            </section>
-
+            <div class="fastest-lap-card" id="fastestLapCard">
+              <!-- Generated by JavaScript -->
+            </div>
+          </section>
         </section>
-
-        </section>
-
+      </section>
     </main>
-
-
-
 
     <!-- =================================================
          FOOTER
     ================================================== -->
 
     <footer>
+      <div class="footer-logo">
+        F1
 
-        <div class="footer-logo">
+        <span> 26 </span>
+      </div>
 
-            F1
+      <p>OpenF1 race intelligence dashboard</p>
 
-            <span>
-                26
-            </span>
-
-        </div>
-
-
-        <p>
-            OpenF1 race intelligence dashboard
-        </p>
-
-
-        <span>
-            2026
-        </span>
-
+      <span> 2026 </span>
     </footer>
-
-
 
     <!-- =================================================
          SEASON CALENDAR MODAL
     ================================================== -->
 
     <div
-        class="calendar-modal"
-        id="calendarModal"
-        aria-hidden="true"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="calendarModalTitle"
+      class="calendar-modal"
+      id="calendarModal"
+      aria-hidden="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="calendarModalTitle"
     >
-        <div class="calendar-modal-backdrop" data-calendar-close></div>
+      <div class="calendar-modal-backdrop" data-calendar-close></div>
 
-        <div class="calendar-modal-panel">
-            <div class="calendar-modal-header">
-                <div>
-                    <span class="eyebrow">2026 / THE CALENDAR</span>
-                    <h2 id="calendarModalTitle">SEASON<br><i>CALENDAR.</i></h2>
-                    <p>Race and qualifying dates across the 2026 season.</p>
-                </div>
+      <div class="calendar-modal-panel">
+        <div class="calendar-modal-header">
+          <div>
+            <span class="eyebrow">2026 / THE CALENDAR</span>
+            <h2 id="calendarModalTitle">SEASON<br /><i>CALENDAR.</i></h2>
+            <p>Race and qualifying dates across the 2026 season.</p>
+          </div>
 
-                <button
-                    class="calendar-modal-close"
-                    id="calendarModalClose"
-                    type="button"
-                    aria-label="Close season calendar"
-                    data-calendar-close
-                >
-                    ×
-                </button>
-            </div>
-
-            <div class="calendar-modal-summary" id="calendarModalSummary"></div>
-
-            <div class="season-calendar-legend">
-                <div class="season-calendar-legend-group">
-                    <span class="season-calendar-status-dot completed"></span>
-                    <span>COMPLETED</span>
-                    <strong id="calendarCompletedLegend"></strong>
-                </div>
-                <div class="season-calendar-legend-group">
-                    <span class="season-calendar-status-dot upcoming"></span>
-                    <span>UPCOMING</span>
-                    <strong id="calendarUpcomingLegend"></strong>
-                </div>
-                <div class="season-calendar-session-key">
-                    <span><b>SQ</b> SPRINT QUALIFYING</span>
-                    <span><b>S</b> SPRINT</span>
-                    <span><b>Q</b> QUALIFYING</span>
-                    <span><b>R</b> RACE</span>
-                </div>
-            </div>
-
-            <div class="season-calendar" id="seasonCalendar"></div>
+          <button
+            class="calendar-modal-close"
+            id="calendarModalClose"
+            type="button"
+            aria-label="Close season calendar"
+            data-calendar-close
+          >
+            ×
+          </button>
         </div>
+
+        <div class="calendar-modal-summary" id="calendarModalSummary"></div>
+
+        <div class="season-calendar-legend">
+          <div class="season-calendar-legend-group">
+            <span class="season-calendar-status-dot completed"></span>
+            <span>COMPLETED</span>
+            <strong id="calendarCompletedLegend"></strong>
+          </div>
+          <div class="season-calendar-legend-group">
+            <span class="season-calendar-status-dot upcoming"></span>
+            <span>UPCOMING</span>
+            <strong id="calendarUpcomingLegend"></strong>
+          </div>
+          <div class="season-calendar-session-key">
+            <span><b>SQ</b> SPRINT QUALIFYING</span>
+            <span><b>S</b> SPRINT</span>
+            <span><b>Q</b> QUALIFYING</span>
+            <span><b>R</b> RACE</span>
+          </div>
+        </div>
+
+        <div class="season-calendar" id="seasonCalendar"></div>
+      </div>
     </div>
 
-
     <button
-        class="back-to-top"
-        id="backToTop"
-        type="button"
-        aria-label="Scroll to top"
-        title="Back to top"
+      class="back-to-top"
+      id="backToTop"
+      type="button"
+      aria-label="Scroll to top"
+      title="Back to top"
     >
-        ↑
+      ↑
     </button>
 
-
     <script src="script.js"></script>
-
-</body>
-
+  </body>
 </html>
