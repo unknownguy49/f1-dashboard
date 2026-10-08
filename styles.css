@@ -8026,7 +8026,7 @@ body {
 
 .replay-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(240px, 310px) 1fr;
+  grid-template-columns: minmax(220px, 280px) minmax(240px, 310px) 150px minmax(180px, 1fr);
   gap: 10px;
   align-items: end;
   margin-bottom: 12px;
@@ -8413,6 +8413,10 @@ body {
     grid-template-columns: 1fr 1fr;
   }
 
+  .replay-load-button {
+    grid-column: 1;
+  }
+
   .replay-load-status {
     grid-column: 1 / -1;
     justify-content: flex-start;
@@ -8451,6 +8455,7 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .replay-load-button,
   .replay-load-status {
     grid-column: auto;
   }
