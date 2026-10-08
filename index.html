@@ -409,7 +409,7 @@
                         <div>
 
                             <span>
-                                DATE
+                                WEEKEND
                             </span>
 
                             <strong id="raceDate">
@@ -466,11 +466,33 @@
 
             <section class="section" id="raceClassificationSection">
 
+                <div class="session-selector" id="sessionSelector" hidden>
+
+                    <button
+                        class="session-selector-button active"
+                        id="raceSessionButton"
+                        type="button"
+                        data-session="race"
+                    >
+                        RACE
+                    </button>
+
+                    <button
+                        class="session-selector-button"
+                        id="sprintSessionButton"
+                        type="button"
+                        data-session="sprint"
+                    >
+                        SPRINT
+                    </button>
+
+                </div>
+
                 <div class="section-heading">
 
                     <span class="eyebrow">RESULT</span>
 
-                    <h2>Race Result</h2>
+                    <h2 id="raceClassificationTitle">Race Result</h2>
 
                 </div>
 
@@ -677,6 +699,8 @@
                     <strong id="calendarUpcomingLegend"></strong>
                 </div>
                 <div class="season-calendar-session-key">
+                    <span><b>SQ</b> SPRINT QUALIFYING</span>
+                    <span><b>S</b> SPRINT</span>
                     <span><b>Q</b> QUALIFYING</span>
                     <span><b>R</b> RACE</span>
                 </div>

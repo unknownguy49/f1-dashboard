@@ -3,6 +3,7 @@
 ===================================================== */
 
 let races = [];
+let activeRaceSession = "race";
 
 /* =====================================================
    OPENF1 DATA LAYER
@@ -184,11 +185,51 @@ function formatRaceDate(date) {
   }).format(new Date(date));
 }
 
-function getRaceStatus(meeting, raceSession) {
+function formatWeekendDateRange(start, end) {
+  if (!start && !end) return "—";
+
+  const startDate = new Date(start || end);
+  const endDate = new Date(end || start);
+
+  if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) {
+    return "—";
+  }
+
+  const startParts = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).formatToParts(startDate);
+  const endParts = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).formatToParts(endDate);
+
+  const getPart = (parts, type) => parts.find((part) => part.type === type)?.value || "";
+  const startDay = getPart(startParts, "day");
+  const startMonth = getPart(startParts, "month");
+  const startYear = getPart(startParts, "year");
+  const endDay = getPart(endParts, "day");
+  const endMonth = getPart(endParts, "month");
+  const endYear = getPart(endParts, "year");
+
+  if (startYear !== endYear) {
+    return `${startDay} ${startMonth} ${startYear} – ${endDay} ${endMonth} ${endYear}`;
+  }
+
+  if (startMonth === endMonth) {
+    return `${startDay}–${endDay} ${endMonth}`;
+  }
+
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+}
+
+function getSessionStatus(meeting, session) {
   if (meeting.is_cancelled) return "CANCELLED";
 
-  const end = raceSession?.date_end || meeting.date_end;
-  const start = raceSession?.date_start || meeting.date_start;
+  const end = session?.date_end || meeting.date_end;
+  const start = session?.date_start || meeting.date_start;
   const now = Date.now();
 
   if (end && new Date(end).getTime() < now) return "COMPLETED";
@@ -196,8 +237,18 @@ function getRaceStatus(meeting, raceSession) {
   return "UPCOMING";
 }
 
+function getRaceStatus(meeting, raceSession) {
+  return getSessionStatus(meeting, raceSession);
+}
+
 async function loadOpenF1Calendar() {
-  const [meetings, raceSessions, qualifyingSessions] = await Promise.all([
+  const [
+    meetings,
+    raceSessions,
+    qualifyingSessions,
+    sprintSessions,
+    sprintQualifyingSessions,
+  ] = await Promise.all([
     fetchOpenF1("meetings", { year: 2026 }),
     fetchOpenF1("sessions", {
       year: 2026,
@@ -207,14 +258,38 @@ async function loadOpenF1Calendar() {
       year: 2026,
       session_name: "Qualifying",
     }),
+    fetchOpenF1("sessions", {
+      year: 2026,
+      session_name: "Sprint",
+    }),
+    fetchOpenF1("sessions", {
+      year: 2026,
+      session_name: "Sprint Qualifying",
+    }),
   ]);
 
   const sessionByMeeting = new Map(
-    raceSessions.map((session) => [session.meeting_key, session]),
+    raceSessions
+      .filter((session) => session.session_name === "Race" && !session.is_cancelled)
+      .map((session) => [session.meeting_key, session]),
   );
 
   const qualifyingByMeeting = new Map(
-    qualifyingSessions.map((session) => [session.meeting_key, session]),
+    qualifyingSessions
+      .filter((session) => session.session_name === "Qualifying" && !session.is_cancelled)
+      .map((session) => [session.meeting_key, session]),
+  );
+
+  const sprintByMeeting = new Map(
+    sprintSessions
+      .filter((session) => session.session_name === "Sprint" && !session.is_cancelled)
+      .map((session) => [session.meeting_key, session]),
+  );
+
+  const sprintQualifyingByMeeting = new Map(
+    sprintQualifyingSessions
+      .filter((session) => session.session_name === "Sprint Qualifying" && !session.is_cancelled)
+      .map((session) => [session.meeting_key, session]),
   );
 
   return meetings
@@ -231,6 +306,8 @@ async function loadOpenF1Calendar() {
     .map((meeting, index) => {
       const raceSession = sessionByMeeting.get(meeting.meeting_key);
       const qualifyingSession = qualifyingByMeeting.get(meeting.meeting_key);
+      const sprintSession = sprintByMeeting.get(meeting.meeting_key);
+      const sprintQualifyingSession = sprintQualifyingByMeeting.get(meeting.meeting_key);
       const raceDisplayNames = {
         Melbourne: "Australia",
         Shanghai: "China",
@@ -267,12 +344,30 @@ async function loadOpenF1Calendar() {
         qualifyingSessionKey: qualifyingSession?.session_key || null,
         qualifyingDateStart: qualifyingSession?.date_start || null,
         qualifyingDateEnd: qualifyingSession?.date_end || null,
+        qualifyingStatus: qualifyingSession
+          ? getSessionStatus(meeting, qualifyingSession)
+          : null,
+        sprintSessionKey: sprintSession?.session_key || null,
+        sprintDateStart: sprintSession?.date_start || null,
+        sprintDateEnd: sprintSession?.date_end || null,
+        sprintQualifyingSessionKey: sprintQualifyingSession?.session_key || null,
+        sprintQualifyingDateStart: sprintQualifyingSession?.date_start || null,
+        sprintQualifyingDateEnd: sprintQualifyingSession?.date_end || null,
+        sprintStatus: sprintSession
+          ? getSessionStatus(meeting, sprintSession)
+          : null,
+        sprintQualifyingStatus: sprintQualifyingSession
+          ? getSessionStatus(meeting, sprintQualifyingSession)
+          : null,
         round: index + 1,
         name: meeting.meeting_name,
         shortName,
         date: formatRaceDate(raceSession?.date_start || meeting.date_start),
+        weekendDate: formatWeekendDateRange(meeting.date_start, meeting.date_end),
         dateStart: raceSession?.date_start || meeting.date_start,
         dateEnd: raceSession?.date_end || meeting.date_end,
+        weekendDateStart: meeting.date_start,
+        weekendDateEnd: meeting.date_end,
         location: meeting.location,
         image: getLocalCircuitImage(
           shortName,
@@ -281,11 +376,17 @@ async function loadOpenF1Calendar() {
           meeting.circuit_key,
         ),
         status: getRaceStatus(meeting, raceSession),
+        hasSprint: Boolean(sprintSession),
         podium: null,
         raceResults: null,
         qualifying: null,
         fastestLap: null,
         startingGrid: null,
+        sprintPodium: null,
+        sprintResults: null,
+        sprintQualifying: null,
+        sprintFastestLap: null,
+        sprintStartingGrid: null,
       };
     });
 }
@@ -511,6 +612,255 @@ async function loadRaceDetails(race) {
   return race.detailsLoading;
 }
 
+async function loadSprintDetails(race) {
+  const sprintCompleted = race.sprintStatus === "COMPLETED";
+  const sprintQualifyingCompleted =
+    race.sprintQualifyingStatus === "COMPLETED";
+
+  if (
+    !race.hasSprint ||
+    !race.sprintSessionKey ||
+    (!sprintCompleted && !sprintQualifyingCompleted)
+  ) {
+    return race;
+  }
+
+  if (race.sprintDetailsLoading) {
+    return race.sprintDetailsLoading;
+  }
+
+  race.sprintDetailsLoading = (async () => {
+    let results = [];
+    let drivers = [];
+    let startingGrid = [];
+
+    if (sprintCompleted) {
+      try {
+        [results, startingGrid] = await Promise.all([
+          fetchOpenF1("session_result", {
+            session_key: race.sprintSessionKey,
+          }),
+          loadSprintStartingGrid(race),
+        ]);
+      } catch (error) {
+        console.error("OpenF1 sprint result load failed:", error);
+        race.sprintDetailsLoading = null;
+        throw error;
+      }
+    }
+
+    if (sprintCompleted) {
+      try {
+        drivers = await fetchOpenF1("drivers", {
+          session_key: race.sprintSessionKey,
+        });
+      } catch (error) {
+        console.warn(
+          "OpenF1 sprint driver list unavailable; using championship driver data:",
+          error,
+        );
+        drivers = [];
+      }
+    }
+
+    const fallbackDriverMap = new Map(
+      phase2State.drivers.map((driver) => [
+        driver.number,
+        {
+          driver_number: driver.number,
+          full_name: driver.name,
+          team_name: driver.team,
+        },
+      ]),
+    );
+
+    const driverByNumber = new Map(
+      drivers.map((driver) => [driver.driver_number, driver]),
+    );
+
+    fallbackDriverMap.forEach((driver, number) => {
+      if (!driverByNumber.has(number)) {
+        driverByNumber.set(number, driver);
+      }
+    });
+
+    const mappedResults = results
+      .filter((result) => Number.isFinite(Number(result.position)))
+      .sort((a, b) => Number(a.position) - Number(b.position))
+      .map((result) => {
+        const driver = driverByNumber.get(result.driver_number) || {};
+        return {
+          position: Number(result.position),
+          number: result.driver_number,
+          driver: driver.full_name || `Driver #${result.driver_number}`,
+          team: driver.team_name || "—",
+          class: getTeamClass(driver.team_name),
+          color: driver.team_colour
+            ? `#${String(driver.team_colour).replace(/^#/, "")}`
+            : null,
+          image: getDriverImage(driver),
+          gap: formatRaceGap(result.gap_to_leader),
+          laps: result.number_of_laps,
+          dnf: result.dnf,
+          dns: result.dns,
+          dsq: result.dsq,
+        };
+      });
+
+    if (sprintCompleted) {
+      race.sprintResults = mappedResults;
+      race.sprintPodium = mappedResults.filter(
+        (driver) => driver.position >= 1 && driver.position <= 3,
+      );
+      race.sprintStartingGrid = Array.isArray(startingGrid)
+        ? startingGrid
+            .filter((item) => Number.isFinite(Number(item.position)))
+            .sort((a, b) => Number(a.position) - Number(b.position))
+        : [];
+    }
+
+    if (race.sprintQualifyingSessionKey) {
+      try {
+        const sprintQualifyingResults = await fetchOpenF1("session_result", {
+          session_key: race.sprintQualifyingSessionKey,
+        });
+
+        let sprintQualifyingDrivers = [];
+
+        try {
+          sprintQualifyingDrivers = await fetchOpenF1("drivers", {
+            session_key: race.sprintQualifyingSessionKey,
+          });
+        } catch (error) {
+          console.warn(
+            "OpenF1 sprint qualifying driver list unavailable; using sprint driver data:",
+            error,
+          );
+        }
+
+        const sprintQualifyingDriverByNumber = new Map(
+          sprintQualifyingDrivers.map((driver) => [driver.driver_number, driver]),
+        );
+
+        driverByNumber.forEach((driver, number) => {
+          if (!sprintQualifyingDriverByNumber.has(number)) {
+            sprintQualifyingDriverByNumber.set(number, driver);
+          }
+        });
+
+        race.sprintQualifying = sprintQualifyingResults
+          .filter((result) => Number.isFinite(Number(result.position)))
+          .sort((a, b) => Number(a.position) - Number(b.position))
+          .map((result) => {
+            const driver =
+              sprintQualifyingDriverByNumber.get(result.driver_number) || {};
+            const duration = Array.isArray(result.duration)
+              ? result.duration
+              : [result.duration];
+            const q1 = duration[0] ?? null;
+            const q2 = duration[1] ?? null;
+            const q3 = duration[2] ?? null;
+            const finalTime = q3 ?? q2 ?? q1 ?? result.duration ?? null;
+
+            return {
+              position: Number(result.position),
+              number: result.driver_number,
+              driver: driver.full_name || `Driver #${result.driver_number}`,
+              team: driver.team_name || "—",
+              class: getTeamClass(driver.team_name),
+              color: driver.team_colour
+                ? `#${String(driver.team_colour).replace(/^#/, "")}`
+                : null,
+              image: getDriverImage(driver),
+              time: formatQualifyingTime(finalTime),
+              q1: formatQualifyingTime(q1),
+              q2: formatQualifyingTime(q2),
+              q3: formatQualifyingTime(q3),
+            };
+          });
+      } catch (error) {
+        console.warn("OpenF1 sprint qualifying result load failed:", error);
+        race.sprintQualifying = null;
+      }
+    } else {
+      race.sprintQualifying = null;
+    }
+
+    if (sprintCompleted) {
+      try {
+        const laps = await fetchOpenF1("laps", {
+          session_key: race.sprintSessionKey,
+        });
+
+      const completedLapCounts = results
+        .map((result) => Number(result.number_of_laps))
+        .filter(Number.isFinite);
+
+      const lastRecordedLap = laps
+        .map((lap) => Number(lap.lap_number))
+        .filter(Number.isFinite);
+
+      race.sprintTotalLaps = completedLapCounts.length
+        ? Math.max(...completedLapCounts)
+        : lastRecordedLap.length
+          ? Math.max(...lastRecordedLap)
+          : null;
+
+      const validLaps = laps.filter(
+        (lap) =>
+          Number.isFinite(Number(lap.lap_duration)) &&
+          Number(lap.lap_duration) > 0,
+      );
+
+      if (validLaps.length) {
+        const fastest = validLaps.reduce(
+          (best, lap) =>
+            Number(lap.lap_duration) < Number(best.lap_duration) ? lap : best,
+          validLaps[0],
+        );
+
+        const driver = driverByNumber.get(fastest.driver_number) || {};
+
+        race.sprintFastestLap = {
+          driver: driver.full_name || `Driver #${fastest.driver_number}`,
+          number: fastest.driver_number,
+          team: driver.team_name || "—",
+          lap: fastest.lap_number,
+          time: formatLapTime(Number(fastest.lap_duration)),
+          image: getDriverImage(driver),
+        };
+      }
+    } catch (error) {
+      console.warn(
+        "OpenF1 sprint lap data unavailable; keeping sprint result data:",
+        error,
+      );
+        race.sprintTotalLaps = race.sprintTotalLaps || null;
+        race.sprintFastestLap = race.sprintFastestLap || null;
+      }
+    }
+
+    race.sprintDetailsLoading = null;
+    return race;
+  })();
+
+  return race.sprintDetailsLoading;
+}
+
+async function loadSprintStartingGrid(race) {
+  if (!race.sprintSessionKey) return [];
+
+  try {
+    const data = await fetchOpenF1("starting_grid", {
+      session_key: race.sprintSessionKey,
+    });
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn("OpenF1 sprint starting grid request failed:", error);
+    return [];
+  }
+}
+
 function formatRaceGap(value) {
   if (value === null || value === undefined || value === "") return null;
 
@@ -636,6 +986,11 @@ const raceStatusLabel = document.getElementById("raceStatusLabel");
 const podium = document.getElementById("podium");
 
 const fastestLapCard = document.getElementById("fastestLapCard");
+const sessionSelector = document.getElementById("sessionSelector");
+const raceSessionButton = document.getElementById("raceSessionButton");
+const sprintSessionButton = document.getElementById("sprintSessionButton");
+const raceClassificationTitle = document.getElementById("raceClassificationTitle");
+const qualifyingTitle = document.getElementById("qualifyingTitle");
 
 /* =====================================================
    DRIVER IMAGES
@@ -827,7 +1182,7 @@ async function selectRace(index) {
 
   roundNumber.textContent = race.round;
 
-  raceDate.textContent = race.date;
+  raceDate.textContent = race.weekendDate;
 
   raceStatus.textContent = race.status;
 
@@ -854,34 +1209,17 @@ async function selectRace(index) {
   trackImage.alt = `${race.name} circuit`;
 
   /* ---------------------------------------------
+       Session selector
+    --------------------------------------------- */
+
+  activeRaceSession = "race";
+  updateSessionSelector(race);
+
+  /* ---------------------------------------------
        Render immediately, then hydrate from OpenF1
     --------------------------------------------- */
 
-  renderPodium(race);
-  renderRaceClassification(race);
-  renderQualifying(race);
-  renderFastestLap(race);
-  renderStartingGridFinish(race);
-
-  if (race.status === "COMPLETED" && race.sessionKey && !race.podium) {
-    raceStatusLabel.textContent = "LOADING RESULT";
-    raceStatus.textContent = "SYNCING";
-
-    try {
-      await loadRaceDetails(race);
-      renderPodium(race);
-      renderRaceClassification(race);
-      renderQualifying(race);
-      renderFastestLap(race);
-      renderStartingGridFinish(race);
-      raceStatusLabel.textContent = race.status;
-      raceStatus.textContent = race.status;
-    } catch (error) {
-      console.error("OpenF1 race detail load failed:", error);
-      raceStatusLabel.textContent = race.status;
-      raceStatus.textContent = "OFFLINE";
-    }
-  }
+  await selectRaceSession(race, "race");
 
   /* ---------------------------------------------
        Return to selected race
@@ -901,15 +1239,138 @@ async function selectRace(index) {
 }
 
 /* =====================================================
+   RACE / SPRINT SESSION SELECTOR
+===================================================== */
+
+function updateSessionSelector(race) {
+  const hasSprint = Boolean(race?.hasSprint);
+
+  if (sessionSelector) {
+    sessionSelector.hidden = !hasSprint;
+  }
+
+  if (raceSessionButton) {
+    raceSessionButton.classList.toggle("active", activeRaceSession === "race");
+  }
+
+  if (sprintSessionButton) {
+    sprintSessionButton.classList.toggle("active", activeRaceSession === "sprint");
+  }
+}
+
+async function selectRaceSession(race, sessionType) {
+  if (!race) return;
+
+  if (sessionType === "sprint" && !race.hasSprint) {
+    activeRaceSession = "race";
+    updateSessionSelector(race);
+    return;
+  }
+
+  activeRaceSession = sessionType;
+  updateSessionSelector(race);
+
+  raceStatusLabel.textContent = race.status;
+  raceStatus.textContent = race.status;
+  raceStatus.classList.toggle("upcoming-status", race.status === "UPCOMING");
+
+  const isSprint = sessionType === "sprint";
+
+  if (raceClassificationTitle) {
+    raceClassificationTitle.textContent = isSprint
+      ? "Sprint Result"
+      : "Race Result";
+  }
+
+  if (qualifyingTitle) {
+    qualifyingTitle.textContent = isSprint
+      ? "Sprint Qualifying Results"
+      : "Qualifying Results";
+  }
+
+  renderPodium(race, sessionType);
+  renderRaceClassification(race, sessionType);
+  renderQualifying(race, sessionType);
+  renderFastestLap(race, sessionType);
+
+  if (isSprint) {
+    const gridFinishSection = document.getElementById("gridFinishSection");
+    if (gridFinishSection) gridFinishSection.hidden = true;
+
+    if (
+      race.sprintSessionKey &&
+      (race.sprintStatus === "COMPLETED" ||
+        race.sprintQualifyingStatus === "COMPLETED") &&
+      !race.sprintResults &&
+      !race.sprintQualifying
+    ) {
+      try {
+        await loadSprintDetails(race);
+      } catch (error) {
+        console.error("OpenF1 sprint detail load failed:", error);
+      }
+    }
+
+    if (activeRaceSession !== "sprint") return;
+
+    renderPodium(race, "sprint");
+    renderRaceClassification(race, "sprint");
+    renderQualifying(race, "sprint");
+    renderFastestLap(race, "sprint");
+    return;
+  }
+
+  renderStartingGridFinish(race);
+
+  if (race.status === "COMPLETED" && race.sessionKey && !race.podium) {
+    raceStatusLabel.textContent = "LOADING RESULT";
+    raceStatus.textContent = "SYNCING";
+
+    try {
+      await loadRaceDetails(race);
+      if (activeRaceSession !== "race") return;
+      renderPodium(race, "race");
+      renderRaceClassification(race, "race");
+      renderQualifying(race, "race");
+      renderFastestLap(race, "race");
+      renderStartingGridFinish(race);
+      raceStatusLabel.textContent = race.status;
+      raceStatus.textContent = race.status;
+    } catch (error) {
+      console.error("OpenF1 race detail load failed:", error);
+      raceStatusLabel.textContent = race.status;
+      raceStatus.textContent = "OFFLINE";
+    }
+  }
+}
+
+raceSessionButton?.addEventListener("click", () => {
+  const activeButton = document.querySelector(".race-button.active");
+  const raceIndex = activeButton ? Number(activeButton.dataset.index) : -1;
+  const race = Number.isInteger(raceIndex) ? races[raceIndex] : null;
+  if (race) selectRaceSession(race, "race");
+});
+
+sprintSessionButton?.addEventListener("click", () => {
+  const activeButton = document.querySelector(".race-button.active");
+  const raceIndex = activeButton ? Number(activeButton.dataset.index) : -1;
+  const race = Number.isInteger(raceIndex) ? races[raceIndex] : null;
+  if (race) selectRaceSession(race, "sprint");
+});
+
+/* =====================================================
    RENDER PODIUM
 ===================================================== */
 
-function renderPodium(race) {
+function renderPodium(race, sessionType = "race") {
+  const podiumData =
+    sessionType === "sprint" ? race.sprintPodium : race.podium;
+
   /* ---------------------------------------------
        Future race
     --------------------------------------------- */
 
-  if (!race.podium) {
+  if (!podiumData) {
     podium.innerHTML = `
 
             ${createEmptyPodiumCard(2, "second")}
@@ -927,11 +1388,11 @@ function renderPodium(race) {
        Completed race
     --------------------------------------------- */
 
-  const first = race.podium.find((driver) => driver.position === 1);
+  const first = podiumData.find((driver) => driver.position === 1);
 
-  const second = race.podium.find((driver) => driver.position === 2);
+  const second = podiumData.find((driver) => driver.position === 2);
 
-  const third = race.podium.find((driver) => driver.position === 3);
+  const third = podiumData.find((driver) => driver.position === 3);
 
   /*
        Visual order:
@@ -1076,7 +1537,7 @@ function createEmptyPodiumCard(position, extraClass) {
    RACE CLASSIFICATION
 ===================================================== */
 
-function renderRaceClassification(race) {
+function renderRaceClassification(race, sessionType = "race") {
   const section = document.getElementById("raceClassificationSection");
   const visible = document.getElementById("raceClassificationVisible");
   const remaining = document.getElementById("raceClassificationRemaining");
@@ -1084,18 +1545,21 @@ function renderRaceClassification(race) {
 
   if (!section || !visible || !remaining || !button) return;
 
+  const resultsData =
+    sessionType === "sprint" ? race.sprintResults : race.raceResults;
+
   section.hidden = false;
   remaining.hidden = true;
   button.textContent = "VIEW MORE";
 
-  if (!race.raceResults?.length) {
+  if (!resultsData?.length) {
     visible.innerHTML = createClassificationPlaceholder();
     remaining.innerHTML = "";
     button.hidden = true;
     return;
   }
 
-  const results = race.raceResults
+  const results = resultsData
     .slice()
     .sort((a, b) => a.position - b.position);
   const firstVisible = results.filter(
@@ -1162,7 +1626,7 @@ function createClassificationPlaceholder() {
    QUALIFYING
 ===================================================== */
 
-function renderQualifying(race) {
+function renderQualifying(race, sessionType = "race") {
   const section = document.getElementById("qualifyingSection");
   const pole = document.getElementById("polePositionCard");
   const visible = document.getElementById("qualifyingVisible");
@@ -1171,12 +1635,15 @@ function renderQualifying(race) {
 
   if (!section || !pole || !visible || !remaining || !button) return;
 
+  const qualifyingData =
+    sessionType === "sprint" ? race.sprintQualifying : race.qualifying;
+
   section.hidden = false;
   remaining.hidden = true;
   button.textContent = "VIEW MORE";
 
-  if (!race.qualifying?.length) {
-    pole.innerHTML = createPolePlaceholder();
+  if (!qualifyingData?.length) {
+    pole.innerHTML = createPolePlaceholder(sessionType);
     visible.innerHTML = [2, 3]
       .map((position) => createQualifyingCard(null, position))
       .join("");
@@ -1185,12 +1652,12 @@ function renderQualifying(race) {
     return;
   }
 
-  const results = race.qualifying;
+  const results = qualifyingData;
   const first = results[0];
   const nextTwo = results.slice(1, 3);
   const rest = results.slice(3);
 
-  pole.innerHTML = createPoleCard(first);
+  pole.innerHTML = createPoleCard(first, sessionType);
   visible.innerHTML = nextTwo
     .map((driver) => createQualifyingCard(driver))
     .join("");
@@ -1204,14 +1671,17 @@ function renderQualifying(race) {
   };
 }
 
-function createPoleCard(driver) {
+function createPoleCard(driver, sessionType = "race") {
   const image = driver.image;
+  const label = sessionType === "sprint"
+    ? "SPRINT QUALIFYING · P1"
+    : "POLE POSITION · P1";
   return `
         <article class="pole-position-card team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
             ${image ? `<img src="${image}" alt="${driver.driver}" draggable="false">` : ""}
             <div class="pole-position-fade"></div>
             <div class="pole-position-content">
-                <span class="pole-position-label">POLE POSITION · P1</span>
+                <span class="pole-position-label">${label}</span>
                 <h3>${driver.driver}</h3>
                 <p>${driver.team} · #${driver.number}</p>
             </div>
@@ -1220,11 +1690,14 @@ function createPoleCard(driver) {
     `;
 }
 
-function createPolePlaceholder() {
+function createPolePlaceholder(sessionType = "race") {
+  const label = sessionType === "sprint"
+    ? "SPRINT QUALIFYING · P1"
+    : "POLE POSITION · P1";
   return `
         <article class="pole-position-card upcoming-qualifying">
             <div class="pole-position-content">
-                <span class="pole-position-label">POLE POSITION · P1</span>
+                <span class="pole-position-label">${label}</span>
                 <h3>—</h3>
                 <p>—</p>
             </div>
@@ -1426,12 +1899,17 @@ function createGridFinishRow(row) {
    FASTEST LAP
 ===================================================== */
 
-function renderFastestLap(race) {
+function renderFastestLap(race, sessionType = "race") {
+  const fastestLap =
+    sessionType === "sprint" ? race.sprintFastestLap : race.fastestLap;
+  const totalLaps =
+    sessionType === "sprint" ? race.sprintTotalLaps : race.totalLaps;
+
   /* ---------------------------------------------
        Future race
     --------------------------------------------- */
 
-  if (!race.fastestLap) {
+  if (!fastestLap) {
     fastestLapCard.classList.add("empty");
 
     fastestLapCard.innerHTML = `
@@ -1490,7 +1968,7 @@ function renderFastestLap(race) {
 
   fastestLapCard.classList.remove("empty");
 
-  const lap = race.fastestLap;
+  const lap = fastestLap;
 
   const driverImage = lap.image;
 
@@ -1544,7 +2022,7 @@ function renderFastestLap(race) {
 
                 <div>
                     <span>TOTAL LAPS</span>
-                    <strong>${race.totalLaps ?? "—"}</strong>
+                    <strong>${totalLaps ?? "—"}</strong>
                 </div>
 
             </div>
@@ -1803,10 +2281,28 @@ function phase2DriverImage(name) {
 }
 
 function phase2CalendarEvent(race, type) {
-  const start = type === "qualifying" ? race.qualifyingDateStart : race.dateStart;
-  if (!start) return null;
+  const config = {
+    qualifying: {
+      start: race.qualifyingDateStart,
+      status: race.qualifyingStatus || race.status,
+    },
+    sprintQualifying: {
+      start: race.sprintQualifyingDateStart,
+      status: race.sprintQualifyingStatus,
+    },
+    sprint: {
+      start: race.sprintDateStart,
+      status: race.sprintStatus,
+    },
+    race: {
+      start: race.dateStart,
+      status: race.status,
+    },
+  }[type];
 
-  const date = new Date(start);
+  if (!config?.start) return null;
+
+  const date = new Date(config.start);
   if (Number.isNaN(date.getTime())) return null;
 
   return {
@@ -1814,12 +2310,22 @@ function phase2CalendarEvent(race, type) {
     type,
     date,
     key: `${race.meetingKey || race.round}-${type}`,
-    status: race.status === "COMPLETED" ? "completed" : "upcoming",
+    status: config.status === "COMPLETED" ? "completed" : "upcoming",
   };
 }
 
 function phase2CalendarDayLabel(event) {
-  return event.type === "qualifying" ? "QUAL" : "RACE";
+  if (event.type === "sprintQualifying") return "SPRINT QUALIFYING";
+  if (event.type === "sprint") return "SPRINT";
+  if (event.type === "qualifying") return "QUALIFYING";
+  return "RACE";
+}
+
+function phase2CalendarBadgeLabel(event) {
+  if (event.type === "sprintQualifying") return "SQ";
+  if (event.type === "sprint") return "S";
+  if (event.type === "qualifying") return "Q";
+  return "R";
 }
 
 const phase2TrackTimezones = {
@@ -1908,6 +2414,8 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
     const events = eventsByDay.get(key) || [];
     const raceEvent = events.find((event) => event.type === "race");
     const qualifyingEvent = events.find((event) => event.type === "qualifying");
+    const sprintQualifyingEvent = events.find((event) => event.type === "sprintQualifying");
+    const sprintEvent = events.find((event) => event.type === "sprint");
     const classes = ["season-calendar-day"];
     const gridPosition = startOffset + day - 1;
     const columnIndex = gridPosition % 7;
@@ -1920,12 +2428,14 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
     if (rowIndex >= 4) classes.push("calendar-edge-bottom");
 
     if (isCurrentMonth && today.getDate() === day) classes.push("today");
-    if (raceEvent?.status === "completed" || qualifyingEvent?.status === "completed") classes.push("has-completed");
-    if (raceEvent?.status === "upcoming" || qualifyingEvent?.status === "upcoming") classes.push("has-upcoming");
+    if ([raceEvent, qualifyingEvent, sprintQualifyingEvent, sprintEvent].some((event) => event?.status === "completed")) classes.push("has-completed");
+    if ([raceEvent, qualifyingEvent, sprintQualifyingEvent, sprintEvent].some((event) => event?.status === "upcoming")) classes.push("has-upcoming");
 
     const labels = [];
-    if (qualifyingEvent) labels.push(`<span class="season-calendar-event qualifying ${qualifyingEvent.status}" title="${phase2Escape(qualifyingEvent.race.shortName || qualifyingEvent.race.name)} qualifying">Q</span>`);
-    if (raceEvent) labels.push(`<span class="season-calendar-event race ${raceEvent.status}" title="${phase2Escape(raceEvent.race.shortName || raceEvent.race.name)} race">R</span>`);
+    if (sprintQualifyingEvent) labels.push(`<span class="season-calendar-event sprint-qualifying ${sprintQualifyingEvent.status}" title="${phase2Escape(sprintQualifyingEvent.race.shortName || sprintQualifyingEvent.race.name)} sprint qualifying">${phase2CalendarBadgeLabel(sprintQualifyingEvent)}</span>`);
+    if (sprintEvent) labels.push(`<span class="season-calendar-event sprint ${sprintEvent.status}" title="${phase2Escape(sprintEvent.race.shortName || sprintEvent.race.name)} sprint">${phase2CalendarBadgeLabel(sprintEvent)}</span>`);
+    if (qualifyingEvent) labels.push(`<span class="season-calendar-event qualifying ${qualifyingEvent.status}" title="${phase2Escape(qualifyingEvent.race.shortName || qualifyingEvent.race.name)} qualifying">${phase2CalendarBadgeLabel(qualifyingEvent)}</span>`);
+    if (raceEvent) labels.push(`<span class="season-calendar-event race ${raceEvent.status}" title="${phase2Escape(raceEvent.race.shortName || raceEvent.race.name)} race">${phase2CalendarBadgeLabel(raceEvent)}</span>`);
 
     const accessible = events.length
       ? events.map((event) => `${event.race.name} ${phase2CalendarDayLabel(event)} ${event.status}`).join(", ")
@@ -1964,6 +2474,8 @@ function phase2RenderCalendarModal() {
   if (!modal || !calendar || !Array.isArray(races) || !races.length) return;
 
   const events = races.flatMap((race) => [
+    phase2CalendarEvent(race, "sprintQualifying"),
+    phase2CalendarEvent(race, "sprint"),
     phase2CalendarEvent(race, "qualifying"),
     phase2CalendarEvent(race, "race"),
   ]).filter(Boolean).sort((a, b) => a.date - b.date);
@@ -2091,6 +2603,32 @@ function phase2BindCalendarModal() {
   });
 }
 
+function phase2NextCountdownEvent(race) {
+  if (!race) return null;
+
+  const now = Date.now();
+  const sessions = race.hasSprint
+    ? [
+        { type: "sprintQualifying", start: race.sprintQualifyingDateStart, label: "NEXT SPRINT QUALIFYING IN" },
+        { type: "sprint", start: race.sprintDateStart, label: "NEXT SPRINT IN" },
+        { type: "qualifying", start: race.qualifyingDateStart, label: "NEXT QUALIFYING IN" },
+        { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
+      ]
+    : [
+        { type: "qualifying", start: race.qualifyingDateStart, label: "NEXT QUALIFYING IN" },
+        { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
+      ];
+
+  for (const session of sessions) {
+    const target = new Date(session.start || "").getTime();
+    if (Number.isFinite(target) && target > now) {
+      return { ...session, target };
+    }
+  }
+
+  return null;
+}
+
 function phase2RenderNextRaceCountdown(next) {
   const countdown = document.getElementById("overviewNextCountdown");
   if (!countdown) return;
@@ -2100,21 +2638,16 @@ function phase2RenderNextRaceCountdown(next) {
     phase2State.nextRaceCountdownTimer = null;
   }
 
-  if (!next?.dateStart) {
-    countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>SEASON COMPLETE</strong>`;
-    countdown.classList.add("complete");
-    return;
-  }
+  const event = phase2NextCountdownEvent(next);
 
-  const target = new Date(next.dateStart).getTime();
-  if (!Number.isFinite(target)) {
-    countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>DATE TBC</strong>`;
+  if (!event) {
+    countdown.innerHTML = `<span class="overview-countdown-label">NEXT SESSION</span><strong>DATE TBC</strong>`;
     countdown.classList.add("complete");
     return;
   }
 
   const update = () => {
-    const remaining = Math.max(0, target - Date.now());
+    const remaining = Math.max(0, event.target - Date.now());
     const totalSeconds = Math.floor(remaining / 1000);
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
@@ -2123,8 +2656,8 @@ function phase2RenderNextRaceCountdown(next) {
 
     countdown.classList.remove("complete");
     countdown.innerHTML = `
-      <span class="overview-countdown-label">NEXT RACE IN</span>
-      <div class="overview-countdown-grid" aria-label="Countdown to next race">
+      <span class="overview-countdown-label">${event.label}</span>
+      <div class="overview-countdown-grid" aria-label="Countdown to ${event.type}">
         <div class="overview-countdown-unit"><strong>${String(days).padStart(2, "0")}</strong><span>DAYS</span></div>
         <div class="overview-countdown-unit"><strong>${String(hours).padStart(2, "0")}</strong><span>HOURS</span></div>
         <div class="overview-countdown-unit"><strong>${String(minutes).padStart(2, "0")}</strong><span>MINUTES</span></div>
@@ -2135,7 +2668,7 @@ function phase2RenderNextRaceCountdown(next) {
     if (remaining <= 0) {
       clearInterval(phase2State.nextRaceCountdownTimer);
       phase2State.nextRaceCountdownTimer = null;
-      countdown.innerHTML = `<span class="overview-countdown-label">NEXT RACE</span><strong>STARTING NOW</strong>`;
+      window.setTimeout(() => phase2RenderNextRaceCountdown(next), 50);
     }
   };
 

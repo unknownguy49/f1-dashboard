@@ -7357,7 +7357,9 @@ body {
 .season-calendar-session-key {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 16px;
   color: #777;
   font-size: 7px;
   font-weight: 900;
@@ -7392,13 +7394,21 @@ body {
   color: #555;
 }
 
+.season-calendar-session-key > span {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
 .season-calendar-session-key b {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 15px;
+  min-width: 15px;
+  width: auto;
   height: 15px;
-  margin-right: 3px;
+  padding: 0 3px;
+  margin-right: 4px;
   border: 1px solid #333;
   color: #aaa;
   font: 800 7px/1 Arial, sans-serif;
@@ -7562,6 +7572,8 @@ body {
     width: 100%;
     margin-left: 0;
     padding-top: 2px;
+    justify-content: flex-start;
+    gap: 8px 14px;
   }
 
   .season-calendar {
@@ -7758,7 +7770,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  min-width: 0;
+  gap: 8px;
   padding: 2px 0 8px;
   color: #eee;
   font: 700 10px/1.2 monospace;
@@ -7766,6 +7779,8 @@ body {
 }
 
 .season-calendar-time-row strong {
+  min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   color: #ddd;
   font: 800 10px/1.2 Arial, sans-serif;
@@ -7782,13 +7797,20 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: auto;
   min-width: 34px;
-  height: 20px;
+  max-width: 118px;
+  min-height: 20px;
+  height: auto;
+  padding: 4px 6px;
+  box-sizing: border-box;
   border: 1px solid #444;
   color: #fff;
-  font: 900 9px/1 Arial, sans-serif;
+  font: 900 8px/1.1 Arial, sans-serif;
   letter-spacing: 0.2px;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .season-calendar-time-zone-row {
@@ -7862,6 +7884,7 @@ body {
 
   .season-calendar-time-row {
     padding-bottom: 9px;
+    gap: 8px;
   }
 
   .season-calendar-time-row strong {
@@ -8961,4 +8984,86 @@ body {
     grid-row: 4;
     width: 100%;
   }
+}
+
+/* =====================================================
+   RACE / SPRINT SESSION SELECTOR
+===================================================== */
+
+.session-selector[hidden] {
+  display: none !important;
+}
+
+.session-selector {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0;
+  margin: -5px 0 42px;
+}
+
+.session-selector-button {
+  min-width: 112px;
+  height: 38px;
+  padding: 0 22px;
+  border: 1px solid #303030;
+  background: #101010;
+  color: #666666;
+  font-family: inherit;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.session-selector-button + .session-selector-button {
+  border-left: 0;
+}
+
+.session-selector-button:hover {
+  background: #171717;
+  border-color: #444444;
+  color: #ffffff;
+}
+
+.session-selector-button.active {
+  background: #e10600;
+  border-color: #e10600;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(225, 6, 0, 0.28);
+}
+
+.session-selector-button.active + .session-selector-button {
+  border-left: 1px solid #303030;
+}
+
+@media (max-width: 600px) {
+  .session-selector {
+    margin-bottom: 34px;
+  }
+
+  .session-selector-button {
+    min-width: 96px;
+    height: 36px;
+    padding: 0 17px;
+  }
+}
+
+/* =====================================================
+   SPRINT EVENTS IN SEASON CALENDAR
+===================================================== */
+
+.season-calendar-event.sprint-qualifying {
+  border-radius: 2px;
+  font-size: 8px;
+}
+
+.season-calendar-event.sprint {
+  border-radius: 50%;
+  border-style: dashed;
 }
