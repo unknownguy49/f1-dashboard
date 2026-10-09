@@ -1,8 +1,10 @@
 {
   "season": 2026,
-  "refreshedAt": "2026-10-09T11:10:10.184Z",
-  "filesUpdated": 102,
-  "requestFailures": 61,
+  "refreshedAt": "2026-10-09T15:07:44.194Z",
+  "filesUpdated": 42,
+  "successfulRequests": 144,
+  "retries": 0,
+  "requestFailures": 21,
   "failedRequests": [
     {
       "endpoint": "starting_grid",
@@ -47,60 +49,18 @@
       "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     },
     {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11307
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "laps",
-      "params": {
-        "session_key": 11307
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
       "endpoint": "starting_grid",
       "params": {
         "session_key": 11307
       },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11315
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11315
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "laps",
-      "params": {
-        "session_key": 11315
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     },
     {
       "endpoint": "starting_grid",
       "params": {
         "session_key": 11315
       },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11326
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     },
     {
       "endpoint": "starting_grid",
@@ -156,126 +116,7 @@
       "params": {
         "session_key": 11731
       },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11230
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11230
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11241
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11241
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11249
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11249
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11276
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11276
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11287
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11287
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11295
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11295
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11303
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11303
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11311
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11311
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11322
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     },
     {
       "endpoint": "starting_grid",
@@ -303,133 +144,14 @@
       "params": {
         "session_key": 11321
       },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11348
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11348
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "laps",
-      "params": {
-        "session_key": 11348
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     },
     {
       "endpoint": "starting_grid",
       "params": {
         "session_key": 11348
       },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11236
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11236
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11271
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11271
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11282
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11282
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11317
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11317
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "session_result",
-      "params": {
-        "session_key": 11344
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "drivers",
-      "params": {
-        "session_key": 11344
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "championship_drivers",
-      "params": {
-        "session_key": 11234
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "championship_teams",
-      "params": {
-        "session_key": 11234
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "championship_drivers",
-      "params": {
-        "session_key": 11245
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
-    },
-    {
-      "endpoint": "championship_teams",
-      "params": {
-        "session_key": 11245
-      },
-      "error": "HTTP 429: {\"detail\":\"Rate limit exceeded. Max 30 requests/minute.\",\"error\":\"Too Many Requests\"}"
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     }
   ]
 }
