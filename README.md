@@ -6,131 +6,20 @@ The project uses the OpenF1 API for live/historical Formula 1 data and runs enti
 
 ## Features
 
-### Season Calendar
-
-- Complete 2026 Formula 1 calendar
-- Full Grand Prix weekend date ranges
-- Session schedule for Qualifying and Race
-- Sprint weekends with:
-  - Sprint Qualifying (SQ)
-  - Sprint (S)
-  - Qualifying (Q)
-  - Race (R)
-- Responsive calendar layout for desktop and mobile
-- Automatic session information from OpenF1
-
-### Race Center
-
-Provides a detailed recap of individual completed and upcoming Grand Prix weekends.
-
-For normal weekends:
-
-- Race Result
-- Qualifying Results
-- Starting Grid
-- Race Movement
-- Fastest Lap
-
-For Sprint weekends:
-
-- Race / Sprint selector
-- Race Result
-- Qualifying Results
-- Race Movement
-- Fastest Lap
-- Sprint Result
-- Sprint Qualifying Results
-- Starting Grid
-
-The Grand Prix header remains consistent when switching between Race and Sprint.
-
-### Championship
-
-- Driver championship standings
-- Constructor championship standings
-- Race-by-race championship position history
-- Current season context
-
-### Drivers
-
-- Driver information
-- Driver number
-- Team
-- Current championship context
-
-### Teams
-
-- Team information
-- Team standings
-- Driver associations
-- Team branding and colors from OpenF1 data
-
-### Race Replay
-
-- Select any completed race
-- Replay actual race car movement
-- Select the drivers to display
-- Initial Top 5 loading
-- Driver telemetry loaded only when required
-- Playback controls
-- 10-second rewind
-- Timeline seeking
-- Automatic telemetry loading when seeking to unavailable data
-- Playback pauses while required telemetry is loading
-- Responsive replay interface
-
-Race Replay is intentionally lazy-loaded. Opening the Race Replay page does not automatically download telemetry for the latest race.
-
-### Countdown
-
-The dashboard countdown follows the next relevant session.
-
-Normal weekend:
-
-1. Qualifying
-2. Race
-
-Sprint weekend:
-
-1. Sprint Qualifying
-2. Sprint
-3. Qualifying
-4. Race
-
-Practice is intentionally excluded from the countdown because the dashboard is focused on the sessions most relevant to race-weekend viewing.
-
-### Persistent Tab State
-
-The last selected main dashboard tab is stored in browser `localStorage`.
-
-Refreshing the page therefore keeps the user on the same section.
-
-For example:
-
-```text
-Race Center → Refresh → Race Center
-Championship → Refresh → Championship
-Race Replay → Refresh → Race Replay
-```
+- **Season Calendar:** 2026 Grand Prix dates, session schedules, and Sprint weekend sessions.
+- **Race Center:** Race and qualifying results, starting grids, race movement, fastest laps, and Sprint details.
+- **Championship:** Driver and constructor standings with race-by-race position history.
+- **Drivers and Teams:** Driver information, team associations, standings, and team branding.
+- **Race Replay:** Visual race movement with driver selection, playback controls, timeline seeking, and telemetry loaded on demand.
+- **Countdown:** Counts down to the next relevant session; practice sessions are excluded.
+- **Persistent Tab:** Remembers the last selected dashboard tab using browser `sessionStorage`.
 
 ## Technology Stack
 
-### Frontend
-
-- HTML5
-- CSS3
-- JavaScript (Vanilla JS)
-- Responsive design
-
-### Data
-
+- HTML5, CSS3, Vanilla JavaScript
 - OpenF1 API
-
-### Deployment
-
-- Vercel
-
-No custom backend is required. The browser communicates directly with the OpenF1 API.
+- GitHub Actions for scheduled cache refreshes
+- Vercel for deployment
 
 ## Data Source
 
@@ -204,123 +93,27 @@ User
        └── OpenF1 position/location telemetry
 ```
 
-## Race and Sprint Architecture
+## Cache Fallback
 
-Each Grand Prix is treated as a meeting that can contain multiple sessions.
+A GitHub Actions workflow periodically fetches OpenF1 data and stores successful responses as JSON files in `data/cache/`. The workflow commits changed cache files to the repository, making them available to the deployed static site.
 
-```text
-Grand Prix Meeting
-│
-├── Practice
-├── Sprint Qualifying   (optional)
-├── Sprint              (optional)
-├── Qualifying
-└── Race
-```
+When an API request fails or is rate-limited, the dashboard can use the corresponding cached response instead. This helps historical results remain available without relying on every browser request reaching OpenF1 successfully. Existing non-empty cache data is preserved when a refresh returns an empty result, preventing accidental replacement with empty data.
 
-A Sprint selector is displayed only when the selected meeting contains an actual Sprint session.
+The cache is refreshed automatically by the workflow and can also be refreshed manually from GitHub Actions. A failed refresh does not remove previously committed cache files.
 
-The Grand Prix-level information such as circuit, location, round, weekend dates and circuit image remains shared between Race and Sprint views.
+## Error Handling
 
-## Race Replay Design
+- API requests retry temporary rate-limit (`429`) and server errors where configured.
+- If a request still fails, the dashboard attempts to load the matching cached JSON response.
+- The API status indicator distinguishes successful API access, cache fallback, and situations where no usable data is available.
+- Some endpoints may legitimately return `404` when OpenF1 has no data for a session. These results are treated as missing data rather than proof that the entire dashboard has failed.
+- Data availability depends on OpenF1 publishing the relevant session information.
 
-Race Replay uses a lazy-loading approach to reduce unnecessary API traffic.
+## Local Development and Deployment
 
-The workflow is:
+This is a client-side application and does not require a custom backend or database. Open the project in a browser using a local static server, or deploy it to Vercel.
 
-```text
-Open Race Replay
-      ↓
-Select completed race
-      ↓
-Click Load Replay
-      ↓
-Load race metadata
-      ↓
-Determine required drivers
-      ↓
-Load location telemetry
-      ↓
-Enable replay
-```
-
-When the user seeks to a point where required telemetry is unavailable:
-
-```text
-Seek
- ↓
-Pause playback
- ↓
-Load missing telemetry
- ↓
-Verify requested timestamp is covered
- ↓
-Resume / enable playback
-```
-
-This prevents the replay from running ahead of the available telemetry.
-
-## Responsive Design
-
-The dashboard is designed for:
-
-- Desktop
-- Tablet
-- Mobile
-
-Responsive behavior includes:
-
-- Mobile navigation
-- Responsive Race Center layout
-- Responsive calendar cards
-- Responsive Sprint/Race selector
-- Mobile-friendly Race Replay controls
-- Wrapped session labels and calendar legends
-- Responsive track and Grand Prix information
-
-## Deployment
-
-The project is deployed on Vercel.
-
-Because the frontend requests Formula 1 data directly from OpenF1 at runtime:
-
-```text
-User Browser
-     │
-     ├── Static files → Vercel
-     │
-     └── F1 data → OpenF1 API
-```
-
-A new race result becoming available through OpenF1 does not require a new Vercel deployment.
-
-A deployment is only required when the project's source code is changed.
-
-## Local Development
-
-### Requirements
-
-- Modern web browser
-- Internet connection
-- No backend server is required
-
-Because this is a static frontend, it can be served using any local static server.
-
-For example, with VS Code, the project can be opened using a local development/static server.
-
-## Browser Storage
-
-The project uses `localStorage` only for small client-side UI preferences.
-
-Currently stored preference:
-
-```text
-f1_active_tab
-```
-
-This stores the last selected main dashboard section so that a refresh does not automatically return the user to Overview.
-
-No authentication or sensitive user data is stored.
+The browser stores only the selected dashboard tab (`f1_active_tab`) in `sessionStorage`. Updating cached data does not require a Vercel redeployment; a deployment is needed when the source code changes.
 
 ## Project Goals
 
@@ -344,27 +137,13 @@ This keeps the application focused on useful season-level information rather tha
 
 ## Limitations
 
-- The application depends on OpenF1 API availability.
-- API data availability depends on when OpenF1 publishes and updates the corresponding session data.
-- The dashboard is currently focused on the 2026 season.
-- Practice is not included as a primary result section.
-- Race Replay requires additional telemetry requests and therefore intentionally uses lazy loading.
-- The project does not provide a custom backend or database.
+- The dashboard focuses on the 2026 season.
+- OpenF1 availability and publication timing affect which data can be displayed.
+- Race Replay loads telemetry on demand and may require additional requests.
+- The project does not provide authentication or a custom backend.
 
-## Credits
+## Credits and Disclaimer
 
-Formula 1 data is provided by OpenF1.
+F1 data is provided by [OpenF1](https://openf1.org/).
 
-https://openf1.org/
-
-## License
-
-This project is intended as a personal project.
-
-Check the terms and conditions of the OpenF1 API and any third-party assets before redistributing or commercializing the project.
-
-## Disclaimer
-
-This is an unofficial Formula 1 fan project.
-
-It is not affiliated with, endorsed by, or sponsored by Formula 1, FIA, or any Formula 1 team.
+This is an unofficial Formula 1 fan project. It is not affiliated with, endorsed by, or sponsored by Formula 1, the FIA, or any Formula 1 team. Check the terms of OpenF1 and third-party assets before redistributing or commercializing the project.
