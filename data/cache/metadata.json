@@ -1,0 +1,8 @@
+{
+  "season": 2026,
+  "refreshedAt": null,
+  "filesUpdated": 0,
+  "requestFailures": 0,
+  "failedRequests": [],
+  "note": "Run the Refresh OpenF1 cache GitHub Actions workflow when public API access is available."
+}
