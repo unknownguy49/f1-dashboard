@@ -153,7 +153,7 @@ function openF1MarkCached(payload) {
   const timestamp = openF1FormatTimestamp(payload.fetchedAt);
   openF1SetStatus(
     "cached",
-    `OpenF1 could not be reached. Showing previously cached data; last saved ${timestamp}. Some information may be outdated.`,
+    `OpenF1 unavailable. Using cached data; last saved ${timestamp}. Some data may be outdated, incomplete, or unavailable. API access is restricted during live sessions, please try again 30 minutes after the session ends.`,
   );
 }
 
