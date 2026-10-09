@@ -14,6 +14,7 @@ const OPENF1_CACHE_DIRECTORY = "data/cache";
 const OPENF1_LOCAL_CACHE_PREFIX = "f1_openf1_cache:";
 let openF1CacheUsed = false;
 let openF1RequestFailedWithoutCache = false;
+let openF1SuccessfulRequest = false;
 
 function openF1CacheKey(path, params = {}) {
   const query = Object.entries(params)
@@ -201,8 +202,9 @@ function openF1Url(path, params = {}) {
   return url.toString();
 }
 
-async function fetchOpenF1(path, params = {}) {
+async function fetchOpenF1(path, params = {}, options = {}) {
   let lastError = null;
+  const key = openF1CacheKey(path, params);
 
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
@@ -214,54 +216,80 @@ async function fetchOpenF1(path, params = {}) {
       if (!response.ok) {
         const error = new Error(`OpenF1 request failed: ${response.status}`);
         error.status = response.status;
+
+        if (response.status === 404 && options.allow404) {
+          const local = openF1ReadLocalCache(key);
+
+          if (local) {
+            openF1MarkCached(local);
+            return local.data;
+          }
+
+          return [];
+        }
+
         if (
           (response.status === 429 || response.status >= 500) &&
           attempt < 2
         ) {
           lastError = error;
-          await new Promise((resolve) =>
-            setTimeout(resolve, 500 * (attempt + 1)),
-          );
+          const retryAfter = Number(response.headers.get("Retry-After"));
+          const wait =
+            Number.isFinite(retryAfter) && retryAfter > 0
+              ? retryAfter * 1000
+              : Math.min(2000 * 2 ** attempt, 10000);
+
+          await new Promise((resolve) => setTimeout(resolve, wait));
           continue;
         }
+
         lastError = error;
         break;
       }
 
       const data = await response.json();
       const fetchedAt = new Date().toISOString();
-      const key = openF1CacheKey(path, params);
+
       openF1SaveLocalCache(key, data, fetchedAt);
-      if (!openF1CacheUsed && !openF1RequestFailedWithoutCache) {
+      openF1SuccessfulRequest = true;
+
+      if (!openF1CacheUsed) {
         openF1SetStatus(
           "operational",
           `OpenF1 responded successfully. Last successful request: ${openF1FormatTimestamp(fetchedAt)}.`,
         );
       }
+
       return data;
     } catch (error) {
       lastError = error;
-      if (attempt < 2) {
+
+      if (attempt < 2 && !error.status) {
         await new Promise((resolve) =>
-          setTimeout(resolve, 350 * (attempt + 1)),
+          setTimeout(resolve, 1000 * (attempt + 1)),
         );
+        continue;
       }
+
+      break;
     }
   }
 
   const cached = await openF1GetCachedData(path, params);
+
   if (cached) {
     openF1MarkCached(cached);
     return cached.data;
   }
 
-  if (!openF1CacheUsed) {
+  if (!openF1CacheUsed && !openF1SuccessfulRequest) {
     openF1RequestFailedWithoutCache = true;
     openF1SetStatus(
       "unavailable",
       "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
     );
   }
+
   throw new Error(
     `OpenF1 request failed and no cached copy is available for ${path}: ${lastError?.message || "network error"}`,
   );
@@ -1063,12 +1091,18 @@ async function loadSprintStartingGrid(race) {
   if (!race.sprintSessionKey) return [];
 
   try {
-    const data = await fetchOpenF1("starting_grid", {
-      session_key: race.sprintSessionKey,
-    });
+    const data = await fetchOpenF1(
+      "starting_grid",
+      { session_key: race.sprintSessionKey },
+      { allow404: true },
+    );
+
     return Array.isArray(data) ? data : [];
   } catch (error) {
-    console.warn("OpenF1 sprint starting grid request failed:", error);
+    console.warn(
+      "Sprint starting grid unavailable; keeping Sprint results:",
+      error,
+    );
     return [];
   }
 }
