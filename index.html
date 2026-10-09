@@ -82,6 +82,17 @@
       </div>
 
       <div class="season">2026 SEASON</div>
+      <button
+        class="api-status-toggle"
+        id="apiStatusToggle"
+        type="button"
+        aria-label="Show API status details"
+        aria-expanded="false"
+        title="API status"
+        data-state="checking"
+      >
+        <span class="api-status-indicator" aria-hidden="true"></span>
+      </button>
 
       <button
         class="mobile-nav-toggle"
@@ -155,6 +166,21 @@
         </div>
       </div>
     </header>
+
+    <section
+      class="api-status-banner"
+      id="apiStatusBanner"
+      data-state="checking"
+      role="status"
+      aria-live="polite"
+      hidden
+    >
+      <div class="api-status-copy">
+        <strong id="apiStatusLabel">CHECKING API</strong>
+        <span id="apiStatusMessage">Checking OpenF1 data availability.</span>
+      </div>
+      <button id="apiStatusRetry" type="button" hidden>RETRY</button>
+    </section>
 
     <main>
       <section class="dashboard-panel active" id="dashboardOverview">

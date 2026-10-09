@@ -10,6 +10,152 @@ let activeRaceSession = "race";
 ===================================================== */
 
 const OPENF1_BASE_URL = "https://api.openf1.org/v1";
+const OPENF1_CACHE_DIRECTORY = "data/cache";
+const OPENF1_LOCAL_CACHE_PREFIX = "f1_openf1_cache:";
+let openF1CacheUsed = false;
+let openF1RequestFailedWithoutCache = false;
+
+function openF1CacheKey(path, params = {}) {
+  const query = Object.entries(params)
+    .filter(
+      ([, value]) => value !== undefined && value !== null && value !== "",
+    )
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}-${value}`)
+    .join("__");
+
+  return `${path}${query ? `__${query}` : ""}`
+    .replace(/[^a-zA-Z0-9_-]/g, "-")
+    .toLowerCase();
+}
+
+function openF1SetStatus(state, detail = "") {
+  const banner = document.getElementById("apiStatusBanner");
+  const label = document.getElementById("apiStatusLabel");
+  const message = document.getElementById("apiStatusMessage");
+  const retry = document.getElementById("apiStatusRetry");
+  const toggle = document.getElementById("apiStatusToggle");
+  if (!banner || !label || !message) return;
+
+  banner.dataset.state = state;
+  const states = {
+    checking: ["CHECKING API", "Checking OpenF1 data availability."],
+    operational: [
+      "API OPERATIONAL",
+      "Latest requested data was retrieved successfully.",
+    ],
+    cached: ["USING CACHED DATA", "Showing previously saved data."],
+    unavailable: [
+      "DATA UNAVAILABLE",
+      "No saved copy was available for the requested data.",
+    ],
+  };
+  const current = states[state] || states.checking;
+  label.textContent = current[0];
+  message.textContent = detail || current[1];
+  if (retry) retry.hidden = state === "checking" || state === "operational";
+
+  const shouldShowByDefault = state === "cached" || state === "unavailable";
+  banner.hidden = !shouldShowByDefault;
+  if (toggle) {
+    toggle.dataset.state = state;
+    toggle.setAttribute(
+      "aria-label",
+      shouldShowByDefault
+        ? "Hide API status details"
+        : "Show API status details",
+    );
+    toggle.setAttribute("aria-expanded", String(shouldShowByDefault));
+    toggle.title = current[0];
+  }
+}
+
+function openF1ToggleStatusBanner() {
+  const banner = document.getElementById("apiStatusBanner");
+  const toggle = document.getElementById("apiStatusToggle");
+  if (!banner || !toggle || banner.dataset.state === "checking") return;
+  banner.hidden = !banner.hidden;
+  toggle.setAttribute("aria-expanded", String(!banner.hidden));
+  toggle.setAttribute(
+    "aria-label",
+    banner.hidden ? "Show API status details" : "Hide API status details",
+  );
+}
+
+function openF1FormatTimestamp(value) {
+  if (!value) return "unknown time";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "unknown time";
+  return date.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+function openF1SaveLocalCache(key, data, fetchedAt) {
+  try {
+    const payload = JSON.stringify({ data, fetchedAt });
+    if (payload.length > 900000) return;
+    localStorage.setItem(`${OPENF1_LOCAL_CACHE_PREFIX}${key}`, payload);
+  } catch (error) {}
+}
+
+function openF1ReadLocalCache(key) {
+  try {
+    const raw = localStorage.getItem(`${OPENF1_LOCAL_CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const payload = JSON.parse(raw);
+    if (
+      !payload ||
+      (!Array.isArray(payload.data) && typeof payload.data !== "object")
+    )
+      return null;
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function openF1ReadStaticCache(key) {
+  try {
+    const response = await fetch(`${OPENF1_CACHE_DIRECTORY}/${key}.json`, {
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    if (
+      !payload ||
+      (!Array.isArray(payload.data) && typeof payload.data !== "object")
+    )
+      return null;
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function openF1GetCachedData(path, params) {
+  const key = openF1CacheKey(path, params);
+  const [local, staticCache] = await Promise.all([
+    Promise.resolve(openF1ReadLocalCache(key)),
+    openF1ReadStaticCache(key),
+  ]);
+  if (!local) return staticCache;
+  if (!staticCache) return local;
+  return Date.parse(staticCache.fetchedAt || "") >
+    Date.parse(local.fetchedAt || "")
+    ? staticCache
+    : local;
+}
+
+function openF1MarkCached(payload) {
+  openF1CacheUsed = true;
+  const timestamp = openF1FormatTimestamp(payload.fetchedAt);
+  openF1SetStatus(
+    "cached",
+    `OpenF1 could not be reached. Showing previously cached data; last saved ${timestamp}. Some information may be outdated.`,
+  );
+}
 
 const openF1CircuitImages = {
   15: "images/barcelona-catalunya.avif",
@@ -55,23 +201,70 @@ function openF1Url(path, params = {}) {
   return url.toString();
 }
 
-async function fetchOpenF1(path, params = {}, attempt = 0) {
-  const response = await fetch(openF1Url(path, params), {
-    headers: {
-      Accept: "application/json",
-    },
-  });
+async function fetchOpenF1(path, params = {}) {
+  let lastError = null;
 
-  if (!response.ok) {
-    if ((response.status === 429 || response.status >= 500) && attempt < 2) {
-      await new Promise((resolve) => setTimeout(resolve, 700 * (attempt + 1)));
-      return fetchOpenF1(path, params, attempt + 1);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(openF1Url(path, params), {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const error = new Error(`OpenF1 request failed: ${response.status}`);
+        error.status = response.status;
+        if (
+          (response.status === 429 || response.status >= 500) &&
+          attempt < 2
+        ) {
+          lastError = error;
+          await new Promise((resolve) =>
+            setTimeout(resolve, 500 * (attempt + 1)),
+          );
+          continue;
+        }
+        lastError = error;
+        break;
+      }
+
+      const data = await response.json();
+      const fetchedAt = new Date().toISOString();
+      const key = openF1CacheKey(path, params);
+      openF1SaveLocalCache(key, data, fetchedAt);
+      if (!openF1CacheUsed && !openF1RequestFailedWithoutCache) {
+        openF1SetStatus(
+          "operational",
+          `OpenF1 responded successfully. Last successful request: ${openF1FormatTimestamp(fetchedAt)}.`,
+        );
+      }
+      return data;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 2) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 350 * (attempt + 1)),
+        );
+      }
     }
-
-    throw new Error(`OpenF1 request failed: ${response.status}`);
   }
 
-  return response.json();
+  const cached = await openF1GetCachedData(path, params);
+  if (cached) {
+    openF1MarkCached(cached);
+    return cached.data;
+  }
+
+  if (!openF1CacheUsed) {
+    openF1RequestFailedWithoutCache = true;
+    openF1SetStatus(
+      "unavailable",
+      "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
+    );
+  }
+  throw new Error(
+    `OpenF1 request failed and no cached copy is available for ${path}: ${lastError?.message || "network error"}`,
+  );
 }
 
 const circuitImageAliases = {
@@ -947,6 +1140,9 @@ async function initializeOpenF1() {
     }
 
     races = liveRaces;
+    const navigationControls = document.querySelector(".navigation-controls");
+    if (navigationControls) navigationControls.hidden = false;
+    if (emptyState) emptyState.hidden = false;
     loaderStatus.textContent = "BUILDING 2026 CALENDAR";
     raceTrack.innerHTML = "";
     buildRaceSelector();
@@ -968,6 +1164,18 @@ async function initializeOpenF1() {
     loaderStatus.textContent = "OFFLINE DATA READY";
     raceTrack.innerHTML = "";
     buildRaceSelector();
+    if (!races.length) {
+      const navigationControls = document.querySelector(".navigation-controls");
+      if (navigationControls) navigationControls.hidden = true;
+      if (emptyState) emptyState.hidden = true;
+      raceTrack.innerHTML = `
+        <div class="calendar-api-unavailable">
+          <span class="dashboard-empty-kicker">RACE DATA OFFLINE</span>
+          <h2>Race calendar temporarily unavailable</h2>
+          <p>We could not retrieve the 2026 race calendar, and no saved calendar is available on this visit. OpenF1 public access may be restricted during a live session. Please try again after the session ends.</p>
+          <button class="dashboard-empty-retry" type="button" onclick="window.location.reload()">TRY AGAIN</button>
+        </div>`;
+    }
     return false;
   }
 }
@@ -2146,6 +2354,13 @@ raceTrack.addEventListener(
 /* =====================================================
    INITIALIZE
 ===================================================== */
+
+document
+  .getElementById("apiStatusRetry")
+  ?.addEventListener("click", () => window.location.reload());
+document
+  .getElementById("apiStatusToggle")
+  ?.addEventListener("click", openF1ToggleStatusBanner);
 
 async function initializeDashboard() {
   await preloadInitialImages();
@@ -4077,7 +4292,11 @@ function replayBind() {
 }
 
 function setDashboardTab(name) {
-  localStorage.setItem("f1_active_tab", name);
+  try {
+    sessionStorage.setItem("f1_active_tab", name);
+  } catch (error) {
+    console.warn("Unable to persist the active dashboard tab:", error);
+  }
 
   document
     .querySelectorAll(".dashboard-tab, .mobile-dashboard-tab")
@@ -4131,13 +4350,105 @@ async function phase2Fetch(path, params) {
 }
 
 function phase2LatestRace() {
+  const now = Date.now();
   return races
-    .filter((race) => race.status === "COMPLETED")
+    .filter((race) => {
+      if (!race.sessionKey) return false;
+      const sessionEnd = new Date(
+        race.dateEnd || race.dateStart || race.date,
+      ).getTime();
+      return (
+        race.status === "COMPLETED" ||
+        (Number.isFinite(sessionEnd) && sessionEnd < now)
+      );
+    })
     .sort(
       (a, b) =>
         new Date(a.dateStart || a.date) - new Date(b.dateStart || b.date),
     )
     .at(-1);
+}
+
+function phase2RenderUnavailable(
+  message = "Season data is temporarily unavailable.",
+) {
+  const hasNoCachedData = openF1RequestFailedWithoutCache && !openF1CacheUsed;
+  const hasCachedData = openF1CacheUsed;
+  const pageStates = [
+    {
+      id: "overviewContent",
+      title: "Season overview unavailable",
+      description: hasNoCachedData
+        ? "We couldn't retrieve the 2026 season data from OpenF1, and no saved copy is available on this visit."
+        : hasCachedData
+          ? "Saved API responses were available, but they did not contain enough completed-race information to assemble the season overview."
+          : "A completed race session is not currently available, so the season overview cannot be assembled yet.",
+    },
+    {
+      id: "driversContent",
+      title: "Driver data unavailable",
+      description: hasNoCachedData
+        ? "Driver standings and season statistics couldn't be retrieved, and no saved copy is available on this visit."
+        : hasCachedData
+          ? "Saved API responses were available, but they did not contain enough information to build the driver standings."
+          : "Driver standings require data from a completed race session, which is not currently available.",
+    },
+    {
+      id: "teamsContent",
+      title: "Team data unavailable",
+      description: hasNoCachedData
+        ? "Constructor standings and team statistics couldn't be retrieved, and no saved copy is available on this visit."
+        : hasCachedData
+          ? "Saved API responses were available, but they did not contain enough information to build the constructor standings."
+          : "Constructor standings require data from a completed race session, which is not currently available.",
+    },
+    {
+      id: "championshipContent",
+      title: "Championship standings unavailable",
+      description: hasNoCachedData
+        ? "We couldn't retrieve championship standings from OpenF1, and no saved copy is available on this visit."
+        : hasCachedData
+          ? "Saved API responses were available, but they did not include enough completed-race information to calculate championship standings."
+          : "No completed race session is currently available to calculate the championship standings.",
+    },
+  ];
+
+  pageStates.forEach(({ id, title, description }) => {
+    const container = document.getElementById(id);
+    if (!container) return;
+    container.innerHTML = `
+      <section class="dashboard-empty-state" role="status">
+        <span class="dashboard-empty-kicker">${hasNoCachedData ? "DATA TEMPORARILY UNAVAILABLE" : "SEASON UPDATE"}</span>
+        <h2>${title}</h2>
+        <p>${description}</p>
+        <p class="dashboard-empty-note">${
+          hasNoCachedData
+            ? "OpenF1 may temporarily restrict public access during a live session. Please try again after the session ends."
+            : hasCachedData
+              ? "The saved data may be incomplete or outdated. Try again when OpenF1 access is available."
+              : "The dashboard will update when OpenF1 makes a completed race session available."
+        }</p>
+        <button class="dashboard-empty-retry" type="button">TRY AGAIN</button>
+      </section>
+    `;
+    const retryButton = container.querySelector(".dashboard-empty-retry");
+    retryButton?.addEventListener(
+      "click",
+      async () => {
+        retryButton.disabled = true;
+        retryButton.textContent = "CHECKING…";
+        try {
+          await phase2LoadSeasonData();
+        } catch (error) {
+          console.error("Phase 2 season data retry failed:", error);
+          phase2RenderUnavailable(
+            "OpenF1 could not provide the latest season data. Please try again shortly.",
+          );
+        }
+      },
+      { once: true },
+    );
+  });
 }
 
 function phase2NextRace() {
@@ -4148,8 +4459,12 @@ async function phase2LoadSeasonData() {
   if (phase2State.loaded || phase2State.loading) return;
 
   const latest = phase2LatestRace();
-  if (!latest?.sessionKey)
-    throw new Error("No completed race session available.");
+  if (!latest?.sessionKey) {
+    phase2RenderUnavailable(
+      "No completed race session is available yet, so championship standings cannot be calculated.",
+    );
+    return;
+  }
 
   phase2State.loading = true;
 
@@ -4667,33 +4982,6 @@ function phase2Render() {
   }
 
   phase2RenderChampionshipHistory();
-
-  const mobileNavToggle = document.querySelector(".mobile-nav-toggle");
-  const mobileNavMenu = document.querySelector(".mobile-dashboard-menu");
-
-  mobileNavToggle?.addEventListener("click", () => {
-    const navbar = document.querySelector(".navbar");
-    const isOpen = navbar?.classList.toggle("mobile-nav-open") ?? false;
-    mobileNavToggle.setAttribute("aria-expanded", String(isOpen));
-    mobileNavMenu?.setAttribute("aria-hidden", String(!isOpen));
-  });
-
-  document.addEventListener("click", (event) => {
-    const navbar = document.querySelector(".navbar");
-    if (!navbar?.classList.contains("mobile-nav-open")) return;
-    if (navbar.contains(event.target)) return;
-    navbar.classList.remove("mobile-nav-open");
-    mobileNavToggle?.setAttribute("aria-expanded", "false");
-    mobileNavMenu?.setAttribute("aria-hidden", "true");
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    const navbar = document.querySelector(".navbar");
-    navbar?.classList.remove("mobile-nav-open");
-    mobileNavToggle?.setAttribute("aria-expanded", "false");
-    mobileNavMenu?.setAttribute("aria-hidden", "true");
-  });
 }
 
 function phase2TeamColor(name) {
@@ -4710,11 +4998,46 @@ function phase2TeamColor(name) {
   if (n.includes("haas")) return "#9e9e9e";
   return "#a1a1a1";
 }
+function bindMobileNavigation() {
+  const mobileNavToggle = document.querySelector(".mobile-nav-toggle");
+  const mobileNavMenu = document.querySelector(".mobile-dashboard-menu");
+  const navbar = document.querySelector(".navbar");
+  if (!mobileNavToggle || mobileNavToggle.dataset.bound === "true") return;
+  mobileNavToggle.dataset.bound = "true";
+
+  mobileNavToggle.addEventListener("click", () => {
+    const isOpen = navbar?.classList.toggle("mobile-nav-open") ?? false;
+    mobileNavToggle.setAttribute("aria-expanded", String(isOpen));
+    mobileNavMenu?.setAttribute("aria-hidden", String(!isOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!navbar?.classList.contains("mobile-nav-open")) return;
+    if (navbar.contains(event.target)) return;
+    navbar.classList.remove("mobile-nav-open");
+    mobileNavToggle.setAttribute("aria-expanded", "false");
+    mobileNavMenu?.setAttribute("aria-hidden", "true");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    navbar?.classList.remove("mobile-nav-open");
+    mobileNavToggle.setAttribute("aria-expanded", "false");
+    mobileNavMenu?.setAttribute("aria-hidden", "true");
+  });
+}
+
 async function phase2Initialize() {
+  bindMobileNavigation();
   replayBind();
   phase2BindCalendarModal();
-
-  const savedTab = localStorage.getItem("f1_active_tab");
+  const savedTab = (() => {
+    try {
+      return sessionStorage.getItem("f1_active_tab");
+    } catch (error) {
+      return null;
+    }
+  })();
   const validTabs = [
     "overview",
     "drivers",
@@ -4723,9 +5046,7 @@ async function phase2Initialize() {
     "replay",
     "race",
   ];
-  const initialTab = validTabs.includes(savedTab) ? savedTab : "overview";
-
-  setDashboardTab(initialTab);
+  setDashboardTab(validTabs.includes(savedTab) ? savedTab : "overview");
 
   document.querySelector(".f1-logo")?.addEventListener("click", () => {
     document.querySelector(".navbar")?.classList.remove("mobile-nav-open");
@@ -4760,15 +5081,9 @@ async function phase2Initialize() {
           } catch (error) {
             console.error("Phase 2 season data failed:", error);
             const message = String(error.message || error);
-            [
-              "overviewContent",
-              "driversContent",
-              "teamsContent",
-              "championshipContent",
-            ].forEach((id) => {
-              document.getElementById(id).innerHTML =
-                `<div class="dashboard-error">SEASON DATA UNAVAILABLE<br><small>${phase2Escape(message)}</small></div>`;
-            });
+            phase2RenderUnavailable(
+              message || "OpenF1 could not provide the latest standings.",
+            );
           }
         }
 
@@ -4790,15 +5105,9 @@ async function phase2Initialize() {
   } catch (error) {
     console.error("Phase 2 season data failed:", error);
     const message = String(error.message || error);
-    [
-      "overviewContent",
-      "driversContent",
-      "teamsContent",
-      "championshipContent",
-    ].forEach((id) => {
-      document.getElementById(id).innerHTML =
-        `<div class="dashboard-error">SEASON DATA UNAVAILABLE<br><small>${phase2Escape(message)}</small></div>`;
-    });
+    phase2RenderUnavailable(
+      message || "OpenF1 could not provide the latest standings.",
+    );
   }
 }
 

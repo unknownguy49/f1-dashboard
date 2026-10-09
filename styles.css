@@ -7786,7 +7786,7 @@ body {
   #dashboardOverview .overview-calendar-button,
   #dashboardOverview .overview-calendar-button:focus-visible {
     position: absolute !important;
-    top: -20px !important;
+    top: 10px !important;
     right: 0 !important;
     width: 32px !important;
     height: 32px !important;
@@ -9198,4 +9198,203 @@ body {
 .season-calendar-event.sprint {
   border-radius: 50%;
   border-style: dashed;
+}
+
+/* Graceful fallback when championship data is not available yet. */
+.dashboard-empty-state {
+  width: min(100% - 2rem, 760px);
+  margin: clamp(2rem, 6vw, 5rem) auto;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0.012)
+  );
+}
+.dashboard-empty-kicker {
+  display: block;
+  margin-bottom: 1rem;
+  color: #f20d0d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+}
+.dashboard-empty-state h2 {
+  margin: 0 0 0.8rem;
+  color: #f4f4f4;
+  font-size: clamp(1.5rem, 4vw, 2.4rem);
+  line-height: 1.05;
+}
+.dashboard-empty-state p {
+  max-width: 56ch;
+  margin: 0.5rem 0;
+  color: #a6a6a6;
+  line-height: 1.65;
+}
+.dashboard-empty-state .dashboard-empty-note {
+  margin-top: 1rem;
+  font-size: 0.88rem;
+}
+.dashboard-empty-retry {
+  margin-top: 1.5rem;
+  padding: 0.85rem 1.2rem;
+  border: 1px solid #f20d0d;
+  background: #f20d0d;
+  color: #fff;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  cursor: pointer;
+}
+.dashboard-empty-retry:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.api-status-toggle {
+  display: grid;
+  place-items: center;
+  flex: 0 0 26px;
+  width: 26px;
+  height: 30px;
+  margin-left: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transform: translate(2px, -1px);
+}
+.api-status-toggle:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 3px;
+}
+.api-status-toggle .api-status-indicator {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #9ca3af;
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.12);
+}
+.api-status-banner {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px clamp(16px, 3vw, 42px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0b0b0b;
+  color: #b8b8b8;
+  font-size: 11px;
+}
+.api-status-banner[hidden] {
+  display: none;
+}
+.api-status-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 12px;
+  min-width: 0;
+}
+.api-status-copy strong {
+  color: #d1d5db;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+.api-status-copy span {
+  color: #888;
+  line-height: 1.45;
+}
+.api-status-toggle[data-state="operational"] .api-status-indicator {
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.13);
+}
+.api-status-toggle[data-state="cached"] .api-status-indicator {
+  background: #eab308;
+  box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.15);
+}
+.api-status-banner[data-state="cached"] .api-status-copy strong {
+  color: #facc15;
+}
+.api-status-toggle[data-state="unavailable"] .api-status-indicator {
+  background: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14);
+}
+.api-status-banner[data-state="unavailable"] .api-status-copy strong {
+  color: #ef4444;
+}
+.api-status-toggle[data-state="checking"] .api-status-indicator {
+  background: #9ca3af;
+  box-shadow: 0 0 0 3px rgba(156, 163, 175, 0.12);
+}
+#apiStatusRetry {
+  flex: 0 0 auto;
+  margin-left: auto;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #eee;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+#apiStatusRetry[hidden] {
+  display: none;
+}
+@media (max-width: 760px) {
+  .api-status-toggle {
+    margin-left: 0;
+    transform: translate(1px, -1px) scale(0.75);
+  }
+  .api-status-banner {
+    align-items: flex-start;
+  }
+  .api-status-copy {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+.calendar-api-unavailable {
+  width: min(100% - 2rem, 720px);
+  margin: 24px auto;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.025);
+}
+.calendar-api-unavailable h2 {
+  margin: 0 0 10px;
+  color: #f4f4f4;
+  font-size: clamp(20px, 3vw, 30px);
+}
+.calendar-api-unavailable p {
+  max-width: 58ch;
+  color: #aaa;
+  line-height: 1.65;
+}
+@media (max-width: 600px) {
+  .api-status-banner {
+    align-items: flex-start;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .api-status-copy {
+    flex-direction: column;
+    gap: 3px;
+  }
+  .api-status-copy span {
+    font-size: 10px;
+  }
+}
+
+/* Hide race-calendar paging controls when no calendar is available. */
+.navigation-controls[hidden] {
+  display: none !important;
 }
