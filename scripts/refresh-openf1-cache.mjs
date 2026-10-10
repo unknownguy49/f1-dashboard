@@ -242,6 +242,9 @@ async function main() {
     });
   }
 
+  await fetchAndCache("championship_drivers", { session_key: "latest" });
+  await fetchAndCache("championship_teams", { session_key: "latest" });
+
   const metadataPath = path.join(CACHE_DIR, "metadata.json");
   let metadataExists = true;
 

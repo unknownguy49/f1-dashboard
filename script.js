@@ -4504,8 +4504,8 @@ async function phase2LoadSeasonData() {
 
   try {
     const [driverStandings, teamStandings, latestDrivers] = await Promise.all([
-      phase2Fetch("championship_drivers", { session_key: latest.sessionKey }),
-      phase2Fetch("championship_teams", { session_key: latest.sessionKey }),
+      phase2Fetch("championship_drivers", { session_key: "latest" }),
+      phase2Fetch("championship_teams", { session_key: "latest" }),
       phase2Fetch("drivers", { session_key: latest.sessionKey }),
     ]);
 
