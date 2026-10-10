@@ -1,10 +1,10 @@
 {
   "season": 2026,
-  "refreshedAt": "2026-10-09T15:07:44.194Z",
-  "filesUpdated": 42,
-  "successfulRequests": 144,
+  "refreshedAt": "2026-10-10T11:15:43.745Z",
+  "filesUpdated": 3,
+  "successfulRequests": 147,
   "retries": 0,
-  "requestFailures": 21,
+  "requestFailures": 22,
   "failedRequests": [
     {
       "endpoint": "starting_grid",
@@ -150,6 +150,13 @@
       "endpoint": "starting_grid",
       "params": {
         "session_key": 11348
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11383
       },
       "error": "HTTP 404: {\"detail\":\"No results found.\"}"
     }
