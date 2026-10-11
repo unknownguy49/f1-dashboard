@@ -2009,29 +2009,27 @@ function createQualifyingRow(driver) {
 ===================================================== */
 
 async function loadStartingGrid(race) {
-  const attempts = [
-    { meeting_key: race.meetingKey },
-    { session_key: race.sessionKey },
-  ];
+  if (!race.qualifyingSessionKey) return [];
 
-  for (const params of attempts) {
-    try {
-      const data = await fetchOpenF1("starting_grid", params);
-      if (Array.isArray(data) && data.length) {
-        return data;
-      }
-    } catch (error) {
-      console.warn("OpenF1 starting grid request failed:", params, error);
-    }
+  try {
+    const data = await fetchOpenF1("starting_grid", {
+      session_key: race.qualifyingSessionKey,
+    });
+
+    if (!Array.isArray(data)) return [];
+
+    return data
+      .filter(
+        item =>
+          Number(item.session_key) === Number(race.qualifyingSessionKey) &&
+          Number.isFinite(Number(item.position)) &&
+          Number.isFinite(Number(item.driver_number))
+      )
+      .sort((a, b) => Number(a.position) - Number(b.position));
+  } catch (error) {
+    console.warn("OpenF1 starting grid request failed:", race.name, error);
+    return [];
   }
-
-  console.warn(
-    "OpenF1 starting grid returned no rows for race:",
-    race.name,
-    race.sessionKey,
-    race.meetingKey,
-  );
-  return [];
 }
 
 function renderStartingGridFinish(race) {
