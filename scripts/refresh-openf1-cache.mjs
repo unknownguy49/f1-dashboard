@@ -226,7 +226,27 @@ async function main() {
 
     if (session.session_name === "Race" || session.session_name === "Sprint") {
       await fetchAndCache("laps", { session_key: key });
-      await fetchAndCache("starting_grid", { session_key: key });
+
+      const qualifyingName =
+        session.session_name === "Race" ? "Qualifying" : "Sprint Qualifying";
+
+      const qualifyingSession = allSessions.find(
+        (candidate) =>
+          String(candidate.meeting_key) === String(session.meeting_key) &&
+          candidate.session_name === qualifyingName &&
+          !candidate.is_cancelled &&
+          sessionHasEnded(candidate),
+      );
+
+      if (qualifyingSession?.session_key) {
+        await fetchAndCache("starting_grid", {
+          session_key: qualifyingSession.session_key,
+        });
+      } else {
+        console.warn(
+          `Skipped starting_grid for ${session.session_name} session ${key}: matching ${qualifyingName} session not found or not completed.`,
+        );
+      }
     }
   }
 

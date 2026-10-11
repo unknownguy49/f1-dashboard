@@ -2020,10 +2020,10 @@ async function loadStartingGrid(race) {
 
     return data
       .filter(
-        item =>
+        (item) =>
           Number(item.session_key) === Number(race.qualifyingSessionKey) &&
           Number.isFinite(Number(item.position)) &&
-          Number.isFinite(Number(item.driver_number))
+          Number.isFinite(Number(item.driver_number)),
       )
       .sort((a, b) => Number(a.position) - Number(b.position));
   } catch (error) {
