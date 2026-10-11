@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-09T11:07:29.033Z",
+  "fetchedAt": "2026-10-11T11:23:02.411Z",
   "data": [
     {
       "session_key": 11240,
@@ -91,7 +91,7 @@
       "session_type": "Race",
       "session_name": "Sprint",
       "date_start": "2026-10-10T09:00:00+00:00",
-      "date_end": "2026-10-10T10:00:00+00:00",
+      "date_end": "2026-10-10T09:30:00+00:00",
       "meeting_key": 1296,
       "circuit_key": 61,
       "circuit_short_name": "Singapore",
