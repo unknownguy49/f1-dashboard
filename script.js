@@ -470,24 +470,18 @@ async function loadOpenF1Calendar() {
     qualifyingSessions,
     sprintSessions,
     sprintQualifyingSessions,
+    practice1Sessions,
+    practice2Sessions,
+    practice3Sessions,
   ] = await Promise.all([
     fetchOpenF1("meetings", { year: 2026 }),
-    fetchOpenF1("sessions", {
-      year: 2026,
-      session_name: "Race",
-    }),
-    fetchOpenF1("sessions", {
-      year: 2026,
-      session_name: "Qualifying",
-    }),
-    fetchOpenF1("sessions", {
-      year: 2026,
-      session_name: "Sprint",
-    }),
-    fetchOpenF1("sessions", {
-      year: 2026,
-      session_name: "Sprint Qualifying",
-    }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Race" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Qualifying" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Sprint" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Sprint Qualifying" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 1" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 2" }),
+    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 3" }),
   ]);
 
   const sessionByMeeting = new Map(
@@ -524,6 +518,24 @@ async function loadOpenF1Calendar() {
       .map((session) => [session.meeting_key, session]),
   );
 
+  const practiceByMeeting = new Map();
+  [
+    ["practice1", practice1Sessions, "Practice 1"],
+    ["practice2", practice2Sessions, "Practice 2"],
+    ["practice3", practice3Sessions, "Practice 3"],
+  ].forEach(([type, sessions, name]) => {
+    sessions
+      .filter(
+        (session) => session.session_name === name && !session.is_cancelled,
+      )
+      .forEach((session) => {
+        if (!practiceByMeeting.has(session.meeting_key)) {
+          practiceByMeeting.set(session.meeting_key, {});
+        }
+        practiceByMeeting.get(session.meeting_key)[type] = session;
+      });
+  });
+
   return meetings
     .filter((meeting) => meeting.year === 2026)
     .filter((meeting) => !meeting.is_cancelled)
@@ -542,6 +554,10 @@ async function loadOpenF1Calendar() {
       const sprintQualifyingSession = sprintQualifyingByMeeting.get(
         meeting.meeting_key,
       );
+      const practiceSessions = practiceByMeeting.get(meeting.meeting_key) || {};
+      const practice1Session = practiceSessions.practice1 || null;
+      const practice2Session = practiceSessions.practice2 || null;
+      const practice3Session = practiceSessions.practice3 || null;
       const raceDisplayNames = {
         Melbourne: "Australia",
         Shanghai: "China",
@@ -594,6 +610,25 @@ async function loadOpenF1Calendar() {
         sprintQualifyingStatus: sprintQualifyingSession
           ? getSessionStatus(meeting, sprintQualifyingSession)
           : null,
+        practice1SessionKey: practice1Session?.session_key || null,
+        practice1DateStart: practice1Session?.date_start || null,
+        practice1DateEnd: practice1Session?.date_end || null,
+        practice1Status: practice1Session
+          ? getSessionStatus(meeting, practice1Session)
+          : null,
+        practice2SessionKey: practice2Session?.session_key || null,
+        practice2DateStart: practice2Session?.date_start || null,
+        practice2DateEnd: practice2Session?.date_end || null,
+        practice2Status: practice2Session
+          ? getSessionStatus(meeting, practice2Session)
+          : null,
+        practice3SessionKey: practice3Session?.session_key || null,
+        practice3DateStart: practice3Session?.date_start || null,
+        practice3DateEnd: practice3Session?.date_end || null,
+        practice3Status: practice3Session
+          ? getSessionStatus(meeting, practice3Session)
+          : null,
+        practiceResults: {},
         round: index + 1,
         name: meeting.meeting_name,
         shortName,
@@ -1254,6 +1289,20 @@ const raceClassificationTitle = document.getElementById(
   "raceClassificationTitle",
 );
 const qualifyingTitle = document.getElementById("qualifyingTitle");
+const practiceResultsSection = document.getElementById(
+  "practiceResultsSection",
+);
+const practiceSessionSelector = document.getElementById(
+  "practiceSessionSelector",
+);
+const practiceResultsVisible = document.getElementById(
+  "practiceResultsVisible",
+);
+const practiceResultsRemaining = document.getElementById(
+  "practiceResultsRemaining",
+);
+const practiceResultsMore = document.getElementById("practiceResultsMore");
+let activePracticeType = "practice1";
 
 /* =====================================================
    DRIVER IMAGES
@@ -1481,6 +1530,7 @@ async function selectRace(index) {
 
   activeRaceSession = "race";
   updateSessionSelector(race);
+  resetPracticeResults(race);
 
   /* ---------------------------------------------
        Render immediately, then hydrate from OpenF1
@@ -1626,6 +1676,241 @@ sprintSessionButton?.addEventListener("click", () => {
   const raceIndex = activeButton ? Number(activeButton.dataset.index) : -1;
   const race = Number.isInteger(raceIndex) ? races[raceIndex] : null;
   if (race) selectRaceSession(race, "sprint");
+});
+
+/* =====================================================
+   PRACTICE RESULTS (OPT-IN)
+===================================================== */
+
+function practiceSessionInfo(race, type) {
+  const config = {
+    practice1: {
+      key: race.practice1SessionKey,
+      status: race.practice1Status,
+      label: "P1",
+      name: "Practice 1",
+    },
+    practice2: {
+      key: race.practice2SessionKey,
+      status: race.practice2Status,
+      label: "P2",
+      name: "Practice 2",
+    },
+    practice3: {
+      key: race.practice3SessionKey,
+      status: race.practice3Status,
+      label: "P3",
+      name: "Practice 3",
+    },
+  };
+  return config[type] || null;
+}
+
+function resetPracticeResults(race) {
+  if (!practiceResultsSection) return;
+
+  const available = ["practice1", "practice2", "practice3"]
+    .map((type) => practiceSessionInfo(race, type))
+    .filter((session) => session?.key);
+
+  practiceResultsSection.hidden = available.length === 0;
+
+  if (practiceSessionSelector) {
+    practiceSessionSelector.hidden = true;
+    practiceSessionSelector.innerHTML = "";
+  }
+
+  if (practiceResultsVisible) {
+    practiceResultsVisible.innerHTML = "";
+  }
+
+  if (practiceResultsRemaining) {
+    practiceResultsRemaining.innerHTML = "";
+    practiceResultsRemaining.hidden = true;
+  }
+
+  if (practiceResultsMore) {
+    practiceResultsMore.hidden = true;
+    practiceResultsMore.textContent = "VIEW MORE";
+  }
+
+  activePracticeType =
+    ["practice1", "practice2", "practice3"].find(
+      (type) => practiceSessionInfo(race, type)?.key,
+    ) || "practice1";
+
+  if (available.length) {
+    renderPracticeSessionSelector(race);
+    loadPracticeResults(race, activePracticeType);
+  }
+}
+
+function renderPracticeSessionSelector(race) {
+  if (!practiceSessionSelector) return;
+  const available = ["practice1", "practice2", "practice3"]
+    .map((type) => ({ type, ...practiceSessionInfo(race, type) }))
+    .filter((session) => session.key);
+  practiceSessionSelector.hidden = available.length <= 1;
+  practiceSessionSelector.innerHTML = available
+    .map(
+      (session) => `
+    <button class="session-selector-button${session.type === activePracticeType ? " active" : ""}" type="button" data-practice-type="${session.type}" aria-pressed="${session.type === activePracticeType}">${session.label}</button>
+  `,
+    )
+    .join("");
+}
+
+function formatPracticeResultTime(result) {
+  const raw = Array.isArray(result.duration)
+    ? result.duration.find(
+        (value) => value !== null && value !== undefined && value !== "",
+      )
+    : result.duration;
+  if (raw !== null && raw !== undefined && raw !== "") {
+    const numeric = Number(raw);
+    return Number.isFinite(numeric) ? formatLapTime(numeric) : String(raw);
+  }
+  return formatRaceGap(result.gap_to_leader) || "—";
+}
+
+async function loadPracticeResults(race, type) {
+  const session = practiceSessionInfo(race, type);
+  if (!session?.key) return;
+  race.practiceResults ||= {};
+  race.practiceResultsLoading ||= {};
+  if (race.practiceResults[type]) {
+    renderPracticeResults(race, type);
+    return;
+  }
+  if (session.status !== "COMPLETED") {
+    renderPracticeResultsMessage(
+      `${session.name.toUpperCase()} RESULTS AVAILABLE AFTER THE SESSION`,
+    );
+    return;
+  }
+  if (race.practiceResultsLoading[type]) {
+    await race.practiceResultsLoading[type];
+    renderPracticeResults(race, type);
+    return;
+  }
+
+  renderPracticeResultsMessage(`LOADING ${session.name.toUpperCase()} RESULTS`);
+  race.practiceResultsLoading[type] = (async () => {
+    const [results, drivers] = await Promise.all([
+      fetchOpenF1("session_result", { session_key: session.key }),
+      fetchOpenF1("drivers", { session_key: session.key }).catch(() => []),
+    ]);
+    const driverByNumber = new Map(
+      drivers.map((driver) => [Number(driver.driver_number), driver]),
+    );
+    const fallbackDriverMap = new Map(
+      phase2State.drivers.map((driver) => [
+        Number(driver.number),
+        {
+          driver_number: driver.number,
+          full_name: driver.name,
+          team_name: driver.team,
+        },
+      ]),
+    );
+    fallbackDriverMap.forEach((driver, number) => {
+      if (!driverByNumber.has(number)) driverByNumber.set(number, driver);
+    });
+    race.practiceResults[type] = (Array.isArray(results) ? results : [])
+      .filter((result) => Number.isFinite(Number(result.position)))
+      .sort((a, b) => Number(a.position) - Number(b.position))
+      .map((result) => {
+        const driver = driverByNumber.get(Number(result.driver_number)) || {};
+        return {
+          position: Number(result.position),
+          number: result.driver_number,
+          driver: driver.full_name || `Driver #${result.driver_number}`,
+          team: driver.team_name || "—",
+          class: getTeamClass(driver.team_name),
+          color: driver.team_colour
+            ? `#${String(driver.team_colour).replace(/^#/, "")}`
+            : null,
+          time: formatPracticeResultTime(result),
+          dnf: result.dnf,
+          dns: result.dns,
+          dsq: result.dsq,
+        };
+      });
+  })();
+
+  try {
+    await race.practiceResultsLoading[type];
+    if (race.practiceResults[type]?.length) renderPracticeResults(race, type);
+    else
+      renderPracticeResultsMessage(
+        `${session.name.toUpperCase()} RESULTS ARE NOT AVAILABLE FROM OPENF1 YET`,
+      );
+  } catch (error) {
+    console.warn(`${session.name} results unavailable:`, error);
+    renderPracticeResultsMessage(
+      `${session.name.toUpperCase()} RESULTS UNAVAILABLE`,
+    );
+  } finally {
+    delete race.practiceResultsLoading[type];
+  }
+}
+
+function renderPracticeResultsMessage(message) {
+  if (practiceResultsVisible)
+    practiceResultsVisible.innerHTML = `<div class="classification-row upcoming-classification"><span class="classification-row-position">—</span><div><strong>${message}</strong><span>OpenF1 session data</span></div><span>—</span></div>`;
+  if (practiceResultsRemaining) {
+    practiceResultsRemaining.innerHTML = "";
+    practiceResultsRemaining.hidden = true;
+  }
+  if (practiceResultsMore) practiceResultsMore.hidden = true;
+}
+
+function renderPracticeResults(race, type) {
+  if (
+    !practiceResultsVisible ||
+    !practiceResultsRemaining ||
+    !practiceResultsMore
+  )
+    return;
+
+  const results = race.practiceResults?.[type] || [];
+
+  const renderRow = (driver) => `
+    <div class="classification-row team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
+      <span class="classification-row-position">${String(driver.position).padStart(2, "0")}</span>
+      <div><strong>${phase2Escape(driver.driver)}</strong><span>${phase2Escape(driver.team)}</span></div>
+      <span>${phase2Escape(driver.dsq ? "DSQ" : driver.dnf ? "DNF" : driver.dns ? "DNS" : driver.time || "—")}</span>
+    </div>
+  `;
+
+  const visible = results.slice(0, 3);
+  const remaining = results.slice(3);
+
+  practiceResultsVisible.innerHTML =
+    visible.map(renderRow).join("") ||
+    `<div class="classification-row upcoming-classification"><span class="classification-row-position">—</span><div><strong>No practice classification available</strong><span>OpenF1</span></div><span>—</span></div>`;
+
+  practiceResultsRemaining.innerHTML = remaining.map(renderRow).join("");
+  practiceResultsRemaining.hidden = true;
+  practiceResultsMore.hidden = remaining.length === 0;
+  practiceResultsMore.textContent = "VIEW MORE";
+
+  practiceResultsMore.onclick = () => {
+    const opening = practiceResultsRemaining.hidden;
+    practiceResultsRemaining.hidden = !opening;
+    practiceResultsMore.textContent = opening ? "VIEW LESS" : "VIEW MORE";
+  };
+}
+
+practiceSessionSelector?.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-practice-type]");
+  if (!button) return;
+  const selected = document.querySelector(".race-button.active");
+  const race = selected ? races[Number(selected.dataset.index)] : null;
+  if (!race) return;
+  activePracticeType = button.dataset.practiceType;
+  renderPracticeSessionSelector(race);
+  await loadPracticeResults(race, activePracticeType);
 });
 
 /* =====================================================
@@ -2552,6 +2837,9 @@ function phase2DriverImage(name) {
 
 function phase2CalendarEvent(race, type) {
   const config = {
+    practice1: { start: race.practice1DateStart, status: race.practice1Status },
+    practice2: { start: race.practice2DateStart, status: race.practice2Status },
+    practice3: { start: race.practice3DateStart, status: race.practice3Status },
     qualifying: {
       start: race.qualifyingDateStart,
       status: race.qualifyingStatus || race.status,
@@ -2585,17 +2873,29 @@ function phase2CalendarEvent(race, type) {
 }
 
 function phase2CalendarDayLabel(event) {
-  if (event.type === "sprintQualifying") return "SPRINT QUALIFYING";
-  if (event.type === "sprint") return "SPRINT";
-  if (event.type === "qualifying") return "QUALIFYING";
-  return "RACE";
+  const labels = {
+    practice1: "PRACTICE 1",
+    practice2: "PRACTICE 2",
+    practice3: "PRACTICE 3",
+    sprintQualifying: "SPRINT QUALIFYING",
+    sprint: "SPRINT",
+    qualifying: "QUALIFYING",
+    race: "RACE",
+  };
+  return labels[event.type] || "SESSION";
 }
 
 function phase2CalendarBadgeLabel(event) {
-  if (event.type === "sprintQualifying") return "SQ";
-  if (event.type === "sprint") return "S";
-  if (event.type === "qualifying") return "Q";
-  return "R";
+  const labels = {
+    practice1: "P1",
+    practice2: "P2",
+    practice3: "P3",
+    sprintQualifying: "SQ",
+    sprint: "S",
+    qualifying: "Q",
+    race: "R",
+  };
+  return labels[event.type] || "S";
 }
 
 const phase2TrackTimezones = {
@@ -2695,6 +2995,9 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
       (event) => event.type === "sprintQualifying",
     );
     const sprintEvent = events.find((event) => event.type === "sprint");
+    const practiceEvents = events.filter((event) =>
+      event.type.startsWith("practice"),
+    );
     const classes = ["season-calendar-day"];
     const gridPosition = startOffset + day - 1;
     const columnIndex = gridPosition % 7;
@@ -2708,19 +3011,32 @@ function phase2RenderCalendarMonth(year, month, eventsByDay) {
 
     if (isCurrentMonth && today.getDate() === day) classes.push("today");
     if (
-      [raceEvent, qualifyingEvent, sprintQualifyingEvent, sprintEvent].some(
-        (event) => event?.status === "completed",
-      )
+      [
+        raceEvent,
+        qualifyingEvent,
+        sprintQualifyingEvent,
+        sprintEvent,
+        ...practiceEvents,
+      ].some((event) => event?.status === "completed")
     )
       classes.push("has-completed");
     if (
-      [raceEvent, qualifyingEvent, sprintQualifyingEvent, sprintEvent].some(
-        (event) => event?.status === "upcoming",
-      )
+      [
+        raceEvent,
+        qualifyingEvent,
+        sprintQualifyingEvent,
+        sprintEvent,
+        ...practiceEvents,
+      ].some((event) => event?.status === "upcoming")
     )
       classes.push("has-upcoming");
 
     const labels = [];
+    practiceEvents.forEach((event) => {
+      labels.push(
+        `<span class="season-calendar-event practice ${event.status}" title="${phase2Escape(event.race.shortName || event.race.name)} ${phase2CalendarDayLabel(event).toLowerCase()}">${phase2CalendarBadgeLabel(event)}</span>`,
+      );
+    });
     if (sprintQualifyingEvent)
       labels.push(
         `<span class="season-calendar-event sprint-qualifying ${sprintQualifyingEvent.status}" title="${phase2Escape(sprintQualifyingEvent.race.shortName || sprintQualifyingEvent.race.name)} sprint qualifying">${phase2CalendarBadgeLabel(sprintQualifyingEvent)}</span>`,
@@ -2786,6 +3102,9 @@ function phase2RenderCalendarModal() {
 
   const events = races
     .flatMap((race) => [
+      phase2CalendarEvent(race, "practice1"),
+      phase2CalendarEvent(race, "practice2"),
+      phase2CalendarEvent(race, "practice3"),
       phase2CalendarEvent(race, "sprintQualifying"),
       phase2CalendarEvent(race, "sprint"),
       phase2CalendarEvent(race, "qualifying"),
@@ -2953,33 +3272,65 @@ function phase2NextCountdownEvent(race) {
   if (!race) return null;
 
   const now = Date.now();
-  const sessions = race.hasSprint
-    ? [
-        {
-          type: "sprintQualifying",
-          start: race.sprintQualifyingDateStart,
-          label: "NEXT SPRINT QUALIFYING IN",
-        },
-        {
-          type: "sprint",
-          start: race.sprintDateStart,
-          label: "NEXT SPRINT IN",
-        },
-        {
-          type: "qualifying",
-          start: race.qualifyingDateStart,
-          label: "NEXT QUALIFYING IN",
-        },
-        { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
-      ]
-    : [
-        {
-          type: "qualifying",
-          start: race.qualifyingDateStart,
-          label: "NEXT QUALIFYING IN",
-        },
-        { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
-      ];
+  const sessions = [
+    {
+      type: "practice1",
+      start: race.practice1DateStart,
+      label: "NEXT PRACTICE IN",
+    },
+    ...(!race.hasSprint
+      ? [
+          {
+            type: "practice2",
+            start: race.practice2DateStart,
+            label: "NEXT PRACTICE IN",
+          },
+          {
+            type: "practice3",
+            start: race.practice3DateStart,
+            label: "NEXT PRACTICE IN",
+          },
+        ]
+      : []),
+    ...(race.hasSprint
+      ? [
+          {
+            type: "sprintQualifying",
+            start: race.sprintQualifyingDateStart,
+            label: "NEXT SPRINT QUALIFYING IN",
+          },
+          {
+            type: "sprint",
+            start: race.sprintDateStart,
+            label: "NEXT SPRINT IN",
+          },
+        ]
+      : []),
+    ...(!race.hasSprint
+      ? [
+          {
+            type: "qualifying",
+            start: race.qualifyingDateStart,
+            label: "NEXT QUALIFYING IN",
+          },
+          { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
+        ]
+      : [
+          {
+            type: "qualifying",
+            start: race.qualifyingDateStart,
+            label: "NEXT QUALIFYING IN",
+          },
+          { type: "race", start: race.dateStart, label: "NEXT RACE IN" },
+        ]),
+  ].sort((a, b) => {
+    const aTime = Date.parse(a.start || "");
+    const bTime = Date.parse(b.start || "");
+    return (
+      (Number.isFinite(aTime) ? aTime : Infinity) -
+      (Number.isFinite(bTime) ? bTime : Infinity)
+    );
+  });
 
   for (const session of sessions) {
     const target = new Date(session.start || "").getTime();
@@ -3895,16 +4246,17 @@ async function replayLoadRace(race) {
   replayElements.canvasEmpty.hidden = false;
   replayElements.canvasEmpty.textContent = "LOADING OPENF1 TELEMETRY";
   replaySetStatus(`LOADING ${race.shortName.toUpperCase()}`);
-  replayElements.trackTitle.textContent = race.name;
+  replayElements.trackTitle.textContent =
+    race.replaySessionType === "sprint" ? `${race.name} · SPRINT` : race.name;
 
   try {
     const [drivers, positions, laps, startingGrid] = await Promise.all([
       fetchOpenF1("drivers", { session_key: race.sessionKey }),
       fetchOpenF1("position", { session_key: race.sessionKey }),
       fetchOpenF1("laps", { session_key: race.sessionKey }),
-      fetchOpenF1("starting_grid", { session_key: race.sessionKey }).catch(
-        () => [],
-      ),
+      fetchOpenF1("starting_grid", {
+        session_key: race.replayStartingGridKey || race.sessionKey,
+      }).catch(() => []),
     ]);
     if (requestId !== replayState.requestId) return;
 
@@ -4054,13 +4406,55 @@ async function replayLoadRace(race) {
 
 function replayPopulateRaceSelect() {
   if (!replayElements.raceSelect) return;
-  const completed = races.filter(
-    (race) => race.status === "COMPLETED" && race.sessionKey,
-  );
-  replayElements.raceSelect.innerHTML = completed.length
-    ? `<option value="">SELECT A COMPLETED RACE</option>${completed.map((race) => `<option value="${race.sessionKey}">${replayEscape(race.shortName)} · ROUND ${String(race.round).padStart(2, "0")}</option>`).join("")}`
-    : `<option value="">NO COMPLETED RACES</option>`;
+  const options = [];
+  races.forEach((race) => {
+    if (race.status === "COMPLETED" && race.sessionKey) {
+      options.push({
+        value: `race:${race.sessionKey}`,
+        label: `${race.shortName} · ROUND ${String(race.round).padStart(2, "0")} · RACE`,
+      });
+    }
+    if (race.sprintStatus === "COMPLETED" && race.sprintSessionKey) {
+      options.push({
+        value: `sprint:${race.sprintSessionKey}`,
+        label: `${race.shortName} · ROUND ${String(race.round).padStart(2, "0")} · SPRINT`,
+      });
+    }
+  });
+  replayElements.raceSelect.innerHTML = options.length
+    ? `<option value="">SELECT A COMPLETED RACE OR SPRINT</option>${options.map((option) => `<option value="${option.value}">${replayEscape(option.label)}</option>`).join("")}`
+    : `<option value="">NO COMPLETED RACES OR SPRINTS</option>`;
   replayElements.raceSelect.value = "";
+}
+
+function replaySelectedDescriptor() {
+  const selected = String(replayElements.raceSelect?.value || "");
+  const separator = selected.indexOf(":");
+  if (separator < 0) return null;
+  const sessionType = selected.slice(0, separator);
+  const selectedKey = selected.slice(separator + 1);
+  const isSprint = sessionType === "sprint";
+  if (!isSprint && sessionType !== "race") return null;
+  const race = races.find(
+    (item) =>
+      String(isSprint ? item.sprintSessionKey : item.sessionKey) ===
+      selectedKey,
+  );
+  if (!race) return null;
+  const sessionKey = isSprint ? race.sprintSessionKey : race.sessionKey;
+  const status = isSprint ? race.sprintStatus : race.status;
+  if (!sessionKey || status !== "COMPLETED") return null;
+  return {
+    ...race,
+    sessionKey,
+    status,
+    dateStart: isSprint ? race.sprintDateStart : race.dateStart,
+    dateEnd: isSprint ? race.sprintDateEnd : race.dateEnd,
+    replaySessionType: sessionType,
+    replayStartingGridKey: isSprint
+      ? race.sprintQualifyingSessionKey
+      : race.qualifyingSessionKey,
+  };
 }
 
 function replayRenderDriverMenu() {
@@ -4131,7 +4525,7 @@ function replayPrepareRaceSelection(sessionKey) {
   replayElements.canvasEmpty.hidden = false;
   replayElements.canvasEmpty.textContent = sessionKey
     ? "PRESS LOAD REPLAY TO FETCH TELEMETRY"
-    : "SELECT A COMPLETED RACE TO LOAD TELEMETRY";
+    : "SELECT A COMPLETED RACE OR SPRINT TO LOAD TELEMETRY";
   replayElements.driverPickerButton.textContent = "TOP 5";
   replayElements.driverPickerButton.disabled = !sessionKey;
   replayElements.driverMenu.hidden = true;
@@ -4153,7 +4547,7 @@ function replayPrepareRaceSelection(sessionKey) {
   replaySetStatus(
     sessionKey
       ? "RACE SELECTED · PRESS LOAD REPLAY"
-      : "SELECT A COMPLETED RACE",
+      : "SELECT A COMPLETED RACE OR SPRINT",
   );
   replayDraw();
 }
@@ -4232,14 +4626,17 @@ function replayBind() {
   if (!replayElements.raceSelect) return;
   replayPopulateRaceSelect();
   replayElements.loadButton.disabled = true;
-  replayElements.raceSelect.addEventListener("change", () =>
-    replaySelectRaceBySession(replayElements.raceSelect.value),
-  );
+  replayElements.raceSelect.addEventListener("change", () => {
+    const race = replaySelectedDescriptor();
+    replaySelectRaceBySession(race?.sessionKey || "");
+    replayElements.loadButton.disabled = !race;
+    if (race)
+      replaySetStatus(
+        `${race.replaySessionType === "sprint" ? "SPRINT" : "RACE"} SELECTED · PRESS LOAD REPLAY`,
+      );
+  });
   replayElements.loadButton.addEventListener("click", () => {
-    const race = races.find(
-      (item) =>
-        String(item.sessionKey) === String(replayElements.raceSelect.value),
-    );
+    const race = replaySelectedDescriptor();
     if (race) replayLoadRace(race);
   });
   replayElements.driverPickerButton.addEventListener("click", () => {
@@ -4802,7 +5199,7 @@ function phase2RenderChampionshipHistory() {
                 ${statusMarkers}
             </svg>
         </div>
-        <div class="position-history-note">LOWER ON THE CHART = BETTER POSITION · DNF/DNS SHOWN BELOW P22 · FINAL POSITIONS FROM OPENF1 SESSION RESULT</div>
+        <div class="position-history-note">HIGHER ON THE CHART = BETTER POSITION · DNF/DNS SHOWN BELOW P22 · FINAL POSITIONS FROM OPENF1 SESSION RESULT</div>
     `;
 }
 
@@ -4947,12 +5344,19 @@ function phase2Render() {
       })
       .join("")}</section>`;
 
-  const championshipDrivers = phase2State.drivers
-    .map(
-      (d, i) =>
-        `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`,
-    )
+  const renderChampionshipDriver = (d, i) =>
+    `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`;
+
+  const championshipDriversVisible = phase2State.drivers
+    .slice(0, 11)
+    .map(renderChampionshipDriver)
     .join("");
+
+  const championshipDriversRemaining = phase2State.drivers
+    .slice(11)
+    .map((d, i) => renderChampionshipDriver(d, i + 11))
+    .join("");
+
   const championshipTeams = phase2State.teams
     .map(
       (t, i) =>
@@ -4995,7 +5399,9 @@ function phase2Render() {
             <div class="championship-column">
                 <span class="rev-eyebrow">01 / DRIVERS</span>
                 <h3>THE DRIVER<br><i>CHAMPIONSHIP.</i></h3>
-                <div class="championship-standing-list">${championshipDrivers}</div>
+                <div class="championship-standing-list">${championshipDriversVisible}</div>
+                <div class="championship-standing-list" id="championshipDriversRemaining" hidden>${championshipDriversRemaining}</div>
+                <button class="data-more-button" id="championshipDriversMore" type="button" ${phase2State.drivers.length <= 11 ? "hidden" : ""}>VIEW MORE</button>
             </div>
             <div class="championship-column">
                 <span class="rev-eyebrow">02 / CONSTRUCTORS</span>
@@ -5004,6 +5410,21 @@ function phase2Render() {
             </div>
         </section>
     `;
+
+  const championshipDriversMore = document.getElementById(
+    "championshipDriversMore",
+  );
+  const championshipDriversRemainingElement = document.getElementById(
+    "championshipDriversRemaining",
+  );
+
+  if (championshipDriversMore && championshipDriversRemainingElement) {
+    championshipDriversMore.onclick = () => {
+      const opening = championshipDriversRemainingElement.hidden;
+      championshipDriversRemainingElement.hidden = !opening;
+      championshipDriversMore.textContent = opening ? "VIEW LESS" : "VIEW MORE";
+    };
+  }
 
   const historySelect = document.getElementById("championshipDriverSelect");
   if (historySelect) {

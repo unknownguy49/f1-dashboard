@@ -366,8 +366,8 @@
               <button class="replay-speed" data-speed="2" type="button">
                 2×
               </button>
-              <button class="replay-speed" data-speed="4" type="button">
-                4×
+              <button class="replay-speed" data-speed="6" type="button">
+                6×
               </button>
             </div>
             <div class="replay-progress-wrap">
@@ -555,6 +555,43 @@
           </section>
 
           <!-- =================================================
+                 PRACTICE RESULTS
+            ================================================== -->
+
+          <section class="section" id="practiceResultsSection">
+            <div class="section-heading">
+              <span class="eyebrow">PRACTICE</span>
+              <h2>Practice Results</h2>
+            </div>
+
+            <div
+              class="session-selector"
+              id="practiceSessionSelector"
+              hidden
+            ></div>
+
+            <div
+              class="classification-remaining"
+              id="practiceResultsVisible"
+            ></div>
+
+            <div
+              class="classification-remaining"
+              id="practiceResultsRemaining"
+              hidden
+            ></div>
+
+            <button
+              class="data-more-button"
+              id="practiceResultsMore"
+              type="button"
+              hidden
+            >
+              VIEW MORE
+            </button>
+          </section>
+
+          <!-- =================================================
                  QUALIFYING
             ================================================== -->
 
@@ -668,7 +705,10 @@
           <div>
             <span class="eyebrow">2026 / THE CALENDAR</span>
             <h2 id="calendarModalTitle">SEASON<br /><i>CALENDAR.</i></h2>
-            <p>Race and qualifying dates across the 2026 season.</p>
+            <p>
+              Practice, sprint, qualifying and race sessions across the 2026
+              season.
+            </p>
           </div>
 
           <button
@@ -696,6 +736,9 @@
             <strong id="calendarUpcomingLegend"></strong>
           </div>
           <div class="season-calendar-session-key">
+            <span><b>P1</b> PRACTICE 1</span>
+            <span><b>P2</b> PRACTICE 2</span>
+            <span><b>P3</b> PRACTICE 3</span>
             <span><b>SQ</b> SPRINT QUALIFYING</span>
             <span><b>S</b> SPRINT</span>
             <span><b>Q</b> QUALIFYING</span>

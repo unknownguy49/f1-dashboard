@@ -192,7 +192,15 @@ async function main() {
   const meetings = await fetchAndCache("meetings", { year: YEAR });
   const sessionGroups = {};
 
-  for (const name of ["Race", "Qualifying", "Sprint", "Sprint Qualifying"]) {
+  for (const name of [
+    "Race",
+    "Qualifying",
+    "Sprint",
+    "Sprint Qualifying",
+    "Practice 1",
+    "Practice 2",
+    "Practice 3",
+  ]) {
     sessionGroups[name] = await fetchAndCache("sessions", {
       year: YEAR,
       session_name: name,
