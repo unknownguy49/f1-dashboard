@@ -1,9 +1,24 @@
 {
   "season": 2026,
-  "refreshedAt": "2026-10-21T20:20:19.611Z",
-  "filesUpdated": 81,
-  "successfulRequests": 260,
+  "refreshedAt": "2026-10-24T09:40:12.088Z",
+  "filesUpdated": 4,
+  "successfulRequests": 262,
   "retries": 0,
-  "requestFailures": 0,
-  "failedRequests": []
+  "requestFailures": 2,
+  "failedRequests": [
+    {
+      "endpoint": "championship_drivers",
+      "params": {
+        "session_key": "latest"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "championship_teams",
+      "params": {
+        "session_key": "latest"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    }
+  ]
 }
