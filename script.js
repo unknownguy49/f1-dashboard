@@ -2835,6 +2835,63 @@ function phase2DriverImage(name) {
     : null;
 }
 
+const overviewDriverImages = {
+  "Alexander Albon": "images/headshots/alex-albon.webp",
+  "Arvid Lindblad": "images/headshots/arvid-lindblad.webp",
+  "Carlos Sainz": "images/headshots/carlos-sainz.webp",
+  "Charles Leclerc": "images/headshots/charles-leclerc.webp",
+  "Esteban Ocon": "images/headshots/esteban-ocon.webp",
+  "Fernando Alonso": "images/headshots/fernando-alonso.webp",
+  "Franco Colapinto": "images/headshots/franco-colapinto.webp",
+  "Gabriel Bortoleto": "images/headshots/gabriel-bortoleto.webp",
+  "George Russell": "images/headshots/george-russell.webp",
+  "Isack Hadjar": "images/headshots/isack-hadjar.webp",
+  "Kimi Antonelli": "images/headshots/kimi-antonelli.webp",
+  "Lance Stroll": "images/headshots/lance-stroll.webp",
+  "Lando Norris": "images/headshots/lando-norris.webp",
+  "Lewis Hamilton": "images/headshots/lewis-hamilton.webp",
+  "Liam Lawson": "images/headshots/liam-lawson.webp",
+  "Max Verstappen": "images/headshots/max-verstappen.webp",
+  "Nico Hulkenberg": "images/headshots/nico-hulkenberg.webp",
+  "Oliver Bearman": "images/headshots/oliver-bearman.webp",
+  "Oscar Piastri": "images/headshots/oscar-piastri.webp",
+  "Pierre Gasly": "images/headshots/pierre-gasly.webp",
+  "Sergio Perez": "images/headshots/sergio-perez.webp",
+  "Valtteri Bottas": "images/headshots/valtteri-bottas.webp",
+  "Driver #22": "images/headshots/driver22.webp",
+};
+
+const overviewTeamImages = {
+  Alpine: "images/teams/alpine.png",
+  "Aston Martin": "images/teams/aston-martin.png",
+  Audi: "images/teams/audi.png",
+  Cadillac: "images/teams/cadillac.png",
+  Ferrari: "images/teams/ferrari.png",
+  Haas: "images/teams/haas.png",
+  McLaren: "images/teams/mclaren.png",
+  Mercedes: "images/teams/mercedes.png",
+  "Racing Bulls": "images/teams/racing-bulls.png",
+  "Red Bull Racing": "images/teams/red-bull.png",
+  "Red Bull": "images/teams/red-bull.png",
+  Williams: "images/teams/williams.png",
+};
+
+function overviewDriverImage(name) {
+  const normalized = String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const match = Object.entries(overviewDriverImages).find(
+    ([driver]) =>
+      driver.trim().toLowerCase().replace(/\s+/g, " ") === normalized,
+  );
+  return match ? match[1] : null;
+}
+
+function overviewTeamImage(name) {
+  return overviewTeamImages[name] || null;
+}
+
 function phase2CalendarEvent(race, type) {
   const config = {
     practice1: { start: race.practice1DateStart, status: race.practice1Status },
@@ -3403,6 +3460,24 @@ function phase2TeamClass(name) {
   if (n.includes("aston martin")) return "astonmartin";
   if (n.includes("cadillac")) return "cadillac";
   return "unknown";
+}
+
+function phase2TeamLogo(name) {
+  const team = phase2TeamClass(name);
+  const logos = {
+    mercedes: "mercedes",
+    ferrari: "ferrari",
+    mclaren: "mclaren",
+    redbull: "red-bull",
+    racingbulls: "racing-bulls",
+    alpine: "alpine",
+    haas: "haas",
+    audi: "audi",
+    williams: "williams",
+    astonmartin: "aston-martin",
+    cadillac: "cadillac",
+  };
+  return logos[team] ? `images/teams/${logos[team]}.png` : "";
 }
 
 /* =====================================================
@@ -5179,10 +5254,14 @@ function phase2RenderChampionshipHistory() {
 
   container.innerHTML = `
         <div class="position-history-header">
-            <div>
-                <span class="rev-eyebrow">DRIVER POSITION / POSITION HISTORY</span>
-                <h3>${phase2Escape(selectedDriver.name)}</h3>
-                <p>${phase2Escape(selectedDriver.team)} · CURRENT CHAMPIONSHIP P${currentPosition}</p>
+            <div class="position-history-identity">
+                <img class="position-history-headshot" src="${phase2Escape(overviewDriverImage(selectedDriver.name) || "")}" alt="" onerror="this.hidden=true">
+                <div>
+                    <span class="rev-eyebrow">DRIVER POSITION / POSITION HISTORY</span>
+                    <h3>${phase2Escape(selectedDriver.name)}</h3>
+                    <p>${phase2Escape(selectedDriver.team)} · CURRENT CHAMPIONSHIP P${currentPosition}</p>
+                </div>
+              </div>
             </div>
             <div class="position-history-stats">
                 <div><span>CURRENT</span><strong>P${currentPosition}</strong></div>
@@ -5220,19 +5299,36 @@ function phase2Render() {
   const standings = (items, limit = items.length) => {
     return `<div class="overview-standings">${items
       .slice(0, limit)
-      .map(
-        (d, i) =>
-          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(d.name)}</strong><small>${E(d.team || "")}</small></div><div class="overview-standing-score"><b>${P(d.points)} <small>PTS</small></b></div></div>`,
-      )
+      .map((d, i) => {
+        const image = overviewDriverImage(d.name);
+        return `<div class="overview-standing">
+          <span>${String(i + 1).padStart(2, "0")}</span>
+          <div class="overview-standing-identity">
+            ${image ? `<img class="overview-standing-headshot" src="${E(image)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}
+            <div class="overview-standing-name">
+              <strong>${E(d.name)}</strong>
+              <small>${E(d.team || "")}</small>
+            </div>
+          </div>
+          <div class="overview-standing-score"><b>${P(d.points)} <small>PTS</small></b></div>
+        </div>`;
+      })
       .join("")}</div>`;
   };
   const teamStandings = (items, limit = 5) => {
     return `<div class="overview-standings overview-teams">${items
       .slice(0, limit)
-      .map(
-        (t, i) =>
-          `<div class="overview-standing"><span>${String(i + 1).padStart(2, "0")}</span><div><strong>${E(t.name)}</strong></div><div class="overview-standing-score"><b>${P(t.points)} <small>PTS</small></b></div></div>`,
-      )
+      .map((t, i) => {
+        const image = overviewTeamImage(t.name);
+        return `<div class="overview-standing">
+          <span>${String(i + 1).padStart(2, "0")}</span>
+          <div class="overview-standing-identity overview-team-identity">
+            ${image ? `<img class="overview-standing-team-logo" src="${E(image)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}
+            <div class="overview-standing-name"><strong>${E(t.name)}</strong></div>
+          </div>
+          <div class="overview-standing-score"><b>${P(t.points)} <small>PTS</small></b></div>
+        </div>`;
+      })
       .join("")}</div>`;
   };
   const heroImage = I(leader?.name);
@@ -5250,6 +5346,7 @@ function phase2Render() {
                 <b>${P(leader?.points)} <small>PTS</small></b>
             </div>
         </div>
+        <img class="overview-hero-championship-image" src="images/championship-leader.png" alt="">
         <div class="overview-hero-number">2026</div>
     </section>
 
@@ -5321,31 +5418,37 @@ function phase2Render() {
     .slice(0, 3)
     .map(
       (d, i) =>
-        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TITLE CONTENDER"} / ${E(d.team)}</span><h3>${E(d.name)}</h3></div>${I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
+        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TITLE CONTENDER"} / ${E(d.team)}</span><h3>${E(d.name)}</h3></div>${overviewDriverImage(d.name) ? `<img src="${E(overviewDriverImage(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
     )
     .join("");
   const remainingDrivers = phase2State.drivers
     .slice(3)
     .map(
       (d, i) =>
-        `<article class="drivers-roster-row"><span class="drivers-roster-pos">${String(i + 4).padStart(2, "0")}</span><div class="drivers-roster-driver"><span>${E(d.team)}</span><h4>${E(d.name)}</h4></div><div class="drivers-roster-number">#${E(d.number)}</div><strong class="drivers-roster-score"><span>${P(d.points)} <small>PTS</small></span></strong></article>`,
+        `<article class="drivers-roster-row">
+        <span class="drivers-roster-pos">${String(i + 4).padStart(2, "0")}</span>
+        ${overviewDriverImage(d.name) ? `<img class="drivers-roster-headshot" src="${E(overviewDriverImage(d.name))}" alt="" loading="lazy">` : ``}
+        <div class="drivers-roster-driver"><span>${E(d.team)}</span><h4>${E(d.name)}</h4></div>
+        <div class="drivers-roster-number">#${E(d.number)}</div>
+        <strong class="drivers-roster-score"><span>${P(d.points)} <small>PTS</small></span></strong>
+      </article>`,
     )
     .join("");
   document.getElementById("driversContent").innerHTML =
-    `<section class="drivers-hero" style="--driver-accent:${phase2TeamColor(leader?.team)}"><div class="drivers-hero-watermark">01</div><div class="drivers-hero-copy"><span class="rev-eyebrow">01 / THE CHAMPIONSHIP LEADER</span><h2>${E(leader?.name || "—")}</h2><p>${E(leader?.team || "—")} / ${P(leader?.points)} POINTS</p></div></section><section class="drivers-featured"><div class="drivers-section-intro"><span class="rev-eyebrow">THE TITLE FIGHT</span><h3>THREE<br><i>FRONT-RUNNERS.</i></h3><p>The drivers currently setting the pace of the 2026 championship.</p></div><div class="drivers-feature-list">${driverFeatures}</div></section><section class="drivers-grid-section"><div class="drivers-section-intro"><span class="rev-eyebrow">THE PURSUIT</span><h3>THE<br><i>GRID.</i></h3><p>Every driver. Every point. Every position.</p></div><div class="drivers-roster">${remainingDrivers}</div></section>`;
+    `<img class="drivers-hero-championship-image" src="images/championship-leader-2.png" alt=""><section class="drivers-hero" style="--driver-accent:${phase2TeamColor(leader?.team)}"><div class="drivers-hero-watermark">01</div><div class="drivers-hero-copy"><span class="rev-eyebrow">01 / THE CHAMPIONSHIP LEADER</span><h2>${E(leader?.name || "—")}</h2><p>${E(leader?.team || "—")} / ${P(leader?.points)} POINTS</p></div></section><section class="drivers-featured"><div class="drivers-section-intro"><span class="rev-eyebrow">THE TITLE FIGHT</span><h3>THREE<br><i>FRONT-RUNNERS.</i></h3><p>The drivers currently setting the pace of the 2026 championship.</p></div><div class="drivers-feature-list">${driverFeatures}</div></section><section class="drivers-grid-section"><div class="drivers-section-intro"><span class="rev-eyebrow">THE PURSUIT</span><h3>THE<br><i>GRID.</i></h3><p>Every driver. Every point. Every position.</p></div><div class="drivers-roster">${remainingDrivers}</div></section>`;
 
   document.getElementById("teamsContent").innerHTML =
-    `<section class="rev-teams-intro"><span class="rev-eyebrow">THE CONSTRUCTOR CHAMPIONSHIP</span><h2>ELEVEN TEAMS.<br><i>ONE CROWN.</i></h2><p>Engineering. Strategy. Two drivers. One result.</p></section><section class="rev-teams-roster">${phase2State.teams
+    `<section class="rev-teams-intro"><img class="rev-teams-hero-mercedes" src="images/teams/mercedes.png" alt="" aria-hidden="true"><span class="rev-eyebrow">THE CONSTRUCTOR CHAMPIONSHIP</span><h2>ELEVEN TEAMS.<br><i>ONE CROWN.</i></h2><p>Engineering. Strategy. Two drivers. One result.</p></section><section class="rev-teams-roster">${phase2State.teams
       .map((t, i) => {
         const pair = phase2State.drivers
           .filter((d) => d.team === t.name)
           .slice(0, 2);
-        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">CONSTRUCTOR</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span>${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score"><span>${P(t.points)}<small>PTS</small></span></strong></article>`;
+        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><img class="rev-team-hero-logo" src="${E(phase2TeamLogo(t.name))}" alt="" aria-hidden="true"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">CONSTRUCTOR</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span>${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score"><span>${P(t.points)}<small>PTS</small></span></strong></article>`;
       })
       .join("")}</section>`;
 
   const renderChampionshipDriver = (d, i) =>
-    `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`;
+    `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><img class="championship-driver-headshot" src="${E(overviewDriverImage(d.name) || "")}" alt="" loading="lazy" onerror="this.hidden=true"><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`;
 
   const championshipDriversVisible = phase2State.drivers
     .slice(0, 11)
@@ -5360,11 +5463,12 @@ function phase2Render() {
   const championshipTeams = phase2State.teams
     .map(
       (t, i) =>
-        `<article class="championship-standing-row championship-team-row team-${phase2TeamClass(t.name)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><div class="championship-standing-driver"><strong>${E(t.name)}</strong></div><b class="championship-standing-score"><span>${P(t.points)}<small>PTS</small></span></b></article>`,
+        `<article class="championship-standing-row championship-team-row team-${phase2TeamClass(t.name)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><img class="championship-team-logo" src="${E(phase2TeamLogo(t.name) || "")}" alt="" loading="lazy" onerror="this.hidden=true"><div class="championship-standing-driver"><strong>${E(t.name)}</strong></div><b class="championship-standing-score"><span>${P(t.points)}<small>PTS</small></span></b></article>`,
     )
     .join("");
   document.getElementById("championshipContent").innerHTML = `
         <section class="championship-hero">
+            <img class="championship-hero-trophy" src="images/championship-trophy.png" alt="" aria-hidden="true">
             <div class="championship-hero-watermark">2026</div>
             <div class="championship-hero-copy">
                 <span class="rev-eyebrow">2026 / WORLD CHAMPIONSHIP</span>

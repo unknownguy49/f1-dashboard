@@ -4098,7 +4098,7 @@ main.dashboard-mode .drivers-roster-row {
     min-height: 540px;
   }
   #dashboardChampionship .championship-hero-watermark {
-    right: -2vw;
+    right: 0;
   }
   #dashboardChampionship .championship-standings {
     display: block;
@@ -9397,4 +9397,474 @@ body {
 /* Hide race-calendar paging controls when no calendar is available. */
 .navigation-controls[hidden] {
   display: none !important;
+}
+
+.overview-standing {
+  position: relative;
+  min-height: 0;
+}
+
+.overview-standing-identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.overview-standing-name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.overview-standing-name strong {
+  overflow-wrap: anywhere;
+}
+
+.overview-standing-headshot {
+  transform: translateY(14px);
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.overview-standing-team-logo {
+  margin-top: 6px;
+  transform: translateY(10px);
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  object-fit: cover;
+}
+
+.overview-team-identity {
+  gap: 14px;
+}
+
+.overview-standing-headshot[hidden],
+.overview-standing-team-logo[hidden] {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .overview-standing-headshot {
+    transform: translateY(17px);
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+  }
+
+  .overview-standing-team-logo {
+    margin-top: 10px;
+    transform: translateY(8px);
+    width: 34px;
+    height: 28px;
+    flex-basis: 34px;
+  }
+
+  .overview-standing-identity {
+    gap: 8px;
+  }
+}
+
+/* Overview standings: preserve compact row geometry with images */
+#dashboardOverview .overview-standing {
+  box-sizing: border-box;
+  height: 66px;
+  min-height: 66px;
+  padding: 0;
+  grid-template-columns: 35px minmax(0, 1fr) 60px;
+  gap: 15px;
+  align-items: center;
+}
+#dashboardOverview .overview-standing-identity {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  height: 100%;
+}
+#dashboardOverview .overview-standing-name {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+#dashboardOverview .overview-standing-name strong {
+  min-width: 0;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+#dashboardOverview .overview-standing-name small {
+  display: inline;
+  margin: 0;
+}
+#dashboardOverview .overview-standing-headshot {
+  display: block;
+  position: static;
+  flex: 0 0 36px;
+  width: 36px;
+  min-width: 36px;
+  max-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  object-fit: cover;
+  border-radius: 50%;
+  opacity: 1;
+}
+#dashboardOverview .overview-standing-team-logo {
+  display: block;
+  position: static;
+  flex: 0 0 30px;
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  max-height: 30px;
+  object-fit: contain;
+  opacity: 1;
+}
+#dashboardOverview .overview-standing-score {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+#dashboardOverview .overview-standing-score b {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  #dashboardOverview .overview-standing {
+    height: 66px;
+    min-height: 66px;
+    grid-template-columns: 25px minmax(0, 1fr) 54px;
+    gap: 8px;
+  }
+  #dashboardOverview .overview-standing-identity {
+    gap: 8px;
+  }
+  #dashboardOverview .overview-standing-headshot {
+    flex-basis: 32px;
+    width: 32px;
+    min-width: 32px;
+    max-width: 32px;
+    height: 32px;
+    min-height: 32px;
+    max-height: 32px;
+  }
+  #dashboardOverview .overview-standing-team-logo {
+    flex-basis: 28px;
+    width: 28px;
+    min-width: 28px;
+    max-width: 28px;
+    height: 28px;
+    min-height: 28px;
+    max-height: 28px;
+  }
+  #dashboardOverview .overview-standing-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  #dashboardOverview .overview-standing-name strong {
+    white-space: normal;
+  }
+}
+
+.overview-hero-new {
+  position: relative;
+  isolation: isolate;
+}
+
+.overview-hero-championship-image {
+  position: absolute;
+  top: -400px;
+  right: 0%;
+  transform: none;
+  width: clamp(220px, 28vw, 440px);
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@media (max-width: 768px) {
+  .overview-hero-championship-image {
+    display: none;
+  }
+}
+
+#dashboardOverview .overview-hero-new {
+  overflow: visible !important;
+}
+
+.overview-hero-championship-image {
+  transform: scale(0.73);
+}
+
+.drivers-feature-row img {
+  height: 220px;
+  width: 220px;
+  transform: translateX(-50px);
+}
+
+.drivers-roster-row {
+  position: relative;
+}
+
+.drivers-roster-headshot {
+  position: absolute;
+  left: 58px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.drivers-roster-driver {
+  margin-left: 52px;
+}
+
+@media (max-width: 700px) {
+  .drivers-feature-row img {
+    height: 100px;
+    width: 100px;
+    transform: translateX(-40px);
+  }
+
+  .drivers-roster-headshot {
+    width: 34px;
+    height: 34px;
+    left: 22px;
+  }
+
+  .drivers-roster-driver {
+    margin-left: 38px;
+  }
+}
+
+.drivers-feature-row:hover > img {
+  transform: translateX(-50px) translateY(-7px) scale(1.035);
+}
+
+@media (max-width: 700px) {
+  .drivers-feature-row:hover > img {
+    transform: translateX(-40px) translateY(-7px) scale(1.035);
+  }
+}
+
+#driversContent {
+  position: relative;
+  overflow: visible !important;
+}
+
+#dashboardDrivers {
+  position: relative;
+}
+
+#driversContent > img.drivers-hero-championship-image {
+  position: absolute;
+  top: -330px;
+  right: 0;
+  width: clamp(220px, 28vw, 440px);
+  height: auto;
+  object-fit: contain;
+  transform: scale(0.8);
+  filter: none;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#dashboardDrivers .drivers-hero {
+  overflow: visible !important;
+}
+
+@media (max-width: 768px) {
+  #driversContent > img.drivers-hero-championship-image {
+    display: none !important;
+  }
+}
+
+#dashboardTeams .rev-team-feature {
+  position: relative;
+}
+
+#dashboardTeams .rev-team-hero-logo {
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  width: clamp(180px, 22vw, 340px);
+  height: clamp(100px, 13vw, 190px);
+  object-fit: contain;
+  object-position: center;
+  transform: translateY(-50%);
+  opacity: 0.16;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#dashboardTeams .rev-team-feature > .rev-pos,
+#dashboardTeams .rev-team-feature > .rev-team-title,
+#dashboardTeams .rev-team-feature > .rev-team-visual,
+#dashboardTeams .rev-team-feature > .rev-team-score {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 700px) {
+  #dashboardTeams .rev-team-hero-logo {
+    left: 45%;
+    width: 130px;
+    height: auto;
+    opacity: 0.05;
+  }
+}
+
+.rev-teams-intro {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.rev-teams-intro > .rev-teams-hero-mercedes {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 35%;
+  width: clamp(240px, 32vw, 480px);
+  height: auto;
+  object-fit: contain;
+  transform: translateY(-65%) scale(0.9);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.rev-teams-intro > .rev-eyebrow,
+.rev-teams-intro > h2,
+.rev-teams-intro > p {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .rev-teams-intro > .rev-teams-hero-mercedes {
+    display: none;
+  }
+}
+
+.championship-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: visible !important;
+}
+
+.championship-hero-trophy {
+  position: absolute;
+  z-index: 1;
+  top: 20%;
+  right: 0;
+  width: clamp(260px, 34vw, 500px);
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  transform: translateY(-50%);
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+.championship-hero-watermark {
+  z-index: 0;
+}
+
+.championship-hero-copy {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .championship-hero-trophy {
+    display: none !important;
+  }
+}
+
+#dashboardChampionship .championship-standing-row {
+  grid-template-columns: 2px 32px 48px minmax(0, 1fr) auto;
+  gap: 14px;
+}
+
+#dashboardChampionship .championship-driver-headshot {
+  display: block;
+  width: 80px;
+  height: auto;
+  object-fit: contain;
+  object-position: center bottom;
+  align-self: end;
+}
+
+#dashboardChampionship .championship-team-logo {
+  display: block;
+  width: 70px;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+#dashboardChampionship .position-history-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+#dashboardChampionship .position-history-identity > div {
+  min-width: 0;
+}
+
+#dashboardChampionship .position-history-headshot {
+  display: block;
+  flex: 0 0 auto;
+  width: 100px;
+  height: auto;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+@media (max-width: 700px) {
+  #dashboardChampionship .championship-standing-row {
+    grid-template-columns: 2px 22px 32px minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  #dashboardChampionship .championship-driver-headshot {
+    width: 70px;
+    height: auto;
+  }
+
+  #dashboardChampionship .championship-team-logo {
+    width: 60px;
+    height: auto;
+  }
+
+  #dashboardChampionship .championship-standing-row > b {
+    font-size: 15px;
+  }
+
+  #dashboardChampionship .position-history-headshot {
+    width: 90px;
+    height: auto;
+  }
+
+  #dashboardChampionship .position-history-identity {
+    gap: 10px;
+  }
 }
