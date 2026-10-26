@@ -2016,7 +2016,7 @@ function createPodiumCard(driver) {
                 </span>
 
 
-                <h3>
+                <h3 data-h2h-driver="${driver.number}">
                     ${driver.driver}
                 </h3>
 
@@ -2136,7 +2136,7 @@ function createClassificationCard(driver) {
             <div class="classification-position">${String(driver.position).padStart(2, "0")}</div>
             <div class="classification-driver">
                 <span>#${driver.number}</span>
-                <strong>${driver.driver}</strong>
+                <strong data-h2h-driver="${driver.number}">${driver.driver}</strong>
                 <small>${driver.team}</small>
             </div>
             <div class="classification-status">${driver.dsq ? "DSQ" : driver.dnf ? "DNF" : driver.dns ? "DNS" : driver.gap ? driver.gap : "FINISHED"}</div>
@@ -2149,7 +2149,7 @@ function createClassificationRow(driver) {
         <div class="classification-row team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
             <span class="classification-row-position">${String(driver.position).padStart(2, "0")}</span>
             <div>
-                <strong>${driver.driver}</strong>
+                <strong data-h2h-driver="${driver.number}">${driver.driver}</strong>
                 <span>${driver.team}</span>
             </div>
             <span>${driver.dsq ? "DSQ" : driver.dnf ? "DNF" : driver.dns ? "DNS" : driver.gap || "—"}</span>
@@ -2270,7 +2270,7 @@ function createQualifyingCard(driver, position = null) {
   return `
         <article class="qualifying-card team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
             <span class="qualifying-position">${String(driver.position).padStart(2, "0")}</span>
-            <div><strong>${driver.driver}</strong><small>${driver.team}</small></div>
+            <div><strong data-h2h-driver="${driver.number}">${driver.driver}</strong><small>${driver.team}</small></div>
             <b>${driver.time}</b>
         </article>
     `;
@@ -2281,7 +2281,7 @@ function createQualifyingRow(driver) {
         <div class="qualifying-row team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
             <span>${String(driver.position).padStart(2, "0")}</span>
             <div>
-                <strong>${driver.driver}</strong>
+                <strong data-h2h-driver="${driver.number}">${driver.driver}</strong>
                 <small>${driver.team}</small>
             </div>
             <span>${driver.time || "—"}</span>
@@ -5306,7 +5306,7 @@ function phase2Render() {
           <div class="overview-standing-identity">
             ${image ? `<img class="overview-standing-headshot" src="${E(image)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}
             <div class="overview-standing-name">
-              <strong>${E(d.name)}</strong>
+              <strong data-h2h-driver="${d.number}">${E(d.name)}</strong>
               <small>${E(d.team || "")}</small>
             </div>
           </div>
@@ -5342,7 +5342,7 @@ function phase2Render() {
             <p class="overview-hero-description">Twenty-two drivers. Eleven teams. One championship still to be decided.</p>
             <div class="overview-leader-line">
                 <span>CHAMPIONSHIP LEADER</span>
-                <strong>${E(leader?.name || "—")}</strong>
+                <strong data-h2h-driver="${leader?.number || ""}">${E(leader?.name || "—")}</strong>
                 <b>${P(leader?.points)} <small>PTS</small></b>
             </div>
         </div>
@@ -5418,7 +5418,7 @@ function phase2Render() {
     .slice(0, 3)
     .map(
       (d, i) =>
-        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TITLE CONTENDER"} / ${E(d.team)}</span><h3>${E(d.name)}</h3></div>${overviewDriverImage(d.name) ? `<img src="${E(overviewDriverImage(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
+        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TITLE CONTENDER"} / ${E(d.team)}</span><h3 data-h2h-driver="${d.number}">${E(d.name)}</h3></div>${overviewDriverImage(d.name) ? `<img src="${E(overviewDriverImage(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
     )
     .join("");
   const remainingDrivers = phase2State.drivers
@@ -5428,7 +5428,7 @@ function phase2Render() {
         `<article class="drivers-roster-row">
         <span class="drivers-roster-pos">${String(i + 4).padStart(2, "0")}</span>
         ${overviewDriverImage(d.name) ? `<img class="drivers-roster-headshot" src="${E(overviewDriverImage(d.name))}" alt="" loading="lazy">` : ``}
-        <div class="drivers-roster-driver"><span>${E(d.team)}</span><h4>${E(d.name)}</h4></div>
+        <div class="drivers-roster-driver"><span>${E(d.team)}</span><h4 data-h2h-driver="${d.number}">${E(d.name)}</h4></div>
         <div class="drivers-roster-number">#${E(d.number)}</div>
         <strong class="drivers-roster-score"><span>${P(d.points)} <small>PTS</small></span></strong>
       </article>`,
@@ -5443,12 +5443,12 @@ function phase2Render() {
         const pair = phase2State.drivers
           .filter((d) => d.team === t.name)
           .slice(0, 2);
-        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><img class="rev-team-hero-logo" src="${E(phase2TeamLogo(t.name))}" alt="" aria-hidden="true"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">CONSTRUCTOR</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span>${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score"><span>${P(t.points)}<small>PTS</small></span></strong></article>`;
+        return `<article class="rev-team-feature ${phase2TeamClass(t.name)}"><img class="rev-team-hero-logo" src="${E(phase2TeamLogo(t.name))}" alt="" aria-hidden="true"><span class="rev-pos">${String(i + 1).padStart(2, "0")}</span><div class="rev-team-title"><span class="rev-eyebrow">CONSTRUCTOR</span><h3>${E(t.name)}</h3><div class="rev-team-pair">${pair.map((d) => `<span data-h2h-driver="${d.number}">${E(d.name)} <b>${P(d.points)}</b></span>`).join("")}</div></div><div class="rev-team-visual">${pair.map((d) => (I(d.name) ? `<img src="${E(I(d.name))}" alt="${E(d.name)}">` : ``)).join("")}</div><strong class="rev-team-score"><span>${P(t.points)}<small>PTS</small></span></strong></article>`;
       })
       .join("")}</section>`;
 
   const renderChampionshipDriver = (d, i) =>
-    `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><img class="championship-driver-headshot" src="${E(overviewDriverImage(d.name) || "")}" alt="" loading="lazy" onerror="this.hidden=true"><div class="championship-standing-driver"><strong>${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`;
+    `<article class="championship-standing-row team-${phase2TeamClass(d.team)}"><span class="championship-standing-accent"></span><span class="championship-standing-pos">${String(i + 1).padStart(2, "0")}</span><img class="championship-driver-headshot" src="${E(overviewDriverImage(d.name) || "")}" alt="" loading="lazy" onerror="this.hidden=true"><div class="championship-standing-driver"><strong data-h2h-driver="${d.number}">${E(d.name)}</strong><span>${E(d.team || "—")}</span></div><b class="championship-standing-score"><span>${P(d.points)}<small>PTS</small></span></b></article>`;
 
   const championshipDriversVisible = phase2State.drivers
     .slice(0, 11)
@@ -5555,6 +5555,1670 @@ function phase2TeamColor(name) {
   if (n.includes("haas")) return "#9e9e9e";
   return "#a1a1a1";
 }
+
+/* =====================================================
+   HEAD-TO-HEAD COMPARISON
+===================================================== */
+const h2hState = {
+  initialized: false,
+  loading: false,
+  driverA: null,
+  driverB: null,
+  pendingDriver: null,
+  requestId: 0,
+  requestCache: new Map(),
+  sessionData: new Map(),
+  comparison: null,
+  popupDriver: null,
+  popupAnchor: null,
+  popupTouch: false,
+  popupHideTimer: null,
+};
+
+const h2hElements = {
+  content: document.getElementById("headToHeadContent"),
+  selectA: document.getElementById("h2hDriverA"),
+  selectB: document.getElementById("h2hDriverB"),
+};
+
+function h2hEscape(value) {
+  return String(value ?? "—").replace(
+    /[&<>'"]/g,
+    (char) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;",
+      })[char],
+  );
+}
+
+function h2hNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function h2hImage(driver) {
+  return (
+    overviewDriverImage(driver?.name) || phase2DriverImage(driver?.name) || ""
+  );
+}
+
+function h2hDrivers() {
+  const source = Array.isArray(phase2State.drivers) ? phase2State.drivers : [];
+  return source
+    .filter((driver) => Number.isFinite(Number(driver.number)))
+    .map((driver) => ({
+      ...driver,
+      number: Number(driver.number),
+      points: h2hNumber(driver.points),
+      position: h2hNumber(driver.position),
+    }));
+}
+
+function h2hRenderSelectorOptions() {
+  const drivers = h2hDrivers();
+  [h2hElements.selectA, h2hElements.selectB].forEach((select) => {
+    if (!select) return;
+    const current = select.value;
+    select.innerHTML = `<option value="">Select driver</option>${drivers
+      .map(
+        (driver) =>
+          `<option value="${driver.number}">${h2hEscape(driver.name)}${driver.team ? ` — ${h2hEscape(driver.team)}` : ""}</option>`,
+      )
+      .join("")}`;
+    if (drivers.some((driver) => String(driver.number) === current))
+      select.value = current;
+  });
+  h2hSyncSelectors();
+}
+
+function h2hSyncSelectors() {
+  if (!h2hElements.selectA || !h2hElements.selectB) return;
+  const a = h2hElements.selectA.value;
+  const b = h2hElements.selectB.value;
+  Array.from(h2hElements.selectA.options).forEach((option) => {
+    option.disabled = Boolean(option.value && option.value === b);
+  });
+  Array.from(h2hElements.selectB.options).forEach((option) => {
+    option.disabled = Boolean(option.value && option.value === a);
+  });
+  h2hState.driverA = a ? Number(a) : null;
+  h2hState.driverB = b ? Number(b) : null;
+}
+
+function h2hBaseSelectors() {
+  const content = h2hElements.content;
+  if (!content) return;
+  document.querySelector(".h2h-page")?.classList.remove("h2h-has-comparison");
+  content.innerHTML = `
+    <div class="h2h-selectors">
+      <label class="h2h-driver-select"><span>DRIVER A</span><select id="h2hDriverA" aria-label="Select Driver A"><option value="">Select driver</option></select></label>
+      <span class="h2h-versus" aria-hidden="true">VS</span>
+      <label class="h2h-driver-select"><span>DRIVER B</span><select id="h2hDriverB" aria-label="Select Driver B"><option value="">Select driver</option></select></label>
+    </div>
+    <p class="h2h-instruction">Select two drivers to begin the comparison.</p>`;
+  h2hElements.selectA = document.getElementById("h2hDriverA");
+  h2hElements.selectB = document.getElementById("h2hDriverB");
+  h2hRenderSelectorOptions();
+}
+
+function h2hRenderState(title, message, retry = false) {
+  const content = h2hElements.content;
+  if (!content) return;
+
+  const selectedA = h2hState.driverA;
+  const selectedB = h2hState.driverB;
+
+  h2hBaseSelectors();
+
+  if (h2hElements.selectA) {
+    h2hElements.selectA.value = selectedA ? String(selectedA) : "";
+  }
+
+  if (h2hElements.selectB) {
+    h2hElements.selectB.value = selectedB ? String(selectedB) : "";
+  }
+
+  h2hSyncSelectors();
+
+  content.insertAdjacentHTML(
+    "beforeend",
+    `<div class="h2h-state" role="status">
+      <h2>${h2hEscape(title)}</h2>
+      <p>${h2hEscape(message)}</p>
+      ${retry ? `<button class="h2h-retry" type="button" data-h2h-retry>TRY AGAIN</button>` : ""}
+    </div>`,
+  );
+}
+
+function h2hRenderLoadingState(driverA, driverB) {
+  h2hBaseSelectors();
+  h2hRenderSelectorOptions();
+  h2hElements.selectA.value = String(driverA);
+  h2hElements.selectB.value = String(driverB);
+  h2hSyncSelectors();
+  h2hElements.content.insertAdjacentHTML(
+    "beforeend",
+    `<div class="h2h-state" role="status"><h2>Loading comparison</h2><p>Loading completed race, qualifying, sprint and championship records from OpenF1 and the project cache.</p></div>`,
+  );
+}
+
+async function h2hWithTimeout(promise, timeoutMs, label) {
+  let timer;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((resolve, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`${label} timed out`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+async function h2hCachedFetch(path, params = {}) {
+  const key = `${path}|${JSON.stringify(Object.entries(params).sort(([a], [b]) => a.localeCompare(b)))}`;
+  if (h2hState.requestCache.has(key)) return h2hState.requestCache.get(key);
+  const request = (async () => {
+    let cached = null;
+    try {
+      cached = await h2hWithTimeout(
+        openF1GetCachedData(path, params),
+        5000,
+        "Cached OpenF1 lookup",
+      );
+    } catch (error) {
+      console.warn("Head-to-head cache lookup failed:", error);
+    }
+    if (cached && Array.isArray(cached.data)) return cached.data;
+    const data = await h2hWithTimeout(
+      fetchOpenF1(path, params, { allow404: true }),
+      18000,
+      "OpenF1 request",
+    );
+    return Array.isArray(data) ? data : [];
+  })();
+  h2hState.requestCache.set(key, request);
+  try {
+    return await request;
+  } catch (error) {
+    h2hState.requestCache.delete(key);
+    throw error;
+  }
+}
+
+function h2hCompletedRaces() {
+  const now = Date.now();
+  return races
+    .filter(
+      (race) =>
+        race.sessionKey &&
+        !race.isCancelled &&
+        (race.status === "COMPLETED" ||
+          (Number.isFinite(Date.parse(race.dateEnd || "")) &&
+            Date.parse(race.dateEnd) < now)),
+    )
+    .sort((a, b) => a.round - b.round);
+}
+
+function h2hDriverRecord(driverNumber, records) {
+  return (
+    records.find(
+      (record) => Number(record.driver_number) === Number(driverNumber),
+    ) || null
+  );
+}
+
+function h2hResultStatus(result) {
+  if (!result) return "NO RESULT";
+  if (result.dsq === true) return "DSQ";
+  if (result.dns === true) return "DNS";
+  if (result.dnf === true) return "DNF";
+  const position = h2hNumber(result.position);
+  if (position !== null && position > 0) return `P${position}`;
+  if (result.status && String(result.status).trim())
+    return String(result.status).toUpperCase();
+  return "RESULT UNAVAILABLE";
+}
+
+function h2hResultPosition(result) {
+  if (!result || result.dsq === true || result.dns === true) return null;
+  const position = h2hNumber(result.position);
+  return Number.isInteger(position) && position > 0 ? position : null;
+}
+
+function h2hQualifyingPosition(result) {
+  return h2hResultPosition(result);
+}
+
+function h2hQualifyingReachedQ3(result) {
+  if (!result) return null;
+  const duration = result.duration;
+  if (Array.isArray(duration))
+    return (
+      duration.length >= 3 &&
+      duration[2] !== null &&
+      duration[2] !== undefined &&
+      duration[2] !== ""
+    );
+  return null;
+}
+
+function h2hRacePointsFromSnapshots(raceRecords, snapshots, driverA, driverB) {
+  let previous = null;
+  return raceRecords.map((race, index) => {
+    const snapshot = snapshots[index];
+    const rowA = snapshot ? h2hDriverRecord(driverA, snapshot) : null;
+    const rowB = snapshot ? h2hDriverRecord(driverB, snapshot) : null;
+    const currentA = h2hNumber(rowA?.points_current);
+    const currentB = h2hNumber(rowB?.points_current);
+    const startA = h2hNumber(rowA?.points_start);
+    const startB = h2hNumber(rowB?.points_start);
+    let weekendA = null;
+    let weekendB = null;
+    if (currentA !== null && currentB !== null) {
+      if (race.round === 1 && startA !== null && startB !== null) {
+        weekendA = currentA - startA;
+        weekendB = currentB - startB;
+      } else if (
+        previous &&
+        previous.index === index - 1 &&
+        previous.a !== null &&
+        previous.b !== null
+      ) {
+        weekendA = currentA - previous.a;
+        weekendB = currentB - previous.b;
+      }
+    }
+    const point = {
+      round: race.round,
+      name: race.shortName || race.name || `Round ${race.round}`,
+      date: race.dateStart || race.date,
+      cumulativeA: currentA,
+      cumulativeB: currentB,
+      weekendA,
+      weekendB,
+      gapCumulative:
+        currentA !== null && currentB !== null ? currentA - currentB : null,
+      gapWeekend:
+        weekendA !== null && weekendB !== null ? weekendA - weekendB : null,
+    };
+    previous =
+      currentA !== null && currentB !== null
+        ? { index, a: currentA, b: currentB }
+        : null;
+    return point;
+  });
+}
+
+async function h2hLoadPair(driverA, driverB, requestId) {
+  const completed = h2hCompletedRaces();
+  if (!completed.length) {
+    return {
+      races: [],
+      events: [],
+      statsA: h2hEmptyStats(),
+      statsB: h2hEmptyStats(),
+      points: [],
+      noCompletedRaces: true,
+    };
+  }
+
+  const sessionJobs = [];
+  for (const race of completed) {
+    sessionJobs.push(
+      (async () => {
+        const [raceResults, qualifyingResults, sprintResults, championship] =
+          await Promise.all([
+            h2hCachedFetch("session_result", {
+              session_key: race.sessionKey,
+            }).catch(() => null),
+            race.qualifyingSessionKey && race.qualifyingStatus !== "UPCOMING"
+              ? h2hCachedFetch("session_result", {
+                  session_key: race.qualifyingSessionKey,
+                }).catch(() => null)
+              : Promise.resolve(null),
+            race.sprintSessionKey && race.sprintStatus !== "UPCOMING"
+              ? h2hCachedFetch("session_result", {
+                  session_key: race.sprintSessionKey,
+                }).catch(() => null)
+              : Promise.resolve(null),
+            h2hCachedFetch("championship_drivers", {
+              session_key: race.sessionKey,
+            }).catch(() => null),
+          ]);
+        if (requestId !== h2hState.requestId) return null;
+        return {
+          race,
+          raceResults,
+          qualifyingResults,
+          sprintResults,
+          championship,
+        };
+      })(),
+    );
+  }
+  const sessions = (await Promise.all(sessionJobs)).filter(Boolean);
+  if (requestId !== h2hState.requestId) return null;
+
+  const statsA = h2hEmptyStats();
+  const statsB = h2hEmptyStats();
+  const eventRows = [];
+
+  for (const session of sessions) {
+    const {
+      race,
+      raceResults,
+      qualifyingResults,
+      sprintResults,
+      championship,
+    } = session;
+    const aRace = Array.isArray(raceResults)
+      ? h2hDriverRecord(driverA, raceResults)
+      : null;
+    const bRace = Array.isArray(raceResults)
+      ? h2hDriverRecord(driverB, raceResults)
+      : null;
+    const aQual = Array.isArray(qualifyingResults)
+      ? h2hDriverRecord(driverA, qualifyingResults)
+      : null;
+    const bQual = Array.isArray(qualifyingResults)
+      ? h2hDriverRecord(driverB, qualifyingResults)
+      : null;
+    const aSprint = Array.isArray(sprintResults)
+      ? h2hDriverRecord(driverA, sprintResults)
+      : null;
+    const bSprint = Array.isArray(sprintResults)
+      ? h2hDriverRecord(driverB, sprintResults)
+      : null;
+
+    if (Array.isArray(raceResults) && raceResults.length && !aRace)
+      statsA.raceDriverDataComplete = false;
+    if (Array.isArray(raceResults) && raceResults.length && !bRace)
+      statsB.raceDriverDataComplete = false;
+    if (
+      race.qualifyingSessionKey &&
+      Array.isArray(qualifyingResults) &&
+      qualifyingResults.length &&
+      !aQual
+    )
+      statsA.qualifyingDriverDataComplete = false;
+    if (
+      race.qualifyingSessionKey &&
+      Array.isArray(qualifyingResults) &&
+      qualifyingResults.length &&
+      !bQual
+    )
+      statsB.qualifyingDriverDataComplete = false;
+    if (aQual && h2hQualifyingReachedQ3(aQual) === null)
+      statsA.q3DataComplete = false;
+    if (bQual && h2hQualifyingReachedQ3(bQual) === null)
+      statsB.q3DataComplete = false;
+    if (
+      race.sprintSessionKey &&
+      Array.isArray(sprintResults) &&
+      sprintResults.length &&
+      !aSprint
+    )
+      statsA.sprintDriverDataComplete = false;
+    if (
+      race.sprintSessionKey &&
+      Array.isArray(sprintResults) &&
+      sprintResults.length &&
+      !bSprint
+    )
+      statsB.sprintDriverDataComplete = false;
+
+    [
+      [statsA, aRace],
+      [statsB, bRace],
+    ].forEach(([stats, result]) => {
+      if (!result) return;
+      const position = h2hResultPosition(result);
+      if (position === 1) stats.wins += 1;
+      if (position !== null && position <= 3) stats.podiums += 1;
+      if (position !== null && position <= 10) stats.pointsFinishes += 1;
+      if (result.dnf === true) stats.dnfs += 1;
+      if (position !== null)
+        stats.bestRace =
+          stats.bestRace === null
+            ? position
+            : Math.min(stats.bestRace, position);
+      if (result.dns === true) stats.dns += 1;
+      if (result.dsq === true) stats.dsqs += 1;
+    });
+    [
+      [statsA, aSprint],
+      [statsB, bSprint],
+    ].forEach(([stats, result]) => {
+      if (!result) return;
+      const position = h2hResultPosition(result);
+      if (position === 1) stats.sprintWins += 1;
+      if (position !== null && position <= 3) stats.sprintPodiums += 1;
+    });
+    [
+      [statsA, aQual],
+      [statsB, bQual],
+    ].forEach(([stats, result]) => {
+      if (!result) return;
+      const position = h2hQualifyingPosition(result);
+      if (position === 1) stats.poles += 1;
+      if (position !== null)
+        stats.bestQualifying =
+          stats.bestQualifying === null
+            ? position
+            : Math.min(stats.bestQualifying, position);
+      if (h2hQualifyingReachedQ3(result) === true) stats.q3 += 1;
+    });
+
+    eventRows.push({
+      race,
+      aRace,
+      bRace,
+      aQual,
+      bQual,
+      aSprint,
+      bSprint,
+      raceFieldSize: Array.isArray(raceResults) ? raceResults.length : null,
+      qualifyingFieldSize: Array.isArray(qualifyingResults)
+        ? qualifyingResults.length
+        : null,
+      sprintFieldSize: Array.isArray(sprintResults)
+        ? sprintResults.length
+        : null,
+      championship: Array.isArray(championship) ? championship : null,
+      raceResultsAvailable:
+        Array.isArray(raceResults) && raceResults.length > 0,
+      qualifyingAvailable:
+        Array.isArray(qualifyingResults) && qualifyingResults.length > 0,
+      sprintAvailable: Array.isArray(sprintResults) && sprintResults.length > 0,
+    });
+  }
+
+  const raceResultsComplete = eventRows.every(
+    (event) => event.raceResultsAvailable,
+  );
+  const qualifyingEvents = eventRows.filter(
+    (event) => event.race.qualifyingSessionKey,
+  );
+  const qualifyingResultsComplete = qualifyingEvents.every(
+    (event) => event.qualifyingAvailable,
+  );
+  const sprintEvents = eventRows.filter((event) => event.race.sprintSessionKey);
+  const sprintResultsComplete = sprintEvents.every(
+    (event) => event.sprintAvailable,
+  );
+  [statsA, statsB].forEach((stats) => {
+    stats.raceResultsComplete = raceResultsComplete;
+    stats.qualifyingResultsComplete = qualifyingResultsComplete;
+    stats.sprintResultsComplete = sprintResultsComplete;
+  });
+
+  const points = h2hRacePointsFromSnapshots(
+    completed,
+    completed.map((race) => {
+      const found = sessions.find(
+        (session) => session.race.round === race.round,
+      );
+      return found &&
+        Array.isArray(found.championship) &&
+        found.championship.length
+        ? found.championship
+        : null;
+    }),
+    driverA,
+    driverB,
+  );
+  return {
+    races: completed,
+    events: eventRows,
+    statsA,
+    statsB,
+    points,
+    noCompletedRaces: false,
+  };
+}
+
+function h2hEmptyStats() {
+  return {
+    wins: 0,
+    podiums: 0,
+    pointsFinishes: 0,
+    poles: 0,
+    q3: 0,
+    bestRace: null,
+    bestQualifying: null,
+    sprintWins: 0,
+    sprintPodiums: 0,
+    dnfs: 0,
+    dns: 0,
+    dsqs: 0,
+    raceDriverDataComplete: true,
+    qualifyingDriverDataComplete: true,
+    sprintDriverDataComplete: true,
+    q3DataComplete: true,
+    raceResultsComplete: true,
+    qualifyingResultsComplete: true,
+    sprintResultsComplete: true,
+  };
+}
+
+function h2hSvgChart(points, series, options = {}) {
+  const width = 640,
+    height = 250,
+    left = 42,
+    right = 14,
+    top = 14,
+    bottom = 34;
+  const plotW = width - left - right,
+    plotH = height - top - bottom;
+  const all = points
+    .flatMap((point) => series.map((item) => point[item.key]))
+    .filter((value) => Number.isFinite(value));
+  if (!all.length)
+    return `<div class="h2h-state"><h2>Points history unavailable</h2><p>The cached championship snapshots do not contain enough historical points data for this chart.</p></div>`;
+  let min = options.zeroBased ? 0 : Math.min(...all);
+  let max = Math.max(...all);
+  if (options.includeZero) {
+    min = Math.min(min, 0);
+    max = Math.max(max, 0);
+  }
+  if (max === min) {
+    max += 1;
+    if (!options.zeroBased) min -= 1;
+  }
+  const padding = (max - min) * 0.12;
+  if (!options.zeroBased) {
+    min -= padding;
+    max += padding;
+  } else max += padding;
+  const x = (i) =>
+    left + (points.length <= 1 ? plotW / 2 : (i * plotW) / (points.length - 1));
+  const y = (value) => top + ((max - value) / (max - min)) * plotH;
+  const gridValues = options.includeZero
+    ? [
+        ...new Set(
+          [min, 0, (min + max) / 2, max].filter((v) => Number.isFinite(v)),
+        ),
+      ]
+    : [min, min + (max - min) / 2, max];
+  const grid = gridValues
+    .map(
+      (v) =>
+        `<line class="${v === 0 ? "h2h-zero" : "h2h-grid"}" x1="${left}" x2="${width - right}" y1="${y(v)}" y2="${y(v)}"></line><text x="${left - 8}" y="${y(v) + 3}" text-anchor="end">${h2hEscape(Number(v.toFixed(1)))}</text>`,
+    )
+    .join("");
+  const labelIndices =
+    points.length <= 12
+      ? points.map((point, index) => index)
+      : [
+          ...points
+            .map((point, index) => index)
+            .filter((index) => index % 2 === 0),
+          points.length - 1,
+        ].filter((index, position, list) => list.indexOf(index) === position);
+  const labels = labelIndices
+    .map(
+      (i) =>
+        `<text x="${x(i)}" y="${height - 12}" text-anchor="middle">${h2hEscape(`R${points[i].round}`)}</text>`,
+    )
+    .join("");
+  const paths = series
+    .map((item) => {
+      let segment = [],
+        segments = [];
+      points.forEach((point, i) => {
+        const value = point[item.key];
+        if (Number.isFinite(value)) segment.push(`${x(i)},${y(value)}`);
+        else if (segment.length) {
+          segments.push(segment.join(" "));
+          segment = [];
+        }
+      });
+      if (segment.length) segments.push(segment.join(" "));
+      return segments
+        .map(
+          (path) =>
+            `<polyline class="${item.className}" points="${path}"></polyline>`,
+        )
+        .join("");
+    })
+    .join("");
+  const circles = series
+    .map((item) =>
+      points
+        .map((point, i) =>
+          Number.isFinite(point[item.key])
+            ? `<circle class="${item.pointClass || ""}" cx="${x(i)}" cy="${y(point[item.key])}" r="3.1"><title>Round ${point.round} · ${h2hEscape(point.name)} · ${h2hEscape(item.label)}: ${point[item.key]}</title></circle>`
+            : "",
+        )
+        .join(""),
+    )
+    .join("");
+  return `<svg class="h2h-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="${h2hEscape(options.label || "Points progression chart")}">${grid}${labels}${paths}${circles}</svg>`;
+}
+
+function h2hMetricRow(label, a, b, options = {}) {
+  const format =
+    options.format ||
+    ((value) =>
+      value === null || value === undefined ? "Unavailable" : String(value));
+  const validA = a !== null && a !== undefined && Number.isFinite(Number(a));
+  const validB = b !== null && b !== undefined && Number.isFinite(Number(b));
+  let leadA = false,
+    leadB = false;
+  if (validA && validB) {
+    if (options.lowerWins) {
+      leadA = Number(a) < Number(b);
+      leadB = Number(b) < Number(a);
+    } else {
+      leadA = Number(a) > Number(b);
+      leadB = Number(b) > Number(a);
+    }
+  }
+  return `<div class="h2h-metric-row"><div class="h2h-metric-value ${leadA ? "is-leading" : ""} ${validA ? "" : "is-unavailable"}">${h2hEscape(format(a))}</div><div class="h2h-metric-label">${h2hEscape(label)}</div><div class="h2h-metric-value ${leadB ? "is-leading" : ""} ${validB ? "" : "is-unavailable"}">${h2hEscape(format(b))}</div></div>`;
+}
+
+function h2hFormatPosition(value) {
+  return value === null || value === undefined ? "—" : `P${value}`;
+}
+
+function h2hPositionScore(result, fieldSize, qualifying = false) {
+  if (!result || !Number.isFinite(Number(fieldSize)) || Number(fieldSize) < 2)
+    return null;
+  const position = qualifying
+    ? h2hQualifyingPosition(result)
+    : h2hResultPosition(result);
+  if (!Number.isFinite(position) || position < 1) return null;
+  return Math.max(
+    0,
+    Math.min(
+      100,
+      (100 * (Number(fieldSize) - position)) / (Number(fieldSize) - 1),
+    ),
+  );
+}
+
+function h2hOutcomeScore(a, b, lowerWins = false) {
+  if (a === null || a === undefined || b === null || b === undefined)
+    return [null, null];
+  const left = Number(a),
+    right = Number(b);
+  if (!Number.isFinite(left) || !Number.isFinite(right)) return [null, null];
+  if (left === right) return [50, 50];
+  const aWins = lowerWins ? left < right : left > right;
+  return aWins ? [100, 0] : [0, 100];
+}
+
+function h2hWeightedScore(parts) {
+  const available = parts.filter(
+    (part) =>
+      part.value !== null &&
+      part.value !== undefined &&
+      Number.isFinite(part.value),
+  );
+  if (!available.length) return null;
+  const weight = available.reduce((sum, part) => sum + part.weight, 0);
+  return weight
+    ? available.reduce((sum, part) => sum + part.value * part.weight, 0) /
+        weight
+    : null;
+}
+
+function h2hBuildPerformanceScores(events, points) {
+  const pointByRound = new Map(points.map((point) => [point.round, point]));
+  return events.map((event) => {
+    const point = pointByRound.get(event.race.round);
+    const aRaceScore = h2hPositionScore(event.aRace, event.raceFieldSize);
+    const bRaceScore = h2hPositionScore(event.bRace, event.raceFieldSize);
+    const aQualScore = h2hPositionScore(
+      event.aQual,
+      event.qualifyingFieldSize,
+      true,
+    );
+    const bQualScore = h2hPositionScore(
+      event.bQual,
+      event.qualifyingFieldSize,
+      true,
+    );
+    const aSprintScore = h2hPositionScore(event.aSprint, event.sprintFieldSize);
+    const bSprintScore = h2hPositionScore(event.bSprint, event.sprintFieldSize);
+    const aPoints = point?.weekendA,
+      bPoints = point?.weekendB;
+    const pointTotal =
+      Number.isFinite(aPoints) && Number.isFinite(bPoints)
+        ? aPoints + bPoints
+        : null;
+    const aPointsScore = pointTotal > 0 ? (aPoints / pointTotal) * 100 : null;
+    const bPointsScore = pointTotal > 0 ? (bPoints / pointTotal) * 100 : null;
+    const spsA = h2hWeightedScore([
+      { value: aRaceScore, weight: 45 },
+      { value: aQualScore, weight: 25 },
+      { value: aPointsScore, weight: 20 },
+      { value: aSprintScore, weight: 10 },
+    ]);
+    const spsB = h2hWeightedScore([
+      { value: bRaceScore, weight: 45 },
+      { value: bQualScore, weight: 25 },
+      { value: bPointsScore, weight: 20 },
+      { value: bSprintScore, weight: 10 },
+    ]);
+    const [raceA, raceB] = h2hOutcomeScore(
+      h2hResultPosition(event.aRace),
+      h2hResultPosition(event.bRace),
+      true,
+    );
+    const [qualA, qualB] = h2hOutcomeScore(
+      h2hQualifyingPosition(event.aQual),
+      h2hQualifyingPosition(event.bQual),
+      true,
+    );
+    const [pointsA, pointsB] = h2hOutcomeScore(aPoints, bPoints);
+    const [sprintA, sprintB] = h2hOutcomeScore(
+      h2hResultPosition(event.aSprint),
+      h2hResultPosition(event.bSprint),
+      true,
+    );
+    const tmsA = h2hWeightedScore([
+      { value: raceA, weight: 40 },
+      { value: qualA, weight: 25 },
+      { value: pointsA, weight: 25 },
+      { value: sprintA, weight: 10 },
+    ]);
+    const tmsB = tmsA === null ? null : 100 - tmsA;
+    return {
+      round: event.race.round,
+      name: event.race.shortName || event.race.name,
+      spsA,
+      spsB,
+      tmsA,
+      tmsB,
+    };
+  });
+}
+
+function h2hRenderComparison(driverA, driverB, comparison) {
+  const content = h2hElements.content;
+  if (!content) return;
+  document.querySelector(".h2h-page")?.classList.add("h2h-has-comparison");
+  const aCurrent = h2hDrivers().find((driver) => driver.number === driverA);
+  const bCurrent = h2hDrivers().find((driver) => driver.number === driverB);
+  if (!aCurrent || !bCurrent) {
+    h2hRenderState(
+      "Driver data unavailable",
+      "The selected driver is no longer present in the available season data. Retry to refresh the list.",
+      true,
+    );
+    return;
+  }
+  const statsA = comparison.statsA,
+    statsB = comparison.statsB;
+  const points = comparison.points || [];
+  const performanceScores = h2hBuildPerformanceScores(
+    comparison.events,
+    points,
+  );
+
+  const spsChart = h2hSvgChart(
+    performanceScores,
+    [
+      {
+        key: "spsA",
+        label: "Driver A SPS",
+        className: "h2h-line-a",
+        pointClass: "h2h-point-a",
+      },
+      {
+        key: "spsB",
+        label: "Driver B SPS",
+        className: "h2h-line-b",
+        pointClass: "h2h-point-b",
+      },
+    ],
+    { zeroBased: true, label: "Season Performance Score evolution" },
+  );
+
+  const tmsChart = h2hSvgChart(
+    performanceScores,
+    [
+      {
+        key: "tmsA",
+        label: "Driver A TMS",
+        className: "h2h-line-a",
+        pointClass: "h2h-point-a",
+      },
+      {
+        key: "tmsB",
+        label: "Driver B TMS",
+        className: "h2h-line-b",
+        pointClass: "h2h-point-b",
+      },
+    ],
+    { zeroBased: true, label: "Teammate Matchup Score evolution" },
+  );
+
+  const scoreLegend = `<div class="h2h-chart-legend">
+    <span><i class="h2h-legend-mark"></i>${h2hEscape(aCurrent.name)}</span>
+    <span><i class="h2h-legend-mark b"></i>${h2hEscape(bCurrent.name)}</span>
+  </div>`;
+
+  const hasUnavailableData =
+    comparison.events.some(
+      (event) =>
+        !event.raceResultsAvailable ||
+        (event.race.qualifyingSessionKey && !event.qualifyingAvailable) ||
+        (event.race.sprintSessionKey && !event.sprintAvailable),
+    ) ||
+    points.some(
+      (point) => point.cumulativeA === null || point.cumulativeB === null,
+    );
+  const aImg = h2hImage(aCurrent),
+    bImg = h2hImage(bCurrent);
+  const imageMarkup = (src, name) =>
+    src
+      ? `<img class="h2h-faceoff-portrait" src="${h2hEscape(src)}" alt="${h2hEscape(name)} portrait" loading="lazy" onerror="this.hidden=true">`
+      : `<div class="h2h-faceoff-portrait" aria-hidden="true"></div>`;
+  const faceoff = `
+    <section class="h2h-faceoff" aria-label="Driver face-off">
+      <article class="h2h-driver-card" style="--h2h-team:${h2hEscape(phase2TeamColor(aCurrent.team))}">
+        ${imageMarkup(aImg, aCurrent.name)}
+        <div class="h2h-driver-card-copy"><span class="rev-eyebrow">DRIVER A / ${h2hEscape(aCurrent.team || "TEAM UNAVAILABLE")}</span><h2>${h2hEscape(aCurrent.name)}</h2><p>CHAMPIONSHIP POSITION ${aCurrent.position ?? "—"}</p><div class="h2h-driver-statline"><span>POINTS<strong>${aCurrent.points ?? "—"}</strong></span><span>DRIVER #<strong>${aCurrent.number}</strong></span></div></div>
+      </article>
+      <div class="h2h-faceoff-mid">VS</div>
+      <article class="h2h-driver-card" style="--h2h-team:${h2hEscape(phase2TeamColor(bCurrent.team))}">
+        ${imageMarkup(bImg, bCurrent.name)}
+        <div class="h2h-driver-card-copy"><span class="rev-eyebrow">DRIVER B / ${h2hEscape(bCurrent.team || "TEAM UNAVAILABLE")}</span><h2>${h2hEscape(bCurrent.name)}</h2><p>CHAMPIONSHIP POSITION ${bCurrent.position ?? "—"}</p><div class="h2h-driver-statline"><span>POINTS<strong>${bCurrent.points ?? "—"}</strong></span><span>DRIVER #<strong>${bCurrent.number}</strong></span></div></div>
+      </article>
+    </section>`;
+  const metrics = [
+    [
+      "Championship points",
+      aCurrent.points,
+      bCurrent.points,
+      { format: (v) => (v === null ? "Unavailable" : String(v)) },
+    ],
+    [
+      "Race wins",
+      statsA.raceResultsComplete && statsA.raceDriverDataComplete
+        ? statsA.wins
+        : null,
+      statsB.raceResultsComplete && statsB.raceDriverDataComplete
+        ? statsB.wins
+        : null,
+    ],
+    [
+      "Podiums",
+      statsA.raceResultsComplete && statsA.raceDriverDataComplete
+        ? statsA.podiums
+        : null,
+      statsB.raceResultsComplete && statsB.raceDriverDataComplete
+        ? statsB.podiums
+        : null,
+    ],
+    [
+      "Points finishes (P1–P10)",
+      statsA.raceResultsComplete && statsA.raceDriverDataComplete
+        ? statsA.pointsFinishes
+        : null,
+      statsB.raceResultsComplete && statsB.raceDriverDataComplete
+        ? statsB.pointsFinishes
+        : null,
+    ],
+    [
+      "Pole positions",
+      statsA.qualifyingResultsComplete && statsA.qualifyingDriverDataComplete
+        ? statsA.poles
+        : null,
+      statsB.qualifyingResultsComplete && statsB.qualifyingDriverDataComplete
+        ? statsB.poles
+        : null,
+    ],
+    [
+      "Q3 appearances",
+      statsA.qualifyingResultsComplete &&
+      statsA.qualifyingDriverDataComplete &&
+      statsA.q3DataComplete
+        ? statsA.q3
+        : null,
+      statsB.qualifyingResultsComplete &&
+      statsB.qualifyingDriverDataComplete &&
+      statsB.q3DataComplete
+        ? statsB.q3
+        : null,
+    ],
+    [
+      "Best race finish",
+      statsA.raceResultsComplete && statsA.raceDriverDataComplete
+        ? statsA.bestRace
+        : null,
+      statsB.raceResultsComplete && statsB.raceDriverDataComplete
+        ? statsB.bestRace
+        : null,
+      { lowerWins: true, format: h2hFormatPosition },
+    ],
+    [
+      "Best qualifying result",
+      statsA.qualifyingResultsComplete && statsA.qualifyingDriverDataComplete
+        ? statsA.bestQualifying
+        : null,
+      statsB.qualifyingResultsComplete && statsB.qualifyingDriverDataComplete
+        ? statsB.bestQualifying
+        : null,
+      { lowerWins: true, format: h2hFormatPosition },
+    ],
+    [
+      "Sprint wins",
+      statsA.sprintResultsComplete && statsA.sprintDriverDataComplete
+        ? statsA.sprintWins
+        : null,
+      statsB.sprintResultsComplete && statsB.sprintDriverDataComplete
+        ? statsB.sprintWins
+        : null,
+    ],
+    [
+      "Sprint podiums",
+      statsA.sprintResultsComplete && statsA.sprintDriverDataComplete
+        ? statsA.sprintPodiums
+        : null,
+      statsB.sprintResultsComplete && statsB.sprintDriverDataComplete
+        ? statsB.sprintPodiums
+        : null,
+    ],
+    [
+      "DNFs",
+      statsA.raceResultsComplete && statsA.raceDriverDataComplete
+        ? statsA.dnfs
+        : null,
+      statsB.raceResultsComplete && statsB.raceDriverDataComplete
+        ? statsB.dnfs
+        : null,
+      { lowerWins: true },
+    ],
+  ];
+  const metricMarkup = metrics
+    .map(([label, a, b, options]) => h2hMetricRow(label, a, b, options || {}))
+    .join("");
+  const chartA = h2hSvgChart(
+    points,
+    [
+      {
+        key: "cumulativeA",
+        label: aCurrent.name,
+        className: "h2h-line-a",
+        pointClass: "h2h-point-a",
+      },
+      {
+        key: "cumulativeB",
+        label: bCurrent.name,
+        className: "h2h-line-b",
+        pointClass: "h2h-point-b",
+      },
+    ],
+    { zeroBased: true, label: "Cumulative championship points by round" },
+  );
+  const chartGap = h2hSvgChart(
+    points,
+    [
+      {
+        key: "gapCumulative",
+        label: `${aCurrent.name} minus ${bCurrent.name}`,
+        className: "h2h-gap-line",
+        pointClass: "h2h-point-a",
+      },
+    ],
+    {
+      includeZero: true,
+      label:
+        "Cumulative championship points gap; positive means Driver A leads",
+    },
+  );
+  const chartRoundGap = h2hSvgChart(
+    points,
+    [
+      {
+        key: "gapWeekend",
+        label: `${aCurrent.name} minus ${bCurrent.name}`,
+        className: "h2h-gap-line",
+        pointClass: "h2h-point-a",
+      },
+    ],
+    {
+      includeZero: true,
+      label:
+        "Championship points gained per weekend gap; positive means Driver A gained more",
+    },
+  );
+  const gapRows = points
+    .map((point) => {
+      const value = point.gapWeekend;
+      const display =
+        value === null
+          ? "Unavailable"
+          : `${value > 0 ? "+" : ""}${Number(value.toFixed(2))}`;
+      const cls =
+        value === null ? "na" : value > 0 ? "a" : value < 0 ? "b" : "";
+      return `<div class="h2h-round-gap-row"><span class="h2h-round-gap-name">R${point.round} · ${h2hEscape(point.name)}</span><strong class="h2h-round-gap-value ${cls}">${display}</strong><span class="h2h-round-gap-name">${value === null ? "Snapshot missing" : value > 0 ? `${h2hEscape(aCurrent.name)} gained more` : value < 0 ? `${h2hEscape(bCurrent.name)} gained more` : "Equal points"}</span></div>`;
+    })
+    .join("");
+  const rows = comparison.races
+    .map((race) => {
+      const event = comparison.events.find(
+        (item) => item.race.round === race.round,
+      );
+      const point = points.find((item) => item.round === race.round);
+      const aRace = event?.aRace || null,
+        bRace = event?.bRace || null;
+      const aStatus = event?.raceResultsAvailable
+        ? h2hResultStatus(aRace)
+        : "DATA UNAVAILABLE";
+      const bStatus = event?.raceResultsAvailable
+        ? h2hResultStatus(bRace)
+        : "DATA UNAVAILABLE";
+      const aPosition = h2hResultPosition(aRace),
+        bPosition = h2hResultPosition(bRace);
+      const aPoints = point?.weekendA,
+        bPoints = point?.weekendB;
+      const delta =
+        aPoints !== null &&
+        aPoints !== undefined &&
+        bPoints !== null &&
+        bPoints !== undefined
+          ? aPoints - bPoints
+          : null;
+      const pointsText = (value) =>
+        value === null || value === undefined
+          ? "—"
+          : `${value > 0 ? "+" : ""}${Number(value.toFixed(2))}`;
+      return `<tr><td class="h2h-table-round">R${race.round}</td><td>${h2hEscape(race.shortName || race.name)}</td><td class="${aPosition !== null && aPosition < (bPosition ?? Infinity) ? "h2h-table-lead" : ""}">${h2hEscape(aStatus)}</td><td>${aPoints === null || aPoints === undefined ? "—" : pointsText(aPoints)}</td><td class="${bPosition !== null && bPosition < (aPosition ?? Infinity) ? "h2h-table-lead" : ""}">${h2hEscape(bStatus)}</td><td>${bPoints === null || bPoints === undefined ? "—" : pointsText(bPoints)}</td><td>${delta === null ? "—" : pointsText(delta)}</td></tr>`;
+    })
+    .join("");
+  content.innerHTML = `
+    <div class="h2h-selectors">
+      <label class="h2h-driver-select"><span>DRIVER A</span><select id="h2hDriverA" aria-label="Select Driver A"><option value="">Select driver</option></select></label>
+      <span class="h2h-versus" aria-hidden="true">VS</span>
+      <label class="h2h-driver-select"><span>DRIVER B</span><select id="h2hDriverB" aria-label="Select Driver B"><option value="">Select driver</option></select></label>
+    </div>
+    ${faceoff}
+    <section class="h2h-section"><div class="h2h-section-heading"><h2>SEASON STATISTICS</h2><p>Current standings and available completed-session results</p></div><div class="h2h-metrics">${metricMarkup}</div><p class="h2h-data-note">A missing result is not counted as a finish. Points progression uses OpenF1 championship snapshots; weekend points include sprint and race points when the snapshot is available. Missing snapshots remain unavailable rather than being estimated.</p>${hasUnavailableData ? `<button class="h2h-retry" type="button" data-h2h-retry>RETRY UNAVAILABLE DATA</button>` : ""}</section>
+    <section class="h2h-section"><div class="h2h-section-heading"><h2><br>POINTS PROGRESSION<br><br></h2><p>Chronological rounds · gaps are Driver A minus Driver B</p></div>
+      <div class="h2h-charts">
+        <article class="h2h-chart-panel"><h3>CUMULATIVE CHAMPIONSHIP POINTS</h3><p>Official cumulative totals from saved championship standings.</p>${chartA}<div class="h2h-chart-legend"><span><i class="h2h-legend-mark"></i>${h2hEscape(aCurrent.name)}</span><span><i class="h2h-legend-mark b"></i>${h2hEscape(bCurrent.name)}</span></div></article>
+        <article class="h2h-chart-panel"><h3>CUMULATIVE POINTS GAP</h3><p>Above zero means Driver A leads; below zero means Driver B leads.</p>${chartGap}</article>
+        <article class="h2h-chart-panel"><h3>POINTS GAP BY WEEKEND</h3><p>Positive values mean Driver A gained more championship points that weekend.</p>${chartRoundGap}</article>
+      </div>
+      <div class="h2h-section-heading" style="margin-top:22px"><br><br><h2>ROUND-BY-ROUND POINTS GAP</h2><p>— means the snapshot needed to calculate the change is missing.</p></div><div class="h2h-round-gap-list">${gapRows || `<p class="h2h-data-note">No completed rounds are available.</p>`}</div>
+    </section>
+    <section class="h2h-section h2h-score-section"><div class="h2h-section-heading"><h2>SPS / TMS SCORE EVOLUTION</h2><p>Custom analytical scores · 0–100 scale</p></div><div class="h2h-score-grid"><article class="h2h-chart-panel"><h3>SEASON PERFORMANCE SCORE (SPS)</h3><p>Per-round score: race result 45%, qualifying 25%, share of the pair's weekend points 20%, sprint result 10%. Available components are reweighted when a session is missing.</p>${spsChart}${scoreLegend}</article><article class="h2h-chart-panel"><h3>TEAMMATE MATCHUP SCORE (TMS)</h3><p>Per-round head-to-head: race result 40%, qualifying 25%, weekend points 25%, sprint result 10%. A win scores 100, a tie 50 each, and a loss 0; unavailable components are excluded.</p>${tmsChart}${scoreLegend}</article></div><p class="h2h-data-note">SPS and TMS are custom dashboard indices, not official FIA, Formula 1, or OpenF1 metrics. Scores are calculated only from available cached/session records; missing components are not treated as losses or zero-point results. Sprint scores are included only for sprint weekends.</p></section>
+    <section class="h2h-section"><div class="h2h-section-heading"><h2>RACE-BY-RACE RESULTS</h2><p>Finishing status and weekend championship points</p></div><div class="h2h-table-wrap"><table class="h2h-results-table"><thead><tr><th>ROUND</th><th>GRAND PRIX</th><th>${h2hEscape(aCurrent.name)} / FINISH</th><th>WEEKEND PTS</th><th>${h2hEscape(bCurrent.name)} / FINISH</th><th>WEEKEND PTS</th><th>POINTS DIFF.</th></tr></thead><tbody>${rows}</tbody></table></div><p class="h2h-data-note">Finishing status comes from session_result records. Weekend points are derived from adjacent championship snapshots, and therefore include sprint points where applicable. If an adjacent snapshot is missing, points are shown as unavailable. No official points are inferred from finishing position alone.</p></section>`;
+  h2hElements.selectA = document.getElementById("h2hDriverA");
+  h2hElements.selectB = document.getElementById("h2hDriverB");
+  h2hRenderSelectorOptions();
+  h2hElements.selectA.value = String(driverA);
+  h2hElements.selectB.value = String(driverB);
+  h2hSyncSelectors();
+}
+
+async function h2hCompareSelected() {
+  h2hSyncSelectors();
+  const requestId = ++h2hState.requestId;
+  if (!h2hState.driverA || !h2hState.driverB) {
+    h2hState.loading = false;
+    const selectedA = h2hState.driverA;
+    const selectedB = h2hState.driverB;
+    h2hState.comparison = null;
+    h2hBaseSelectors();
+    h2hRenderSelectorOptions();
+    h2hElements.selectA.value = selectedA ? String(selectedA) : "";
+    h2hElements.selectB.value = selectedB ? String(selectedB) : "";
+    h2hSyncSelectors();
+    const instruction = h2hElements.content?.querySelector(".h2h-instruction");
+    if (instruction && (h2hState.driverA || h2hState.driverB))
+      instruction.textContent =
+        "Choose a different second driver to load the comparison.";
+    return;
+  }
+  if (h2hState.driverA === h2hState.driverB) {
+    h2hState.loading = false;
+    h2hRenderState(
+      "Choose two different drivers",
+      "Driver A and Driver B must be different.",
+      true,
+    );
+    return;
+  }
+  const driverA = h2hState.driverA,
+    driverB = h2hState.driverB;
+  h2hState.loading = true;
+  h2hRenderLoadingState(driverA, driverB);
+  try {
+    const comparison = await h2hLoadPair(driverA, driverB, requestId);
+    if (requestId !== h2hState.requestId || !comparison) return;
+    h2hState.comparison = comparison;
+    if (comparison.noCompletedRaces) {
+      h2hRenderState(
+        "No completed race data",
+        "There are no completed race sessions available to compare yet.",
+        true,
+      );
+      return;
+    }
+    h2hRenderComparison(driverA, driverB, comparison);
+  } catch (error) {
+    if (requestId !== h2hState.requestId) return;
+    console.error("Head-to-head comparison failed:", error);
+    h2hRenderState(
+      "Comparison unavailable",
+      "OpenF1 and the saved cache could not provide enough data. Retry when data access is available.",
+      true,
+    );
+  } finally {
+    if (requestId === h2hState.requestId) h2hState.loading = false;
+  }
+}
+
+async function h2hLoadDriverListFallback() {
+  let standings = null;
+  try {
+    standings = await h2hCachedFetch("championship_drivers", {
+      session_key: "latest",
+    });
+  } catch (error) {
+    console.warn("Head-to-head cached standings unavailable:", error);
+  }
+  if (!Array.isArray(standings) || !standings.length) return false;
+
+  const byNumber = new Map();
+  const requiredNumbers = new Set(
+    standings.map((item) => Number(item.driver_number)),
+  );
+  const now = Date.now();
+  const candidates = races
+    .filter(
+      (race) =>
+        race.sessionKey &&
+        (race.status === "COMPLETED" ||
+          (Number.isFinite(Date.parse(race.dateEnd || "")) &&
+            Date.parse(race.dateEnd) < now)),
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        Date.parse(b.dateStart || b.date || "") -
+        Date.parse(a.dateStart || a.date || ""),
+    );
+  for (const race of candidates) {
+    const cached = await openF1ReadStaticCache(
+      openF1CacheKey("drivers", { session_key: race.sessionKey }),
+    );
+    if (Array.isArray(cached?.data)) {
+      cached.data.forEach((driver) => {
+        const number = Number(driver.driver_number);
+        if (!byNumber.has(number)) byNumber.set(number, driver);
+      });
+    }
+    if ([...requiredNumbers].every((number) => byNumber.has(number))) break;
+  }
+  const existingByNumber = new Map(
+    (phase2State.drivers || []).map((driver) => [
+      Number(driver.number),
+      driver,
+    ]),
+  );
+  phase2State.drivers = standings
+    .slice()
+    .sort(
+      (a, b) =>
+        (h2hNumber(a.position_current) ?? Infinity) -
+        (h2hNumber(b.position_current) ?? Infinity),
+    )
+    .map((item) => {
+      const number = Number(item.driver_number);
+      const source = byNumber.get(number) || {};
+      const existing = existingByNumber.get(number) || {};
+      return {
+        name: source.full_name || existing.name || `Driver #${number}`,
+        number,
+        team: source.team_name || existing.team || "Unknown",
+        points: h2hNumber(item.points_current),
+        position: h2hNumber(item.position_current),
+      };
+    })
+    .filter((driver) => Number.isFinite(driver.number));
+  return h2hDrivers().length > 0;
+}
+
+async function h2hEnrichDriverNames() {
+  if (!Array.isArray(phase2State.drivers) || !phase2State.drivers.length)
+    return;
+  const needsNames = phase2State.drivers.some(
+    (driver) =>
+      !driver.name ||
+      /^Driver #/i.test(driver.name) ||
+      !driver.team ||
+      driver.team === "Unknown",
+  );
+  if (!needsNames) return;
+  const now = Date.now();
+  const candidates = races
+    .filter(
+      (race) =>
+        race.sessionKey &&
+        (race.status === "COMPLETED" ||
+          (Number.isFinite(Date.parse(race.dateEnd || "")) &&
+            Date.parse(race.dateEnd) < now)),
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        Date.parse(b.dateStart || b.date || "") -
+        Date.parse(a.dateStart || a.date || ""),
+    );
+  const byNumber = new Map();
+  const requiredNumbers = new Set(
+    phase2State.drivers
+      .filter(
+        (driver) =>
+          !driver.name ||
+          /^Driver #/i.test(driver.name) ||
+          !driver.team ||
+          driver.team === "Unknown",
+      )
+      .map((driver) => Number(driver.number)),
+  );
+  for (const race of candidates) {
+    const cached = await openF1ReadStaticCache(
+      openF1CacheKey("drivers", { session_key: race.sessionKey }),
+    );
+    if (Array.isArray(cached?.data)) {
+      cached.data.forEach((driver) => {
+        const number = Number(driver.driver_number);
+        if (!byNumber.has(number)) byNumber.set(number, driver);
+      });
+    }
+    if ([...requiredNumbers].every((number) => byNumber.has(number))) break;
+  }
+  phase2State.drivers = phase2State.drivers.map((standing) => {
+    const source = byNumber.get(Number(standing.number));
+    if (!source) return standing;
+    return {
+      ...standing,
+      name: /^Driver #/i.test(standing.name || "")
+        ? source.full_name || standing.name
+        : standing.name,
+      team:
+        !standing.team || standing.team === "Unknown"
+          ? source.team_name || standing.team
+          : standing.team,
+    };
+  });
+}
+
+async function h2hWaitForSeasonLoad() {
+  const deadline = Date.now() + 20000;
+  while (phase2State.loading && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+async function h2hInitialize() {
+  if (!h2hElements.content) return;
+  if (!h2hDrivers().length && phase2State.loading) await h2hWaitForSeasonLoad();
+  if (!h2hDrivers().length) {
+    try {
+      await h2hLoadDriverListFallback();
+    } catch (error) {
+      console.warn("Head-to-head cached driver list unavailable:", error);
+    }
+  }
+  if (!h2hDrivers().length && !phase2State.loaded && !phase2State.loading) {
+    try {
+      await phase2LoadSeasonData();
+    } catch (error) {
+      console.warn("Head-to-head driver list could not load:", error);
+    }
+  }
+  if (!h2hDrivers().length) {
+    try {
+      await h2hLoadDriverListFallback();
+    } catch (error) {
+      console.warn("Head-to-head cached driver list retry failed:", error);
+    }
+  }
+  await h2hEnrichDriverNames();
+  const savedDriverA = h2hState.driverA;
+  const savedDriverB = h2hState.driverB;
+  if (!h2hDrivers().length) {
+    h2hRenderState(
+      "Driver list unavailable",
+      "The dashboard could not load driver standings from OpenF1 or the saved season cache. Retry when data access is available.",
+      true,
+    );
+    return;
+  }
+  if (!h2hState.initialized) {
+    h2hState.initialized = true;
+    h2hBaseSelectors();
+    h2hElements.content.addEventListener("change", (event) => {
+      if (event.target.id !== "h2hDriverA" && event.target.id !== "h2hDriverB")
+        return;
+      h2hSyncSelectors();
+      h2hCompareSelected();
+    });
+    h2hElements.content.addEventListener("click", (event) => {
+      if (event.target.closest("[data-h2h-retry]")) {
+        h2hState.requestCache.clear();
+        h2hInitialize().then(h2hCompareSelected);
+      }
+    });
+  } else if (
+    !h2hElements.selectA?.isConnected ||
+    !h2hElements.selectB?.isConnected
+  ) {
+    h2hBaseSelectors();
+  }
+  h2hRenderSelectorOptions();
+  if (h2hState.pendingDriver === null) {
+    if (
+      savedDriverA !== null &&
+      h2hDrivers().some((driver) => driver.number === savedDriverA)
+    )
+      h2hElements.selectA.value = String(savedDriverA);
+    if (
+      savedDriverB !== null &&
+      h2hDrivers().some((driver) => driver.number === savedDriverB)
+    )
+      h2hElements.selectB.value = String(savedDriverB);
+    h2hSyncSelectors();
+  }
+  if (h2hState.pendingDriver !== null) {
+    const pending = Number(h2hState.pendingDriver);
+    h2hState.pendingDriver = null;
+    if (h2hDrivers().some((driver) => driver.number === pending)) {
+      h2hElements.selectA.value = String(pending);
+      h2hElements.selectB.value = "";
+      h2hSyncSelectors();
+      h2hCompareSelected();
+    }
+  }
+}
+
+function h2hEnsurePopup() {
+  let popup = document.getElementById("h2hDriverPopup");
+  if (popup) return popup;
+  popup = document.createElement("aside");
+  popup.id = "h2hDriverPopup";
+  popup.className = "h2h-popup";
+  popup.hidden = true;
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-label", "Driver information");
+  popup.innerHTML = `<div class="h2h-popup-head"><img class="h2h-popup-portrait" alt=""><div><p class="h2h-popup-name"></p><p class="h2h-popup-team"></p></div></div><div class="h2h-popup-stats"><span>CHAMPIONSHIP POS.<strong class="h2h-popup-position">—</strong></span><span>POINTS<strong class="h2h-popup-points">—</strong></span></div><button class="h2h-popup-action" type="button">HEAD-TO-HEAD</button>`;
+  document.body.appendChild(popup);
+  popup.addEventListener("pointerenter", () => {
+    if (h2hState.popupHideTimer) clearTimeout(h2hState.popupHideTimer);
+    h2hState.popupHideTimer = null;
+  });
+  popup.addEventListener("pointerleave", () => {
+    if (!h2hState.popupTouch) h2hSchedulePopupHide();
+  });
+  popup.querySelector(".h2h-popup-action").addEventListener("click", () => {
+    const number = h2hState.popupDriver;
+    if (number === null || number === undefined) return;
+    h2hState.pendingDriver = Number(number);
+    h2hClosePopup();
+    setDashboardTab("headtohead");
+    h2hInitialize();
+  });
+  return popup;
+}
+
+function h2hOpenPopup(anchor, driverNumber, touch = false) {
+  const driver = h2hDrivers().find(
+    (item) => item.number === Number(driverNumber),
+  );
+  if (!driver) return;
+  const popup = h2hEnsurePopup();
+  h2hState.popupAnchor = anchor;
+  h2hState.popupDriver = driver.number;
+  h2hState.popupTouch = touch;
+  if (h2hState.popupHideTimer) clearTimeout(h2hState.popupHideTimer);
+  const image = popup.querySelector(".h2h-popup-portrait");
+  const portrait = h2hImage(driver);
+  if (portrait) image.src = portrait;
+  else image.removeAttribute("src");
+  image.alt = `${driver.name} portrait`;
+  image.hidden = !portrait;
+  popup.querySelector(".h2h-popup-name").textContent = driver.name;
+  popup.querySelector(".h2h-popup-team").textContent =
+    driver.team || "Team unavailable";
+  popup.querySelector(".h2h-popup-position").textContent =
+    driver.position === null ? "—" : `P${driver.position}`;
+  popup.querySelector(".h2h-popup-points").textContent =
+    driver.points === null ? "—" : String(driver.points);
+  popup.style.setProperty("--h2h-team", phase2TeamColor(driver.team));
+  popup.hidden = false;
+  h2hPositionPopup();
+}
+
+function h2hPositionPopup() {
+  const popup = document.getElementById("h2hDriverPopup");
+  const anchor = h2hState.popupAnchor;
+  if (!popup || popup.hidden || !anchor?.isConnected) return;
+  const rect = anchor.getBoundingClientRect();
+  const width = popup.offsetWidth || 264,
+    height = popup.offsetHeight || 200;
+  const margin = 10,
+    gap = 12;
+  const rightFits = rect.right + gap + width <= window.innerWidth - margin;
+  const leftFits = rect.left - gap - width >= margin;
+  let left;
+  let top = rect.top + (rect.height - height) / 2;
+  if (rightFits) {
+    left = rect.right + gap;
+  } else if (leftFits) {
+    left = rect.left - width - gap;
+  } else {
+    left = Math.max(
+      margin,
+      Math.min(
+        window.innerWidth - width - margin,
+        rect.left + (rect.width - width) / 2,
+      ),
+    );
+    const belowFits = rect.bottom + gap + height <= window.innerHeight - margin;
+    const aboveFits = rect.top - gap - height >= margin;
+    if (belowFits) top = rect.bottom + gap;
+    else if (aboveFits) top = rect.top - height - gap;
+  }
+  if (top < margin) top = margin;
+  if (top + height > window.innerHeight - margin)
+    top = Math.max(margin, window.innerHeight - height - margin);
+  popup.style.left = `${Math.round(left)}px`;
+  popup.style.top = `${Math.round(top)}px`;
+}
+
+function h2hSchedulePopupHide() {
+  if (h2hState.popupHideTimer) clearTimeout(h2hState.popupHideTimer);
+  h2hState.popupHideTimer = setTimeout(() => {
+    const popup = document.getElementById("h2hDriverPopup");
+    if (popup && !popup.matches(":hover") && !h2hState.popupTouch)
+      h2hClosePopup();
+  }, 160);
+}
+
+function h2hClosePopup() {
+  if (h2hState.popupHideTimer) clearTimeout(h2hState.popupHideTimer);
+  h2hState.popupHideTimer = null;
+  const popup = document.getElementById("h2hDriverPopup");
+  if (popup) popup.hidden = true;
+  h2hState.popupAnchor = null;
+  h2hState.popupDriver = null;
+  h2hState.popupTouch = false;
+}
+
+function h2hDecorateDriverReferences() {
+  const popup = document.getElementById("h2hDriverPopup");
+  if (
+    popup &&
+    !popup.hidden &&
+    h2hState.popupAnchor &&
+    !h2hState.popupAnchor.isConnected
+  )
+    h2hClosePopup();
+  const driverMap = new Map(
+    h2hDrivers().map((driver) => [driver.name.toLowerCase(), driver]),
+  );
+  const targets = [
+    ".drivers-feature-copy h3",
+    ".drivers-roster-driver h4",
+    ".championship-standing-driver strong",
+    ".rev-team-pair span",
+    ".classification-driver strong",
+    ".classification-row strong",
+    ".podium-card h3",
+    ".qualifying-card strong",
+    ".qualifying-row strong",
+    ".driver-info h3",
+    ".qualifying-driver strong",
+    ".overview-leader h2",
+    ".overview-leader-line strong",
+    ".overview-standing-name strong",
+    ".drivers-hero-copy h2",
+  ];
+  document.querySelectorAll(targets.join(",")).forEach((element) => {
+    if (
+      element.closest("#headToHeadContent") ||
+      element.closest("#h2hDriverPopup")
+    )
+      return;
+    if (element.closest(".championship-team-row")) return;
+    const exactText = element.textContent.trim().toLowerCase();
+    const driver = driverMap.get(exactText);
+    if (!driver) return;
+    element.dataset.h2hDriver = String(driver.number);
+    element.tabIndex = element.tabIndex >= 0 ? element.tabIndex : 0;
+    element.setAttribute("aria-haspopup", "dialog");
+    element.setAttribute(
+      "aria-label",
+      `${driver.name}, show driver information`,
+    );
+  });
+  document.querySelectorAll("[data-replay-driver]").forEach((element) => {
+    const driver = h2hDrivers().find(
+      (item) => item.number === Number(element.dataset.replayDriver),
+    );
+    if (!driver) return;
+    element.dataset.h2hDriver = String(driver.number);
+  });
+  document.querySelectorAll("[data-h2h-driver]").forEach((element) => {
+    const driver = h2hDrivers().find(
+      (item) => item.number === Number(element.dataset.h2hDriver),
+    );
+    if (!driver) return;
+    element.tabIndex = element.tabIndex >= 0 ? element.tabIndex : 0;
+    element.setAttribute("aria-haspopup", "dialog");
+    element.setAttribute(
+      "aria-label",
+      `${driver.name}, show driver information`,
+    );
+  });
+}
+
+document
+  .querySelectorAll(
+    "#dashboardDrivers [data-h2h-driver], " +
+      "#dashboardChampionship [data-h2h-driver], " +
+      "#dashboardRace [data-h2h-driver]",
+  )
+  .forEach((element) => {
+    element.removeAttribute("data-h2h-driver");
+    element.removeAttribute("aria-haspopup");
+
+    if (
+      element.getAttribute("aria-label")?.endsWith(", show driver information")
+    ) {
+      element.removeAttribute("aria-label");
+    }
+
+    if (element.getAttribute("tabindex") === "0") {
+      element.removeAttribute("tabindex");
+    }
+  });
+
+function h2hPopupAllowed(target) {
+  return (
+    Boolean(target) &&
+    !target.closest("#dashboardDrivers, #dashboardChampionship, #dashboardRace")
+  );
+}
+
+function h2hBindPopupEvents() {
+  if (document.documentElement.dataset.h2hPopupBound === "true") return;
+  document.documentElement.dataset.h2hPopupBound = "true";
+  document.addEventListener("pointerover", (event) => {
+    const target = event.target.closest?.("[data-h2h-driver]");
+    if (!h2hPopupAllowed(target) || event.pointerType === "touch") return;
+    if (target.contains(event.relatedTarget)) return;
+    h2hOpenPopup(target, Number(target.dataset.h2hDriver), false);
+  });
+  document.addEventListener("pointerout", (event) => {
+    const target = event.target.closest?.("[data-h2h-driver]");
+    if (!h2hPopupAllowed(target) || event.pointerType === "touch") return;
+    if (target.contains(event.relatedTarget)) return;
+    if (event.relatedTarget?.closest?.("#h2hDriverPopup")) return;
+    h2hSchedulePopupHide();
+  });
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest?.("[data-h2h-driver]");
+    if (target) {
+      if (!h2hPopupAllowed(target)) {
+        h2hClosePopup();
+        return;
+      }
+      if (
+        event.target.closest("a,button,input,select,textarea") &&
+        !event.target.closest("[data-h2h-driver]")?.matches("a,button")
+      )
+        return;
+      if (event.detail === 0) {
+        h2hOpenPopup(target, Number(target.dataset.h2hDriver), true);
+        return;
+      }
+      if (window.matchMedia("(hover: none), (pointer: coarse)").matches) {
+        if (h2hState.popupDriver === Number(target.dataset.h2hDriver))
+          h2hClosePopup();
+        else h2hOpenPopup(target, Number(target.dataset.h2hDriver), true);
+        event.preventDefault();
+      }
+      return;
+    }
+    if (!event.target.closest("#h2hDriverPopup")) h2hClosePopup();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") h2hClosePopup();
+    if (
+      (event.key === "Enter" || event.key === " ") &&
+      event.target.matches?.("[data-h2h-driver]") &&
+      h2hPopupAllowed(event.target)
+    ) {
+      event.preventDefault();
+      h2hOpenPopup(event.target, Number(event.target.dataset.h2hDriver), true);
+    }
+  });
+  window.addEventListener("scroll", h2hPositionPopup, {
+    passive: true,
+    capture: true,
+  });
+  window.addEventListener("resize", h2hPositionPopup);
+}
+
 function bindMobileNavigation() {
   const mobileNavToggle = document.querySelector(".mobile-nav-toggle");
   const mobileNavMenu = document.querySelector(".mobile-dashboard-menu");
@@ -5600,10 +7264,26 @@ async function phase2Initialize() {
     "drivers",
     "teams",
     "championship",
+    "headtohead",
     "replay",
     "race",
   ];
-  setDashboardTab(validTabs.includes(savedTab) ? savedTab : "overview");
+  const requestedTab = (() => {
+    try {
+      const queryTab = new URLSearchParams(window.location.search).get("tab");
+      const hashTab = window.location.hash.replace(/^#/, "");
+      return validTabs.includes(queryTab)
+        ? queryTab
+        : validTabs.includes(hashTab)
+          ? hashTab
+          : null;
+    } catch (error) {
+      return null;
+    }
+  })();
+  setDashboardTab(
+    requestedTab || (validTabs.includes(savedTab) ? savedTab : "overview"),
+  );
 
   document.querySelector(".f1-logo")?.addEventListener("click", () => {
     document.querySelector(".navbar")?.classList.remove("mobile-nav-open");
@@ -5647,6 +7327,9 @@ async function phase2Initialize() {
         if (button.dataset.dashboard === "championship" && phase2State.loaded) {
           phase2LoadPositionHistory();
         }
+        if (button.dataset.dashboard === "headtohead") {
+          h2hInitialize();
+        }
       });
     });
 
@@ -5659,6 +7342,24 @@ async function phase2Initialize() {
 
   try {
     await phase2LoadSeasonData();
+    h2hBindPopupEvents();
+    h2hDecorateDriverReferences();
+    const h2hObserver = new MutationObserver(() =>
+      h2hDecorateDriverReferences(),
+    );
+    [
+      "overviewContent",
+      "driversContent",
+      "teamsContent",
+      "championshipContent",
+      "raceView",
+      "replayShell",
+    ].forEach((id) => {
+      const target = document.getElementById(id);
+      if (target)
+        h2hObserver.observe(target, { childList: true, subtree: true });
+    });
+    h2hInitialize();
   } catch (error) {
     console.error("Phase 2 season data failed:", error);
     const message = String(error.message || error);

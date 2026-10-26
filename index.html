@@ -72,6 +72,13 @@
           >
             Championship
           </button>
+          <button
+            class="dashboard-tab"
+            data-dashboard="headtohead"
+            type="button"
+          >
+            Head-to-head
+          </button>
           <button class="dashboard-tab" data-dashboard="replay" type="button">
             Race Replay
           </button>
@@ -148,10 +155,18 @@
             </button>
             <button
               class="mobile-dashboard-tab"
-              data-dashboard="replay"
+              data-dashboard="headtohead"
               type="button"
             >
               <span class="mobile-dashboard-index">05</span>
+              <span>Head-to-head</span>
+            </button>
+            <button
+              class="mobile-dashboard-tab"
+              data-dashboard="replay"
+              type="button"
+            >
+              <span class="mobile-dashboard-index">06</span>
               <span>Race Replay</span>
             </button>
             <button
@@ -159,7 +174,7 @@
               data-dashboard="race"
               type="button"
             >
-              <span class="mobile-dashboard-index">06</span>
+              <span class="mobile-dashboard-index">07</span>
               <span>Race Center</span>
             </button>
           </nav>
@@ -235,6 +250,39 @@
         </div>
         <div id="championshipContent" class="dashboard-loading">
           LOADING CHAMPIONSHIP DATA
+        </div>
+      </section>
+
+      <section class="dashboard-panel" id="dashboardHeadtohead">
+        <div class="h2h-page">
+          <header class="h2h-page-heading">
+            <span class="rev-eyebrow">2026 SEASON / DRIVER COMPARISON</span>
+            <h1>HEAD-TO-<i>HEAD.</i></h1>
+            <p>
+              Compare two drivers across race weekends, qualifying and the
+              championship.
+            </p>
+          </header>
+          <div id="headToHeadContent" class="h2h-content" aria-live="polite">
+            <div class="h2h-selectors">
+              <label class="h2h-driver-select"
+                ><span>DRIVER A</span
+                ><select id="h2hDriverA" aria-label="Select Driver A">
+                  <option value="">Select driver</option>
+                </select></label
+              >
+              <span class="h2h-versus" aria-hidden="true">VS</span>
+              <label class="h2h-driver-select"
+                ><span>DRIVER B</span
+                ><select id="h2hDriverB" aria-label="Select Driver B">
+                  <option value="">Select driver</option>
+                </select></label
+              >
+            </div>
+            <p class="h2h-instruction">
+              Select two drivers to begin the comparison.
+            </p>
+          </div>
         </div>
       </section>
 
