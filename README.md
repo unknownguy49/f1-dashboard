@@ -92,18 +92,18 @@ https://api.openf1.org/v1
 
 The application currently uses the following OpenF1 endpoints:
 
-| Endpoint               | Purpose                                                 |
-| ---------------------- | ------------------------------------------------------- |
-| `meetings`             | 2026 Grand Prix meeting/calendar information            |
-| `sessions`             | Race, Qualifying, Sprint and Sprint Qualifying sessions |
-| `session_result`       | Race, Sprint, Practice and Qualifying results           |
-| `drivers`              | Driver information for a session                        |
-| `laps`                 | Lap information and fastest-lap related data            |
-| `starting_grid`        | Starting grid information                               |
-| `position`             | Race position data                                      |
-| `location`             | Car location/telemetry used by Race Replay              |
-| `championship_drivers` | Driver championship standings                           |
-| `championship_teams`   | Constructor championship standings                      |
+| Endpoint               | Purpose                                                           |
+| ---------------------- | ----------------------------------------------------------------- |
+| `meetings`             | 2026 Grand Prix meeting/calendar information                      |
+| `sessions`             | Race, Qualifying, Practice, Sprint and Sprint Qualifying sessions |
+| `session_result`       | Race, Sprint, Practice, Qualifying and Sprint Qualifying results  |
+| `drivers`              | Driver information for a session                                  |
+| `laps`                 | Lap information and fastest-lap related data                      |
+| `starting_grid`        | Starting grid information                                         |
+| `position`             | Race position data                                                |
+| `location`             | Car location/telemetry used by Race Replay                        |
+| `championship_drivers` | Driver championship standings                                     |
+| `championship_teams`   | Constructor championship standings                                |
 
 The dashboard retrieves data from the OpenF1 API at runtime and can use matching JSON files in `data/cache/` when cached responses are available. The cache is maintained by the GitHub Actions workflow. New data can become available without a Vercel redeployment, provided OpenF1 has published it or an updated cache has been committed and deployed as static content.
 

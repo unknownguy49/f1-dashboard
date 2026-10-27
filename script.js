@@ -4,6 +4,7 @@
 
 let races = [];
 let activeRaceSession = "race";
+let raceSelectionVersion = 0;
 
 /* =====================================================
    OPENF1 DATA LAYER
@@ -1438,6 +1439,7 @@ function buildRaceSelector() {
 ===================================================== */
 
 async function selectRace(index) {
+  const selectionVersion = ++raceSelectionVersion;
   const race = races[index];
 
   if (!race) {
@@ -1536,7 +1538,7 @@ async function selectRace(index) {
        Render immediately, then hydrate from OpenF1
     --------------------------------------------- */
 
-  await selectRaceSession(race, "race");
+  await selectRaceSession(race, "race", selectionVersion);
 
   /* ---------------------------------------------
        Return to selected race
@@ -1578,7 +1580,11 @@ function updateSessionSelector(race) {
   }
 }
 
-async function selectRaceSession(race, sessionType) {
+async function selectRaceSession(
+  race,
+  sessionType,
+  selectionVersion = raceSelectionVersion,
+) {
   if (!race) return;
 
   if (sessionType === "sprint" && !race.hasSprint) {
@@ -1637,6 +1643,8 @@ async function selectRaceSession(race, sessionType) {
       } catch (error) {
         console.error("OpenF1 sprint detail load failed:", error);
       }
+      if (selectionVersion !== raceSelectionVersion) return;
+      if (activeRaceSession !== "sprint") return;
     }
 
     if (activeRaceSession !== "sprint") return;
@@ -1656,6 +1664,7 @@ async function selectRaceSession(race, sessionType) {
 
     try {
       await loadRaceDetails(race);
+      if (selectionVersion !== raceSelectionVersion) return;
       if (activeRaceSession !== "race") return;
       renderPodium(race, "race");
       renderRaceClassification(race, "race");
@@ -1666,6 +1675,7 @@ async function selectRaceSession(race, sessionType) {
       raceStatus.textContent = race.status;
     } catch (error) {
       console.error("OpenF1 race detail load failed:", error);
+      if (selectionVersion !== raceSelectionVersion) return;
       raceStatusLabel.textContent = race.status;
       raceStatus.textContent = "OFFLINE";
     }
@@ -2867,6 +2877,7 @@ const overviewDriverImages = {
   "Sergio Perez": "images/headshots/sergio-perez.webp",
   "Valtteri Bottas": "images/headshots/valtteri-bottas.webp",
   "Driver #22": "images/headshots/driver22.webp",
+  "Yuki Tsunoda": "images/headshots/driver22.webp",
 };
 
 const overviewTeamImages = {
@@ -3718,7 +3729,10 @@ function replayCleanTrackLap(points) {
   if (distances.length < 24) return [];
   distances.sort((a, b) => a - b);
   const medianDistance = distances[Math.floor(distances.length / 2)];
-  const jumpLimit = Math.max(medianDistance * 8, 500);
+  const isHungary = /hungary|hungaroring/i.test(
+    `${replayState.race?.shortName || ""} ${replayState.race?.location || ""} ${replayState.race?.name || ""}`,
+  );
+  const jumpLimit = isHungary ? 500 : Math.max(medianDistance * 8, 500);
 
   let bestSegment = [];
   let segment = [sorted[0]];
@@ -3737,6 +3751,9 @@ function replayCleanTrackLap(points) {
 
 function replayBuildTrack() {
   let best = null;
+  const raceName = replayState.race?.shortName;
+  const isMiami = raceName === "Miami";
+  const isAzerbaijan = raceName === "Azerbaijan";
 
   for (const driver of replayState.drivers) {
     const points = replayState.locations.get(Number(driver.driver_number));
@@ -3761,21 +3778,40 @@ function replayBuildTrack() {
         ),
       );
       if (lapPoints.length < 25) continue;
-      if (!best || lapPoints.length > best.length) best = lapPoints;
+
+      if (isMiami || isAzerbaijan) {
+        const first = lapPoints[0];
+        const last = lapPoints.at(-1);
+        const endpointGap = Math.hypot(last.x - first.x, last.y - first.y);
+        const score = lapPoints.length / (1 + endpointGap / 100);
+        if (!best || score > best.score) best = { points: lapPoints, score };
+      } else if (!best || lapPoints.length > best.length) {
+        best = lapPoints;
+      }
     }
   }
 
-  if (!best?.length) {
+  if (!best) {
     replayState.trackPoints = [];
     replayState.trackStartPoint = null;
     replayState.trackStartDirection = null;
     return;
   }
 
-  const step = Math.max(1, Math.ceil(best.length / 1200));
-  replayState.trackPoints = best.filter((_, index) => index % step === 0);
+  const selected = isMiami || isAzerbaijan ? best.points : best;
+  const step = Math.max(1, Math.ceil(selected.length / 1200));
+  replayState.trackPoints = selected.filter((_, index) => index % step === 0);
   replayState.trackStartPoint = replayState.trackPoints[0] || null;
-  const next = replayState.trackPoints[1];
+
+  const isAustria = raceName === "Austria";
+  const next = isAustria
+    ? replayState.trackPoints.find(
+        (point) =>
+          point.x !== replayState.trackStartPoint?.x ||
+          point.y !== replayState.trackStartPoint?.y,
+      )
+    : replayState.trackPoints[1];
+
   replayState.trackStartDirection =
     next && replayState.trackStartPoint
       ? {
@@ -4011,7 +4047,19 @@ function replayDraw() {
 
   if (replayState.trackPoints.length > 2) {
     const first = project(replayState.trackPoints[0]);
-    const second = project(replayState.trackPoints[1]);
+    const isAustria = replayState.race?.shortName === "Austria";
+    const direction = isAustria
+      ? replayState.trackStartDirection
+      : {
+          x: replayState.trackPoints[1].x - replayState.trackPoints[0].x,
+          y: replayState.trackPoints[1].y - replayState.trackPoints[0].y,
+        };
+    const second = direction
+      ? project({
+          x: replayState.trackPoints[0].x + direction.x,
+          y: replayState.trackPoints[0].y + direction.y,
+        })
+      : first;
     const dx = second.x - first.x;
     const dy = second.y - first.y;
     const length = Math.hypot(dx, dy) || 1;
@@ -5880,14 +5928,34 @@ function h2hQualifyingPosition(result) {
 
 function h2hQualifyingReachedQ3(result) {
   if (!result) return null;
+
   const duration = result.duration;
-  if (Array.isArray(duration))
-    return (
-      duration.length >= 3 &&
+
+  if (Array.isArray(duration) && duration.length >= 3) {
+    if (
       duration[2] !== null &&
       duration[2] !== undefined &&
       duration[2] !== ""
-    );
+    ) {
+      return true;
+    }
+
+    if (
+      duration[0] !== null &&
+      duration[0] !== undefined &&
+      duration[0] !== "" &&
+      duration[1] !== null &&
+      duration[1] !== undefined &&
+      duration[1] !== ""
+    ) {
+      return false;
+    }
+  }
+
+  const position = h2hQualifyingPosition(result);
+
+  if (position !== null) return position <= 10;
+
   return null;
 }
 
@@ -5940,6 +6008,7 @@ function h2hRacePointsFromSnapshots(raceRecords, snapshots, driverA, driverB) {
 
 async function h2hLoadPair(driverA, driverB, requestId) {
   const completed = h2hCompletedRaces();
+
   if (!completed.length) {
     return {
       races: [],
@@ -5952,40 +6021,68 @@ async function h2hLoadPair(driverA, driverB, requestId) {
   }
 
   const sessionJobs = [];
+
   for (const race of completed) {
     sessionJobs.push(
       (async () => {
-        const [raceResults, qualifyingResults, sprintResults, championship] =
-          await Promise.all([
-            h2hCachedFetch("session_result", {
-              session_key: race.sessionKey,
-            }).catch(() => null),
-            race.qualifyingSessionKey && race.qualifyingStatus !== "UPCOMING"
-              ? h2hCachedFetch("session_result", {
-                  session_key: race.qualifyingSessionKey,
-                }).catch(() => null)
-              : Promise.resolve(null),
-            race.sprintSessionKey && race.sprintStatus !== "UPCOMING"
-              ? h2hCachedFetch("session_result", {
-                  session_key: race.sprintSessionKey,
-                }).catch(() => null)
-              : Promise.resolve(null),
-            h2hCachedFetch("championship_drivers", {
-              session_key: race.sessionKey,
-            }).catch(() => null),
-          ]);
+        const [
+          raceResults,
+          qualifyingResults,
+          sprintResults,
+          championship,
+          raceDrivers,
+          qualifyingDrivers,
+          sprintDrivers,
+        ] = await Promise.all([
+          h2hCachedFetch("session_result", {
+            session_key: race.sessionKey,
+          }).catch(() => null),
+          race.qualifyingSessionKey && race.qualifyingStatus !== "UPCOMING"
+            ? h2hCachedFetch("session_result", {
+                session_key: race.qualifyingSessionKey,
+              }).catch(() => null)
+            : Promise.resolve(null),
+          race.sprintSessionKey && race.sprintStatus !== "UPCOMING"
+            ? h2hCachedFetch("session_result", {
+                session_key: race.sprintSessionKey,
+              }).catch(() => null)
+            : Promise.resolve(null),
+          h2hCachedFetch("championship_drivers", {
+            session_key: race.sessionKey,
+          }).catch(() => null),
+          h2hCachedFetch("drivers", {
+            session_key: race.sessionKey,
+          }).catch(() => null),
+          race.qualifyingSessionKey && race.qualifyingStatus !== "UPCOMING"
+            ? h2hCachedFetch("drivers", {
+                session_key: race.qualifyingSessionKey,
+              }).catch(() => null)
+            : Promise.resolve(null),
+          race.sprintSessionKey && race.sprintStatus !== "UPCOMING"
+            ? h2hCachedFetch("drivers", {
+                session_key: race.sprintSessionKey,
+              }).catch(() => null)
+            : Promise.resolve(null),
+        ]);
+
         if (requestId !== h2hState.requestId) return null;
+
         return {
           race,
           raceResults,
           qualifyingResults,
           sprintResults,
           championship,
+          raceDrivers,
+          qualifyingDrivers,
+          sprintDrivers,
         };
       })(),
     );
   }
+
   const sessions = (await Promise.all(sessionJobs)).filter(Boolean);
+
   if (requestId !== h2hState.requestId) return null;
 
   const statsA = h2hEmptyStats();
@@ -5999,7 +6096,11 @@ async function h2hLoadPair(driverA, driverB, requestId) {
       qualifyingResults,
       sprintResults,
       championship,
+      raceDrivers,
+      qualifyingDrivers,
+      sprintDrivers,
     } = session;
+
     const aRace = Array.isArray(raceResults)
       ? h2hDriverRecord(driverA, raceResults)
       : null;
@@ -6019,82 +6120,140 @@ async function h2hLoadPair(driverA, driverB, requestId) {
       ? h2hDriverRecord(driverB, sprintResults)
       : null;
 
-    if (Array.isArray(raceResults) && raceResults.length && !aRace)
-      statsA.raceDriverDataComplete = false;
-    if (Array.isArray(raceResults) && raceResults.length && !bRace)
-      statsB.raceDriverDataComplete = false;
+    const aRaceParticipated =
+      Array.isArray(raceDrivers) &&
+      h2hDriverRecord(driverA, raceDrivers) !== null;
+    const bRaceParticipated =
+      Array.isArray(raceDrivers) &&
+      h2hDriverRecord(driverB, raceDrivers) !== null;
+    const aQualParticipated =
+      Array.isArray(qualifyingDrivers) &&
+      h2hDriverRecord(driverA, qualifyingDrivers) !== null;
+    const bQualParticipated =
+      Array.isArray(qualifyingDrivers) &&
+      h2hDriverRecord(driverB, qualifyingDrivers) !== null;
+    const aSprintParticipated =
+      Array.isArray(sprintDrivers) &&
+      h2hDriverRecord(driverA, sprintDrivers) !== null;
+    const bSprintParticipated =
+      Array.isArray(sprintDrivers) &&
+      h2hDriverRecord(driverB, sprintDrivers) !== null;
+
     if (
-      race.qualifyingSessionKey &&
+      aRaceParticipated &&
+      Array.isArray(raceResults) &&
+      raceResults.length &&
+      !aRace
+    ) {
+      statsA.raceDriverDataComplete = false;
+    }
+
+    if (
+      bRaceParticipated &&
+      Array.isArray(raceResults) &&
+      raceResults.length &&
+      !bRace
+    ) {
+      statsB.raceDriverDataComplete = false;
+    }
+
+    if (
+      aQualParticipated &&
       Array.isArray(qualifyingResults) &&
       qualifyingResults.length &&
       !aQual
-    )
+    ) {
       statsA.qualifyingDriverDataComplete = false;
+    }
+
     if (
-      race.qualifyingSessionKey &&
+      bQualParticipated &&
       Array.isArray(qualifyingResults) &&
       qualifyingResults.length &&
       !bQual
-    )
+    ) {
       statsB.qualifyingDriverDataComplete = false;
-    if (aQual && h2hQualifyingReachedQ3(aQual) === null)
+    }
+
+    if (aQual && h2hQualifyingReachedQ3(aQual) === null) {
       statsA.q3DataComplete = false;
-    if (bQual && h2hQualifyingReachedQ3(bQual) === null)
+    }
+
+    if (bQual && h2hQualifyingReachedQ3(bQual) === null) {
       statsB.q3DataComplete = false;
+    }
+
     if (
-      race.sprintSessionKey &&
+      aSprintParticipated &&
       Array.isArray(sprintResults) &&
       sprintResults.length &&
       !aSprint
-    )
+    ) {
       statsA.sprintDriverDataComplete = false;
+    }
+
     if (
-      race.sprintSessionKey &&
+      bSprintParticipated &&
       Array.isArray(sprintResults) &&
       sprintResults.length &&
       !bSprint
-    )
+    ) {
       statsB.sprintDriverDataComplete = false;
+    }
 
     [
       [statsA, aRace],
       [statsB, bRace],
     ].forEach(([stats, result]) => {
       if (!result) return;
+
       const position = h2hResultPosition(result);
+
       if (position === 1) stats.wins += 1;
       if (position !== null && position <= 3) stats.podiums += 1;
       if (position !== null && position <= 10) stats.pointsFinishes += 1;
       if (result.dnf === true) stats.dnfs += 1;
-      if (position !== null)
+
+      if (position !== null) {
         stats.bestRace =
           stats.bestRace === null
             ? position
             : Math.min(stats.bestRace, position);
+      }
+
       if (result.dns === true) stats.dns += 1;
       if (result.dsq === true) stats.dsqs += 1;
     });
+
     [
       [statsA, aSprint],
       [statsB, bSprint],
     ].forEach(([stats, result]) => {
       if (!result) return;
+
       const position = h2hResultPosition(result);
+
       if (position === 1) stats.sprintWins += 1;
       if (position !== null && position <= 3) stats.sprintPodiums += 1;
     });
+
     [
       [statsA, aQual],
       [statsB, bQual],
     ].forEach(([stats, result]) => {
       if (!result) return;
+
       const position = h2hQualifyingPosition(result);
+
       if (position === 1) stats.poles += 1;
-      if (position !== null)
+
+      if (position !== null) {
         stats.bestQualifying =
           stats.bestQualifying === null
             ? position
             : Math.min(stats.bestQualifying, position);
+      }
+
       if (h2hQualifyingReachedQ3(result) === true) stats.q3 += 1;
     });
 
@@ -6125,16 +6284,21 @@ async function h2hLoadPair(driverA, driverB, requestId) {
   const raceResultsComplete = eventRows.every(
     (event) => event.raceResultsAvailable,
   );
+
   const qualifyingEvents = eventRows.filter(
     (event) => event.race.qualifyingSessionKey,
   );
+
   const qualifyingResultsComplete = qualifyingEvents.every(
     (event) => event.qualifyingAvailable,
   );
+
   const sprintEvents = eventRows.filter((event) => event.race.sprintSessionKey);
+
   const sprintResultsComplete = sprintEvents.every(
     (event) => event.sprintAvailable,
   );
+
   [statsA, statsB].forEach((stats) => {
     stats.raceResultsComplete = raceResultsComplete;
     stats.qualifyingResultsComplete = qualifyingResultsComplete;
@@ -6147,6 +6311,7 @@ async function h2hLoadPair(driverA, driverB, requestId) {
       const found = sessions.find(
         (session) => session.race.round === race.round,
       );
+
       return found &&
         Array.isArray(found.championship) &&
         found.championship.length
@@ -6156,6 +6321,7 @@ async function h2hLoadPair(driverA, driverB, requestId) {
     driverA,
     driverB,
   );
+
   return {
     races: completed,
     events: eventRows,
@@ -6551,28 +6717,8 @@ function h2hRenderComparison(driverA, driverB, comparison) {
         ? statsB.pointsFinishes
         : null,
     ],
-    [
-      "Pole positions",
-      statsA.qualifyingResultsComplete && statsA.qualifyingDriverDataComplete
-        ? statsA.poles
-        : null,
-      statsB.qualifyingResultsComplete && statsB.qualifyingDriverDataComplete
-        ? statsB.poles
-        : null,
-    ],
-    [
-      "Q3 appearances",
-      statsA.qualifyingResultsComplete &&
-      statsA.qualifyingDriverDataComplete &&
-      statsA.q3DataComplete
-        ? statsA.q3
-        : null,
-      statsB.qualifyingResultsComplete &&
-      statsB.qualifyingDriverDataComplete &&
-      statsB.q3DataComplete
-        ? statsB.q3
-        : null,
-    ],
+    ["Pole positions", statsA.poles, statsB.poles],
+    ["Q3 appearances", statsA.q3, statsB.q3],
     [
       "Best race finish",
       statsA.raceResultsComplete && statsA.raceDriverDataComplete
@@ -6585,12 +6731,8 @@ function h2hRenderComparison(driverA, driverB, comparison) {
     ],
     [
       "Best qualifying result",
-      statsA.qualifyingResultsComplete && statsA.qualifyingDriverDataComplete
-        ? statsA.bestQualifying
-        : null,
-      statsB.qualifyingResultsComplete && statsB.qualifyingDriverDataComplete
-        ? statsB.bestQualifying
-        : null,
+      statsA.bestQualifying,
+      statsB.bestQualifying,
       { lowerWins: true, format: h2hFormatPosition },
     ],
     [
