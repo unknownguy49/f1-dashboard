@@ -1154,6 +1154,13 @@ footer > span {
    RESPONSIVE
 ===================================================== */
 
+@media (min-width: 1024px) {
+  .hero {
+    margin-top: 50px;
+    padding-bottom: 40px;
+  }
+}
+
 @media (max-width: 900px) {
   main {
     width: 90%;
