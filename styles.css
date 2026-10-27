@@ -1156,8 +1156,8 @@ footer > span {
 
 @media (min-width: 1024px) {
   .hero {
-    margin-top: 50px;
-    padding-bottom: 40px;
+    margin-top: 20px;
+    padding-bottom: 20px;
   }
 }
 
