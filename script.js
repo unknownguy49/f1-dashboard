@@ -1626,6 +1626,7 @@ async function selectRaceSession(
   renderRaceClassification(race, sessionType);
   renderQualifying(race, sessionType);
   renderFastestLap(race, sessionType);
+  void loadRaceStrategyData(race, sessionType, selectionVersion);
 
   if (isSprint) {
     const gridFinishSection = document.getElementById("gridFinishSection");
@@ -1653,6 +1654,8 @@ async function selectRaceSession(
     renderRaceClassification(race, "sprint");
     renderQualifying(race, "sprint");
     renderFastestLap(race, "sprint");
+    const sprintStrategy = race.strategyBySession?.sprint;
+    if (sprintStrategy?.loaded) renderRaceStrategy(race, "sprint", sprintStrategy);
     return;
   }
 
@@ -1671,6 +1674,8 @@ async function selectRaceSession(
       renderQualifying(race, "race");
       renderFastestLap(race, "race");
       renderStartingGridFinish(race);
+      const raceStrategy = race.strategyBySession?.race;
+      if (raceStrategy?.loaded) renderRaceStrategy(race, "race", raceStrategy);
       raceStatusLabel.textContent = race.status;
       raceStatus.textContent = race.status;
     } catch (error) {
@@ -2459,6 +2464,387 @@ function createGridFinishRow(row) {
             ${move}
         </div>
     `;
+}
+
+/* =====================================================
+   TYRE STINTS AND PIT STRATEGY
+===================================================== */
+
+const raceStrategySection = document.getElementById("raceStrategySection");
+const raceStrategyContent = document.getElementById("raceStrategyContent");
+
+if (raceStrategyContent) {
+  raceStrategyContent.addEventListener("click", (event) => {
+    const viewMoreButton = event.target.closest(".pit-view-more");
+    if (viewMoreButton) {
+      const table = viewMoreButton.closest(".pit-strategy-block")?.querySelector(".pit-strategy-table");
+      if (!table) return;
+      const expanded = viewMoreButton.getAttribute("aria-expanded") === "true";
+      table.querySelectorAll(".pit-row-extra").forEach((row) => { row.hidden = expanded; });
+      viewMoreButton.setAttribute("aria-expanded", String(!expanded));
+      viewMoreButton.textContent = expanded ? "VIEW MORE STOPS" : "VIEW FEWER STOPS";
+      return;
+    }
+    if (!window.matchMedia("(max-width: 700px)").matches) return;
+    const row = event.target.closest(".stint-driver-row");
+    if (!row) return;
+    const expanded = row.classList.toggle("mobile-expanded");
+    row.setAttribute("aria-expanded", String(expanded));
+  });
+  raceStrategyContent.addEventListener("keydown", (event) => {
+    if (!window.matchMedia("(max-width: 700px)").matches) return;
+    if (event.key !== "Enter" && event.key !== " ") return;
+    const row = event.target.closest(".stint-driver-row");
+    if (!row) return;
+    event.preventDefault();
+    const expanded = row.classList.toggle("mobile-expanded");
+    row.setAttribute("aria-expanded", String(expanded));
+  });
+}
+
+function strategyEscape(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function strategyCompoundClass(compound) {
+  const value = String(compound || "unknown").trim().toLowerCase();
+  if (value.includes("soft")) return "soft";
+  if (value.includes("medium")) return "medium";
+  if (value.includes("hard")) return "hard";
+  if (value.includes("inter")) return "intermediate";
+  if (value.includes("wet")) return "wet";
+  return "unknown";
+}
+
+function strategyCompoundLabel(compound) {
+  const value = String(compound || "Unknown").trim();
+  const known = {
+    SOFT: "SOFT", MEDIUM: "MEDIUM", HARD: "HARD",
+    INTERMEDIATE: "INTERMEDIATE", WET: "WET",
+  };
+  return known[value.toUpperCase()] || value.toUpperCase();
+}
+
+function formatStrategyDuration(value) {
+  const seconds = Number(value);
+  if (!Number.isFinite(seconds) || seconds <= 0) return "—";
+  return `${seconds.toFixed(1)}s`;
+}
+
+function strategyDriverName(number, race, sessionType) {
+  const results = sessionType === "sprint" ? race.sprintResults : race.raceResults;
+  const result = results?.find((item) => Number(item.number) === Number(number));
+  if (result?.driver) return result.driver;
+  const driver = phase2State.drivers.find((item) => Number(item.number) === Number(number));
+  return driver?.name || `Driver #${number}`;
+}
+
+function renderRaceStrategy(race, sessionType = "race", state = null) {
+  if (!raceStrategySection || !raceStrategyContent) return;
+  const sessionStatus = sessionType === "sprint" ? race.sprintStatus : race.status;
+  raceStrategySection.hidden = false;
+
+  if (sessionStatus !== "COMPLETED") {
+    raceStrategyContent.innerHTML = `<div class="strategy-empty">${sessionStatus === "UPCOMING" || sessionStatus === "LIVE" ? "TYRE STINTS AND PIT STRATEGY WILL BE AVAILABLE AFTER THE SESSION." : "STRATEGY DATA IS NOT AVAILABLE FOR THIS SESSION."}</div>`;
+    return;
+  }
+
+  if (!state) {
+    raceStrategyContent.innerHTML = '<div class="strategy-loading">LOADING STINT AND PIT-STOP DATA</div>';
+    return;
+  }
+  if (state.error) {
+    raceStrategyContent.innerHTML = '<div class="strategy-empty">STRATEGY DATA COULD NOT BE LOADED. TRY SELECTING THIS SESSION AGAIN LATER.</div>';
+    return;
+  }
+
+  const stints = (state.stints || []).filter((item) =>
+    Number.isFinite(Number(item.driver_number)) &&
+    Number.isFinite(Number(item.lap_start)) &&
+    Number.isFinite(Number(item.lap_end)) &&
+    Number(item.lap_end) >= Number(item.lap_start)
+  );
+  const pits = (state.pits || []).filter((item) =>
+    Number.isFinite(Number(item.driver_number)) && Number.isFinite(Number(item.lap_number))
+  );
+
+  if (!stints.length && !pits.length) {
+    raceStrategyContent.innerHTML = '<div class="strategy-empty">OPENF1 HAS NOT PROVIDED TYRE STINT OR PIT-STOP DATA FOR THIS SESSION.</div>';
+    return;
+  }
+
+  const maxLap = Math.max(
+    Number(sessionType === "sprint" ? race.sprintTotalLaps : race.totalLaps) || 0,
+    ...stints.map((item) => Number(item.lap_end) || 0),
+    ...pits.map((item) => Number(item.lap_number) || 0),
+    1,
+  );
+  const resultData = sessionType === "sprint" ? race.sprintResults : race.raceResults;
+  const resultByNumber = new Map((resultData || []).map((item) => {
+    const rawPosition = item.position;
+    const numericPosition = rawPosition === null || rawPosition === undefined || String(rawPosition).trim() === "" ? NaN : Number(rawPosition);
+    return [Number(item.number), {
+      ...item,
+      position: Number.isFinite(numericPosition) && numericPosition > 0 ? numericPosition : null,
+    }];
+  }));
+  const driverNumbers = [...new Set([
+    ...(resultData || []).map((item) => Number(item.number)),
+    ...stints.map((item) => Number(item.driver_number)),
+    ...pits.map((item) => Number(item.driver_number)),
+  ])].filter(Number.isFinite);
+
+  const driverTeam = (number) => {
+    const result = resultByNumber.get(number);
+    const fallback = phase2State.drivers.find((item) => Number(item.number) === number);
+    return result?.team || result?.team_name || fallback?.team || fallback?.team_name || "Team unavailable";
+  };
+  const teamGroups = new Map();
+  driverNumbers.forEach((number) => {
+    const driverStints = stints.filter((item) => Number(item.driver_number) === number)
+      .sort((a, b) => Number(a.stint_number || a.lap_start) - Number(b.stint_number || b.lap_start));
+    if (!driverStints.length) return;
+    const team = driverTeam(number);
+    if (!teamGroups.has(team)) teamGroups.set(team, []);
+    teamGroups.get(team).push({ number, driverStints, result: resultByNumber.get(number) });
+  });
+  const orderedTeams = [...teamGroups.entries()].sort(([teamA, driversA], [teamB, driversB]) => {
+    const positionsA = driversA.map((driver) => driver.result?.position).filter(Number.isFinite).sort((a, b) => a - b);
+    const positionsB = driversB.map((driver) => driver.result?.position).filter(Number.isFinite).sort((a, b) => a - b);
+    const bestA = positionsA[0] ?? Infinity;
+    const bestB = positionsB[0] ?? Infinity;
+    if (bestA !== bestB) return bestA - bestB;
+    const sumA = positionsA.reduce((sum, position) => sum + position, 0);
+    const sumB = positionsB.reduce((sum, position) => sum + position, 0);
+    if (sumA !== sumB) return sumA - sumB;
+    return teamA.localeCompare(teamB);
+  });
+
+  const stintRows = orderedTeams.map(([team, teamDrivers], teamIndex) => {
+    teamDrivers.sort((a, b) => {
+      const positionA = a.result?.position ?? Infinity;
+      const positionB = b.result?.position ?? Infinity;
+      if (positionA !== positionB) return positionA - positionB;
+      return a.number - b.number;
+    });
+    const teamClass = getTeamClass(team);
+    const teamColor = phase2TeamColor(team) || "#555555";
+    const rows = teamDrivers.map(({ number, driverStints, result }) => {
+      const driverName = strategyDriverName(number, race, sessionType);
+      const shortName = driverName.split(/\s+/).slice(-1)[0];
+      const finishPosition = Number.isFinite(result?.position)
+        ? `P${result.position}`
+        : result?.dsq
+          ? "DSQ"
+          : result?.dns
+            ? "DNS"
+            : result?.dnf
+              ? "DNF"
+              : "DNF";
+      const segments = driverStints.map((stint) => {
+        const start = Math.max(1, Number(stint.lap_start));
+        const end = Math.max(start, Number(stint.lap_end));
+        const width = Math.max(0.8, ((end - start + 1) / maxLap) * 100);
+        const compound = strategyCompoundLabel(stint.compound);
+        return `<div class="stint-segment ${strategyCompoundClass(stint.compound)}" style="width:${width}%" title="${strategyEscape(`${compound}: laps ${start}–${end}`)}" aria-hidden="true"><span>${strategyEscape(compound)}</span><b>${start}–${end}</b></div>`;
+      }).join("");
+      const mobileDetails = driverStints.map((stint) => {
+        const start = Math.max(1, Number(stint.lap_start));
+        const end = Math.max(start, Number(stint.lap_end));
+        const compound = strategyCompoundLabel(stint.compound);
+        return `<span class="stint-mobile-detail"><i class="${strategyCompoundClass(stint.compound)}"></i><strong>${strategyEscape(compound)}</strong><span>Laps ${start}–${end}</span></span>`;
+      }).join("");
+      const total = driverStints.reduce((sum, stint) => sum + Math.max(0, Number(stint.lap_end) - Number(stint.lap_start) + 1), 0);
+      return `<div class="stint-driver-row" tabindex="0" role="button" aria-expanded="false" aria-label="${strategyEscape(`${driverName}, ${finishPosition}. Tap to view tyre compounds and lap ranges`)}"><div class="stint-driver-name"><strong>${strategyEscape(shortName)}</strong><span class="stint-driver-finish">${finishPosition}</span><span>#${number}</span></div><div class="stint-timeline">${segments}</div><div class="stint-lap-total">${total} L</div><div class="stint-mobile-details">${mobileDetails}</div></div>`;
+    }).join("");
+    return `<section class="stint-team-group team-${strategyEscape(teamClass)}" style="--team-color:${strategyEscape(teamColor)}"><header class="stint-team-heading"><div><span class="stint-team-rank">${String(teamIndex + 1).padStart(2, "0")}</span><h4>${strategyEscape(team)}</h4></div></header>${rows}</section>`;
+  }).join("");
+
+  const sortedPits = pits.slice().sort((a, b) => Number(a.lap_number) - Number(b.lap_number) || Number(a.driver_number) - Number(b.driver_number));
+  const pitRows = sortedPits.map((pit, index) => {
+    const number = Number(pit.driver_number);
+    const name = strategyDriverName(number, race, sessionType);
+    const stop = pit.pit_duration ?? null;
+    const lapStints = stints.filter((item) => Number(item.driver_number) === number && Number(item.lap_start) >= Number(pit.lap_number))
+      .sort((a, b) => Number(a.lap_start) - Number(b.lap_start));
+    const nextStint = lapStints[0];
+    const compound = nextStint ? strategyCompoundLabel(nextStint.compound) : "—";
+    return `<div class="pit-strategy-row${index >= 5 ? " pit-row-extra" : ""}"${index >= 5 ? " hidden" : ""}><span class="pit-lap">L${Number(pit.lap_number)}</span><div class="pit-driver"><strong>${strategyEscape(name)}</strong><span>#${number}</span></div><span class="pit-duration">${formatStrategyDuration(stop)}</span><span class="pit-tyre">${strategyEscape(compound)}</span></div>`;
+  }).join("");
+
+  const stationaryPitRecords = sortedPits
+    .map((pit) => ({ pit, duration: Number(pit.stop_duration ?? pit.stopDuration) }))
+    .filter(({ duration }) => Number.isFinite(duration) && duration > 0);
+  const fastestDurationRecord = stationaryPitRecords.slice().sort((a, b) => a.duration - b.duration)[0] || null;
+  const fastestPit = fastestDurationRecord ? fastestDurationRecord.duration : null;
+  const fastestPitRecord = fastestDurationRecord?.pit || null;
+  const fastestPitDriver = fastestPitRecord ? strategyDriverName(Number(fastestPitRecord.driver_number), race, sessionType) : "—";
+  const averagePit = stationaryPitRecords.length ? stationaryPitRecords.reduce((sum, record) => sum + record.duration, 0) / stationaryPitRecords.length : null;
+  const durationSourceNote = stationaryPitRecords.length
+    ? `${stationaryPitRecords.length} stops with stationary-time data`
+    : "Stationary stop times unavailable for this session";
+  const stopCounts = new Map();
+  sortedPits.forEach((pit) => {
+    const number = Number(pit.driver_number);
+    stopCounts.set(number, (stopCounts.get(number) || 0) + 1);
+  });
+  const mostStopsEntry = [...stopCounts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
+  const mostStopsName = mostStopsEntry ? strategyDriverName(mostStopsEntry[0], race, sessionType) : "—";
+  const teamStopCounts = new Map();
+  stopCounts.forEach((count, number) => {
+    const team = driverTeam(number);
+    if (!teamStopCounts.has(team)) teamStopCounts.set(team, []);
+    teamStopCounts.get(team).push({ number, count });
+  });
+  const differingTeammates = [...teamStopCounts.entries()].find(([, drivers]) => drivers.length > 1 && new Set(drivers.map((driver) => driver.count)).size > 1);
+  const strategyInsights = [];
+  if (mostStopsEntry) strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">MOST STOPS</span><strong>${strategyEscape(mostStopsName)}</strong><span>${mostStopsEntry[1]} recorded ${mostStopsEntry[1] === 1 ? "stop" : "stops"}</span></div>`);
+  const oneStopDrivers = [...stopCounts.entries()].filter(([, count]) => count === 1).length;
+  const twoStopDrivers = [...stopCounts.entries()].filter(([, count]) => count === 2).length;
+  if (oneStopDrivers || twoStopDrivers) strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">STOP COUNT</span><strong>${oneStopDrivers} one-stop · ${twoStopDrivers} two-stop</strong><span>Among drivers with recorded pit stops</span></div>`);
+  if (differingTeammates) {
+    const [team, drivers] = differingTeammates;
+    const high = drivers.slice().sort((a, b) => b.count - a.count)[0];
+    const low = drivers.slice().sort((a, b) => a.count - b.count)[0];
+    strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">TEAMMATE SPLIT</span><strong>${strategyEscape(team)}</strong><span>${strategyEscape(strategyDriverName(high.number, race, sessionType))}: ${high.count} stops · ${strategyEscape(strategyDriverName(low.number, race, sessionType))}: ${low.count}</span></div>`);
+  }
+
+  const compoundCounts = new Map();
+  stints.forEach((stint) => {
+    const compound = strategyCompoundLabel(stint.compound);
+    compoundCounts.set(compound, (compoundCounts.get(compound) || 0) + 1);
+  });
+  const legend = [...compoundCounts.keys()].map((compound) => `<span class="stint-legend-item"><i class="${strategyCompoundClass(compound)}"></i>${strategyEscape(compound)}</span>`).join("");
+
+  raceStrategyContent.innerHTML = `
+    <div class="strategy-summary"><span>${driverNumbers.length} DRIVERS TRACKED</span><span>${stints.length} RECORDED STINTS</span><span>${pits.length} RECORDED STOPS</span></div>
+    <div class="strategy-block"><div class="strategy-block-heading"><div><span class="eyebrow">COMPOUND USAGE</span><h3>Tyre stint timeline</h3></div><div class="stint-legend">${legend}</div></div>
+      <div class="stint-lap-axis"><span>DRIVER</span><div><span>LAP 1</span><span>LAP ${maxLap}</span></div><span>TOTAL</span></div>
+      <div class="stint-timeline-list">${stintRows || '<div class="strategy-empty">NO VALID TYRE STINT RECORDS FOR THIS SESSION.</div>'}</div>
+    </div>
+    <div class="strategy-pit-overview">
+      <div class="strategy-block-heading strategy-overview-heading"><div><span class="eyebrow">PIT LANE ANALYSIS</span><h3>Pit-stop overview</h3></div></div>
+      <div class="strategy-stat-grid">
+        <article class="strategy-stat-card"><span>FASTEST PIT STOP</span><strong>${fastestPit === null ? "—" : `${fastestPit.toFixed(2)}s`}</strong><small>${fastestPit === null ? "Stationary stop time unavailable" : `${strategyEscape(fastestPitDriver)} · Lap ${Number(fastestPitRecord.lap_number)}`}</small></article>
+        <article class="strategy-stat-card"><span>AVERAGE STOP</span><strong>${averagePit === null ? "—" : `${averagePit.toFixed(2)}s`}</strong><small>${durationSourceNote}</small></article>
+        <article class="strategy-stat-card"><span>TOTAL STOPS</span><strong>${pits.length}</strong><small>Recorded pit-stop events</small></article>
+        <article class="strategy-stat-card"><span>STOP COUNT</span><strong>${oneStopDrivers} one-stop · ${twoStopDrivers} two-stop</strong><small>Among drivers with recorded pit stops</small></article>
+      </div>
+      
+      <div class="strategy-block pit-strategy-block"><div class="strategy-block-heading"><div><span class="eyebrow">LAP-BY-LAP RECORD</span><h3>Pit-stop timeline</h3></div><span class="strategy-block-note">${pits.length} STOPS RECORDED</span></div>
+      ${pits.length ? `<div class="pit-strategy-table"><div class="pit-strategy-head"><span>LAP</span><span>DRIVER</span><span>PIT LANE</span><span>NEXT TYRE</span></div>${pitRows}</div>${pits.length > 5 ? '<button type="button" class="pit-view-more" aria-expanded="false">VIEW MORE STOPS</button>' : ""}` : '<div class="strategy-empty">NO PIT-STOP RECORDS WERE RETURNED FOR THIS SESSION.</div>'}
+    </div>
+    </div>
+    <p class="strategy-footnote">${stationaryPitRecords.length ? "Fastest and average pit stops use stationary stop_duration values only. The lap-by-lap table shows pit-lane time separately." : "OpenF1 did not supply stationary stop_duration values for this session. Pit-lane transit times are not substituted; fastest and average stationary stop times remain unavailable."}</p>`;
+}
+
+async function loadRaceStrategyData(race, sessionType, selectionVersion) {
+  const sessionKey = sessionType === "sprint" ? race.sprintSessionKey : race.sessionKey;
+  const sessionStatus = sessionType === "sprint" ? race.sprintStatus : race.status;
+  if (!raceStrategySection || !raceStrategyContent) return;
+  if (sessionStatus !== "COMPLETED" || !sessionKey) {
+    renderRaceStrategy(race, sessionType);
+    return;
+  }
+
+  race.strategyBySession ||= {};
+  const cacheKey = String(sessionType);
+  if (race.strategyBySession[cacheKey]?.loading) {
+    renderRaceStrategy(race, sessionType, race.strategyBySession[cacheKey]);
+    return race.strategyBySession[cacheKey].loading;
+  }
+  if (race.strategyBySession[cacheKey]?.loaded) {
+    renderRaceStrategy(race, sessionType, race.strategyBySession[cacheKey]);
+    return;
+  }
+
+  const state = race.strategyBySession[cacheKey] = { loaded: false, stints: [], pits: [] };
+  renderRaceStrategy(race, sessionType, state);
+  state.loading = (async () => {
+    const [stintsResult, pitsResult] = await Promise.allSettled([
+      fetchOpenF1("stints", { session_key: sessionKey }),
+      fetchOpenF1("pit", { session_key: sessionKey }),
+    ]);
+    if (stintsResult.status === "fulfilled") state.stints = Array.isArray(stintsResult.value) ? stintsResult.value : [];
+    if (pitsResult.status === "fulfilled") state.pits = Array.isArray(pitsResult.value) ? pitsResult.value : [];
+
+    try {
+  const indexResponse = await fetch("/api/bigdataf1?raceId=jumper");
+
+if (!indexResponse.ok) {
+  throw new Error(`BigDataF1 race index failed: ${indexResponse.status}`);
+}
+
+const raceIndex = await indexResponse.json();
+
+const raceYear = Number(race.year ?? race.season ?? 2026);
+const raceRound = Number(race.round);
+
+const matchingRace = raceIndex.races?.find(
+  (item) => Number(item.year) === raceYear && Number(item.round) === raceRound
+);
+
+if (!matchingRace) {
+  throw new Error(`BigDataF1 race not found for ${raceYear}, round ${raceRound}`);
+}
+
+const bigDataResponse = await fetch(
+  `/api/bigdataf1?raceId=${matchingRace.raceId}`
+);
+
+  if (bigDataResponse.ok) {
+    const bigData = await bigDataResponse.json();
+    const bigDataPitStops = bigData.details?.pitstops ?? [];
+
+    const normalizePitDriverName = (value) =>
+      String(value ?? "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+
+    const stationaryTimes = new Map();
+
+    for (const stop of bigDataPitStops) {
+      stationaryTimes.set(
+        `${normalizePitDriverName(stop.fullName)}:${Number(stop.lap)}`,
+        Number(stop.time)
+      );
+    }
+
+    state.pits = state.pits.map((pit) => {
+      const driverName = strategyDriverName(
+        Number(pit.driver_number),
+        race,
+        sessionType
+      );
+
+      const duration = stationaryTimes.get(
+        `${normalizePitDriverName(driverName)}:${Number(pit.lap_number)}`
+      );
+
+      return {
+        ...pit,
+        stop_duration: Number.isFinite(duration) ? duration : null
+      };
+    });
+  }
+} catch (error) {
+  console.warn("BigDataF1 pit-stop data unavailable:", error);
+}
+
+    if (stintsResult.status === "rejected" && pitsResult.status === "rejected") state.error = true;
+    state.loaded = true;
+    state.loading = null;
+    if (selectionVersion !== raceSelectionVersion || activeRaceSession !== sessionType) return;
+    renderRaceStrategy(race, sessionType, state);
+  })();
+  return state.loading;
 }
 
 /* =====================================================
