@@ -17,11 +17,19 @@
     <div class="page-loader" id="pageLoader" aria-label="Loading F1 dashboard">
       <div class="loader-content">
         <div class="loader-logo">
-          F1<span style="color: #fff; padding-left: 10px">26</span>
+          F1<span style="color: #fff; padding-left: 25px">26</span>
         </div>
         <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
         <div class="loader-progress" aria-hidden="true">
           <div class="loader-progress-bar" id="loaderProgressBar"></div>
+          <div class="loader-car" id="loaderCar">
+            <img
+              src="images/loader-f1-car.png"
+              alt=""
+              aria-hidden="true"
+              draggable="false"
+            />
+          </div>
         </div>
         <div class="loader-meta">
           <span>LOADING ASSETS</span>
@@ -715,14 +723,27 @@
             </div>
           </section>
 
-          <section class="section strategy-section" id="raceStrategySection" hidden>
+          <section
+            class="section strategy-section"
+            id="raceStrategySection"
+            hidden
+          >
             <div class="section-heading strategy-heading">
               <span class="eyebrow">RACE ANALYSIS</span>
               <h2>Tyre Stints <span>&amp;</span> Pit Strategy</h2>
-              <p>Actual tyre compound usage and recorded pit stops for this session.</p>
+              <p>
+                Actual tyre compound usage and recorded pit stops for this
+                session.
+              </p>
             </div>
-            <div id="raceStrategyContent" class="race-strategy-content" aria-live="polite">
-              <div class="strategy-loading">LOADING STINT AND PIT-STOP DATA</div>
+            <div
+              id="raceStrategyContent"
+              class="race-strategy-content"
+              aria-live="polite"
+            >
+              <div class="strategy-loading">
+                LOADING STINT AND PIT-STOP DATA
+              </div>
             </div>
           </section>
         </section>

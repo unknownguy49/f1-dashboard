@@ -1200,7 +1200,7 @@ function getTeamClass(teamName = "") {
 }
 
 async function initializeOpenF1() {
-  loaderStatus.textContent = "CONNECTING TO OPENF1";
+  if (!LOADER_DEV_MODE) loaderStatus.textContent = "CONNECTING TO OPENF1";
 
   try {
     const liveRaces = await loadOpenF1Calendar();
@@ -1213,25 +1213,22 @@ async function initializeOpenF1() {
     const navigationControls = document.querySelector(".navigation-controls");
     if (navigationControls) navigationControls.hidden = false;
     if (emptyState) emptyState.hidden = false;
-    loaderStatus.textContent = "BUILDING 2026 CALENDAR";
+    if (!LOADER_DEV_MODE) loaderStatus.textContent = "BUILDING 2026 CALENDAR";
     raceTrack.innerHTML = "";
     buildRaceSelector();
 
-    loaderProgressBar.style.width = "70%";
-    loaderPercentage.textContent = "70%";
-    loaderStatus.textContent = "RACE DATA READY";
+    setLoaderProgress(70);
+    if (!LOADER_DEV_MODE) loaderStatus.textContent = "RACE DATA READY";
 
     await new Promise((resolve) => setTimeout(resolve, 180));
 
-    loaderProgressBar.style.width = "100%";
-    loaderPercentage.textContent = "100%";
+    setLoaderProgress(100);
 
     return true;
   } catch (error) {
     console.error("OpenF1 initialization failed:", error);
-    loaderProgressBar.style.width = "100%";
-    loaderPercentage.textContent = "100%";
-    loaderStatus.textContent = "OFFLINE DATA READY";
+    setLoaderProgress(100);
+    if (!LOADER_DEV_MODE) loaderStatus.textContent = "OFFLINE DATA READY";
     raceTrack.innerHTML = "";
     buildRaceSelector();
     if (!races.length) {
@@ -1333,10 +1330,39 @@ const driverImages = {
    INITIAL IMAGE PRELOADER
 ===================================================== */
 
+const LOADER_DEV_MODE = false;
+
 const pageLoader = document.getElementById("pageLoader");
 const loaderProgressBar = document.getElementById("loaderProgressBar");
 const loaderPercentage = document.getElementById("loaderPercentage");
 const loaderStatus = document.getElementById("loaderStatus");
+const loaderCar = document.getElementById("loaderCar");
+if (LOADER_DEV_MODE) {
+  loaderStatus.textContent = "INITIALIZING RACE DATA";
+  setTimeout(() => setLoaderProgress(0), 0);
+}
+
+function setLoaderProgress(percentage) {
+  const progress = LOADER_DEV_MODE ? 0 : Math.max(0, Math.min(100, percentage));
+  loaderProgressBar.style.width = `${progress}%`;
+  loaderPercentage.textContent = `${progress}%`;
+
+  const trackWidth = loaderProgressBar.parentElement.clientWidth;
+  const carWidth = loaderCar.offsetWidth;
+  const isMobile = window.matchMedia("(max-width: 600px)").matches;
+  const startOffset = isMobile ? 0 : -46;
+  const endOffset = isMobile ? 0 : 23;
+
+  const start = startOffset;
+  const end = trackWidth - carWidth + endOffset;
+
+  loaderCar.style.left = `${start + (end - start) * (progress / 100)}px`;
+}
+
+window.addEventListener("resize", () => {
+  const currentProgress = Number.parseFloat(loaderPercentage.textContent) || 0;
+  setLoaderProgress(currentProgress);
+});
 
 /*
    Preload the assets needed for the first useful interaction.
@@ -1380,7 +1406,7 @@ async function preloadInitialImages() {
   const total = uniqueInitialImages.length;
 
   if (!total) {
-    pageLoader.classList.add("hidden");
+    if (!LOADER_DEV_MODE) pageLoader.classList.add("hidden");
     return;
   }
 
@@ -1389,8 +1415,7 @@ async function preloadInitialImages() {
   const updateProgress = () => {
     loaded++;
     const percentage = Math.round((loaded / total) * 40);
-    loaderProgressBar.style.width = `${percentage}%`;
-    loaderPercentage.textContent = `${percentage}%`;
+    setLoaderProgress(percentage);
   };
 
   await Promise.all(
@@ -1655,7 +1680,8 @@ async function selectRaceSession(
     renderQualifying(race, "sprint");
     renderFastestLap(race, "sprint");
     const sprintStrategy = race.strategyBySession?.sprint;
-    if (sprintStrategy?.loaded) renderRaceStrategy(race, "sprint", sprintStrategy);
+    if (sprintStrategy?.loaded)
+      renderRaceStrategy(race, "sprint", sprintStrategy);
     return;
   }
 
@@ -2477,12 +2503,18 @@ if (raceStrategyContent) {
   raceStrategyContent.addEventListener("click", (event) => {
     const viewMoreButton = event.target.closest(".pit-view-more");
     if (viewMoreButton) {
-      const table = viewMoreButton.closest(".pit-strategy-block")?.querySelector(".pit-strategy-table");
+      const table = viewMoreButton
+        .closest(".pit-strategy-block")
+        ?.querySelector(".pit-strategy-table");
       if (!table) return;
       const expanded = viewMoreButton.getAttribute("aria-expanded") === "true";
-      table.querySelectorAll(".pit-row-extra").forEach((row) => { row.hidden = expanded; });
+      table.querySelectorAll(".pit-row-extra").forEach((row) => {
+        row.hidden = expanded;
+      });
       viewMoreButton.setAttribute("aria-expanded", String(!expanded));
-      viewMoreButton.textContent = expanded ? "VIEW MORE STOPS" : "VIEW FEWER STOPS";
+      viewMoreButton.textContent = expanded
+        ? "VIEW MORE STOPS"
+        : "VIEW FEWER STOPS";
       return;
     }
     if (!window.matchMedia("(max-width: 700px)").matches) return;
@@ -2512,7 +2544,9 @@ function strategyEscape(value) {
 }
 
 function strategyCompoundClass(compound) {
-  const value = String(compound || "unknown").trim().toLowerCase();
+  const value = String(compound || "unknown")
+    .trim()
+    .toLowerCase();
   if (value.includes("soft")) return "soft";
   if (value.includes("medium")) return "medium";
   if (value.includes("hard")) return "hard";
@@ -2524,8 +2558,11 @@ function strategyCompoundClass(compound) {
 function strategyCompoundLabel(compound) {
   const value = String(compound || "Unknown").trim();
   const known = {
-    SOFT: "SOFT", MEDIUM: "MEDIUM", HARD: "HARD",
-    INTERMEDIATE: "INTERMEDIATE", WET: "WET",
+    SOFT: "SOFT",
+    MEDIUM: "MEDIUM",
+    HARD: "HARD",
+    INTERMEDIATE: "INTERMEDIATE",
+    WET: "WET",
   };
   return known[value.toUpperCase()] || value.toUpperCase();
 }
@@ -2537,16 +2574,22 @@ function formatStrategyDuration(value) {
 }
 
 function strategyDriverName(number, race, sessionType) {
-  const results = sessionType === "sprint" ? race.sprintResults : race.raceResults;
-  const result = results?.find((item) => Number(item.number) === Number(number));
+  const results =
+    sessionType === "sprint" ? race.sprintResults : race.raceResults;
+  const result = results?.find(
+    (item) => Number(item.number) === Number(number),
+  );
   if (result?.driver) return result.driver;
-  const driver = phase2State.drivers.find((item) => Number(item.number) === Number(number));
+  const driver = phase2State.drivers.find(
+    (item) => Number(item.number) === Number(number),
+  );
   return driver?.name || `Driver #${number}`;
 }
 
 function renderRaceStrategy(race, sessionType = "race", state = null) {
   if (!raceStrategySection || !raceStrategyContent) return;
-  const sessionStatus = sessionType === "sprint" ? race.sprintStatus : race.status;
+  const sessionStatus =
+    sessionType === "sprint" ? race.sprintStatus : race.status;
   raceStrategySection.hidden = false;
 
   if (sessionStatus !== "COMPLETED") {
@@ -2555,136 +2598,226 @@ function renderRaceStrategy(race, sessionType = "race", state = null) {
   }
 
   if (!state) {
-    raceStrategyContent.innerHTML = '<div class="strategy-loading">LOADING STINT AND PIT-STOP DATA</div>';
+    raceStrategyContent.innerHTML =
+      '<div class="strategy-loading">LOADING STINT AND PIT-STOP DATA</div>';
     return;
   }
   if (state.error) {
-    raceStrategyContent.innerHTML = '<div class="strategy-empty">STRATEGY DATA COULD NOT BE LOADED. TRY SELECTING THIS SESSION AGAIN LATER.</div>';
+    raceStrategyContent.innerHTML =
+      '<div class="strategy-empty">STRATEGY DATA COULD NOT BE LOADED. TRY SELECTING THIS SESSION AGAIN LATER.</div>';
     return;
   }
 
-  const stints = (state.stints || []).filter((item) =>
-    Number.isFinite(Number(item.driver_number)) &&
-    Number.isFinite(Number(item.lap_start)) &&
-    Number.isFinite(Number(item.lap_end)) &&
-    Number(item.lap_end) >= Number(item.lap_start)
+  const stints = (state.stints || []).filter(
+    (item) =>
+      Number.isFinite(Number(item.driver_number)) &&
+      Number.isFinite(Number(item.lap_start)) &&
+      Number.isFinite(Number(item.lap_end)) &&
+      Number(item.lap_end) >= Number(item.lap_start),
   );
-  const pits = (state.pits || []).filter((item) =>
-    Number.isFinite(Number(item.driver_number)) && Number.isFinite(Number(item.lap_number))
+  const pits = (state.pits || []).filter(
+    (item) =>
+      Number.isFinite(Number(item.driver_number)) &&
+      Number.isFinite(Number(item.lap_number)),
   );
 
   if (!stints.length && !pits.length) {
-    raceStrategyContent.innerHTML = '<div class="strategy-empty">OPENF1 HAS NOT PROVIDED TYRE STINT OR PIT-STOP DATA FOR THIS SESSION.</div>';
+    raceStrategyContent.innerHTML =
+      '<div class="strategy-empty">OPENF1 HAS NOT PROVIDED TYRE STINT OR PIT-STOP DATA FOR THIS SESSION.</div>';
     return;
   }
 
   const maxLap = Math.max(
-    Number(sessionType === "sprint" ? race.sprintTotalLaps : race.totalLaps) || 0,
+    Number(sessionType === "sprint" ? race.sprintTotalLaps : race.totalLaps) ||
+      0,
     ...stints.map((item) => Number(item.lap_end) || 0),
     ...pits.map((item) => Number(item.lap_number) || 0),
     1,
   );
-  const resultData = sessionType === "sprint" ? race.sprintResults : race.raceResults;
-  const resultByNumber = new Map((resultData || []).map((item) => {
-    const rawPosition = item.position;
-    const numericPosition = rawPosition === null || rawPosition === undefined || String(rawPosition).trim() === "" ? NaN : Number(rawPosition);
-    return [Number(item.number), {
-      ...item,
-      position: Number.isFinite(numericPosition) && numericPosition > 0 ? numericPosition : null,
-    }];
-  }));
-  const driverNumbers = [...new Set([
-    ...(resultData || []).map((item) => Number(item.number)),
-    ...stints.map((item) => Number(item.driver_number)),
-    ...pits.map((item) => Number(item.driver_number)),
-  ])].filter(Number.isFinite);
+  const resultData =
+    sessionType === "sprint" ? race.sprintResults : race.raceResults;
+  const resultByNumber = new Map(
+    (resultData || []).map((item) => {
+      const rawPosition = item.position;
+      const numericPosition =
+        rawPosition === null ||
+        rawPosition === undefined ||
+        String(rawPosition).trim() === ""
+          ? NaN
+          : Number(rawPosition);
+      return [
+        Number(item.number),
+        {
+          ...item,
+          position:
+            Number.isFinite(numericPosition) && numericPosition > 0
+              ? numericPosition
+              : null,
+        },
+      ];
+    }),
+  );
+  const driverNumbers = [
+    ...new Set([
+      ...(resultData || []).map((item) => Number(item.number)),
+      ...stints.map((item) => Number(item.driver_number)),
+      ...pits.map((item) => Number(item.driver_number)),
+    ]),
+  ].filter(Number.isFinite);
 
   const driverTeam = (number) => {
     const result = resultByNumber.get(number);
-    const fallback = phase2State.drivers.find((item) => Number(item.number) === number);
-    return result?.team || result?.team_name || fallback?.team || fallback?.team_name || "Team unavailable";
+    const fallback = phase2State.drivers.find(
+      (item) => Number(item.number) === number,
+    );
+    return (
+      result?.team ||
+      result?.team_name ||
+      fallback?.team ||
+      fallback?.team_name ||
+      "Team unavailable"
+    );
   };
   const teamGroups = new Map();
   driverNumbers.forEach((number) => {
-    const driverStints = stints.filter((item) => Number(item.driver_number) === number)
-      .sort((a, b) => Number(a.stint_number || a.lap_start) - Number(b.stint_number || b.lap_start));
+    const driverStints = stints
+      .filter((item) => Number(item.driver_number) === number)
+      .sort(
+        (a, b) =>
+          Number(a.stint_number || a.lap_start) -
+          Number(b.stint_number || b.lap_start),
+      );
     if (!driverStints.length) return;
     const team = driverTeam(number);
     if (!teamGroups.has(team)) teamGroups.set(team, []);
-    teamGroups.get(team).push({ number, driverStints, result: resultByNumber.get(number) });
+    teamGroups
+      .get(team)
+      .push({ number, driverStints, result: resultByNumber.get(number) });
   });
-  const orderedTeams = [...teamGroups.entries()].sort(([teamA, driversA], [teamB, driversB]) => {
-    const positionsA = driversA.map((driver) => driver.result?.position).filter(Number.isFinite).sort((a, b) => a - b);
-    const positionsB = driversB.map((driver) => driver.result?.position).filter(Number.isFinite).sort((a, b) => a - b);
-    const bestA = positionsA[0] ?? Infinity;
-    const bestB = positionsB[0] ?? Infinity;
-    if (bestA !== bestB) return bestA - bestB;
-    const sumA = positionsA.reduce((sum, position) => sum + position, 0);
-    const sumB = positionsB.reduce((sum, position) => sum + position, 0);
-    if (sumA !== sumB) return sumA - sumB;
-    return teamA.localeCompare(teamB);
-  });
+  const orderedTeams = [...teamGroups.entries()].sort(
+    ([teamA, driversA], [teamB, driversB]) => {
+      const positionsA = driversA
+        .map((driver) => driver.result?.position)
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b);
+      const positionsB = driversB
+        .map((driver) => driver.result?.position)
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b);
+      const bestA = positionsA[0] ?? Infinity;
+      const bestB = positionsB[0] ?? Infinity;
+      if (bestA !== bestB) return bestA - bestB;
+      const sumA = positionsA.reduce((sum, position) => sum + position, 0);
+      const sumB = positionsB.reduce((sum, position) => sum + position, 0);
+      if (sumA !== sumB) return sumA - sumB;
+      return teamA.localeCompare(teamB);
+    },
+  );
 
-  const stintRows = orderedTeams.map(([team, teamDrivers], teamIndex) => {
-    teamDrivers.sort((a, b) => {
-      const positionA = a.result?.position ?? Infinity;
-      const positionB = b.result?.position ?? Infinity;
-      if (positionA !== positionB) return positionA - positionB;
-      return a.number - b.number;
-    });
-    const teamClass = getTeamClass(team);
-    const teamColor = phase2TeamColor(team) || "#555555";
-    const rows = teamDrivers.map(({ number, driverStints, result }) => {
-      const driverName = strategyDriverName(number, race, sessionType);
-      const shortName = driverName.split(/\s+/).slice(-1)[0];
-      const finishPosition = Number.isFinite(result?.position)
-        ? `P${result.position}`
-        : result?.dsq
-          ? "DSQ"
-          : result?.dns
-            ? "DNS"
-            : result?.dnf
-              ? "DNF"
-              : "DNF";
-      const segments = driverStints.map((stint) => {
-        const start = Math.max(1, Number(stint.lap_start));
-        const end = Math.max(start, Number(stint.lap_end));
-        const width = Math.max(0.8, ((end - start + 1) / maxLap) * 100);
-        const compound = strategyCompoundLabel(stint.compound);
-        return `<div class="stint-segment ${strategyCompoundClass(stint.compound)}" style="width:${width}%" title="${strategyEscape(`${compound}: laps ${start}–${end}`)}" aria-hidden="true"><span>${strategyEscape(compound)}</span><b>${start}–${end}</b></div>`;
-      }).join("");
-      const mobileDetails = driverStints.map((stint) => {
-        const start = Math.max(1, Number(stint.lap_start));
-        const end = Math.max(start, Number(stint.lap_end));
-        const compound = strategyCompoundLabel(stint.compound);
-        return `<span class="stint-mobile-detail"><i class="${strategyCompoundClass(stint.compound)}"></i><strong>${strategyEscape(compound)}</strong><span>Laps ${start}–${end}</span></span>`;
-      }).join("");
-      const total = driverStints.reduce((sum, stint) => sum + Math.max(0, Number(stint.lap_end) - Number(stint.lap_start) + 1), 0);
-      return `<div class="stint-driver-row" tabindex="0" role="button" aria-expanded="false" aria-label="${strategyEscape(`${driverName}, ${finishPosition}. Tap to view tyre compounds and lap ranges`)}"><div class="stint-driver-name"><strong>${strategyEscape(shortName)}</strong><span class="stint-driver-finish">${finishPosition}</span><span>#${number}</span></div><div class="stint-timeline">${segments}</div><div class="stint-lap-total">${total} L</div><div class="stint-mobile-details">${mobileDetails}</div></div>`;
-    }).join("");
-    return `<section class="stint-team-group team-${strategyEscape(teamClass)}" style="--team-color:${strategyEscape(teamColor)}"><header class="stint-team-heading"><div><span class="stint-team-rank">${String(teamIndex + 1).padStart(2, "0")}</span><h4>${strategyEscape(team)}</h4></div></header>${rows}</section>`;
-  }).join("");
+  const stintRows = orderedTeams
+    .map(([team, teamDrivers], teamIndex) => {
+      teamDrivers.sort((a, b) => {
+        const positionA = a.result?.position ?? Infinity;
+        const positionB = b.result?.position ?? Infinity;
+        if (positionA !== positionB) return positionA - positionB;
+        return a.number - b.number;
+      });
+      const teamClass = getTeamClass(team);
+      const teamColor = phase2TeamColor(team) || "#555555";
+      const rows = teamDrivers
+        .map(({ number, driverStints, result }) => {
+          const driverName = strategyDriverName(number, race, sessionType);
+          const shortName = driverName.split(/\s+/).slice(-1)[0];
+          const finishPosition = Number.isFinite(result?.position)
+            ? `P${result.position}`
+            : result?.dsq
+              ? "DSQ"
+              : result?.dns
+                ? "DNS"
+                : result?.dnf
+                  ? "DNF"
+                  : "DNF";
+          const segments = driverStints
+            .map((stint) => {
+              const start = Math.max(1, Number(stint.lap_start));
+              const end = Math.max(start, Number(stint.lap_end));
+              const width = Math.max(0.8, ((end - start + 1) / maxLap) * 100);
+              const compound = strategyCompoundLabel(stint.compound);
+              return `<div class="stint-segment ${strategyCompoundClass(stint.compound)}" style="width:${width}%" title="${strategyEscape(`${compound}: laps ${start}–${end}`)}" aria-hidden="true"><span>${strategyEscape(compound)}</span><b>${start}–${end}</b></div>`;
+            })
+            .join("");
+          const mobileDetails = driverStints
+            .map((stint) => {
+              const start = Math.max(1, Number(stint.lap_start));
+              const end = Math.max(start, Number(stint.lap_end));
+              const compound = strategyCompoundLabel(stint.compound);
+              return `<span class="stint-mobile-detail"><i class="${strategyCompoundClass(stint.compound)}"></i><strong>${strategyEscape(compound)}</strong><span>Laps ${start}–${end}</span></span>`;
+            })
+            .join("");
+          const total = driverStints.reduce(
+            (sum, stint) =>
+              sum +
+              Math.max(0, Number(stint.lap_end) - Number(stint.lap_start) + 1),
+            0,
+          );
+          return `<div class="stint-driver-row" tabindex="0" role="button" aria-expanded="false" aria-label="${strategyEscape(`${driverName}, ${finishPosition}. Tap to view tyre compounds and lap ranges`)}"><div class="stint-driver-name"><strong>${strategyEscape(shortName)}</strong><span class="stint-driver-finish">${finishPosition}</span><span>#${number}</span></div><div class="stint-timeline">${segments}</div><div class="stint-lap-total">${total} L</div><div class="stint-mobile-details">${mobileDetails}</div></div>`;
+        })
+        .join("");
+      return `<section class="stint-team-group team-${strategyEscape(teamClass)}" style="--team-color:${strategyEscape(teamColor)}"><header class="stint-team-heading"><div><span class="stint-team-rank">${String(teamIndex + 1).padStart(2, "0")}</span><h4>${strategyEscape(team)}</h4></div></header>${rows}</section>`;
+    })
+    .join("");
 
-  const sortedPits = pits.slice().sort((a, b) => Number(a.lap_number) - Number(b.lap_number) || Number(a.driver_number) - Number(b.driver_number));
-  const pitRows = sortedPits.map((pit, index) => {
-    const number = Number(pit.driver_number);
-    const name = strategyDriverName(number, race, sessionType);
-    const stop = pit.pit_duration ?? null;
-    const lapStints = stints.filter((item) => Number(item.driver_number) === number && Number(item.lap_start) >= Number(pit.lap_number))
-      .sort((a, b) => Number(a.lap_start) - Number(b.lap_start));
-    const nextStint = lapStints[0];
-    const compound = nextStint ? strategyCompoundLabel(nextStint.compound) : "—";
-    return `<div class="pit-strategy-row${index >= 5 ? " pit-row-extra" : ""}"${index >= 5 ? " hidden" : ""}><span class="pit-lap">L${Number(pit.lap_number)}</span><div class="pit-driver"><strong>${strategyEscape(name)}</strong><span>#${number}</span></div><span class="pit-duration">${formatStrategyDuration(stop)}</span><span class="pit-tyre">${strategyEscape(compound)}</span></div>`;
-  }).join("");
+  const sortedPits = pits
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(a.lap_number) - Number(b.lap_number) ||
+        Number(a.driver_number) - Number(b.driver_number),
+    );
+  const pitRows = sortedPits
+    .map((pit, index) => {
+      const number = Number(pit.driver_number);
+      const name = strategyDriverName(number, race, sessionType);
+      const stop = pit.pit_duration ?? null;
+      const lapStints = stints
+        .filter(
+          (item) =>
+            Number(item.driver_number) === number &&
+            Number(item.lap_start) >= Number(pit.lap_number),
+        )
+        .sort((a, b) => Number(a.lap_start) - Number(b.lap_start));
+      const nextStint = lapStints[0];
+      const compound = nextStint
+        ? strategyCompoundLabel(nextStint.compound)
+        : "—";
+      return `<div class="pit-strategy-row${index >= 5 ? " pit-row-extra" : ""}"${index >= 5 ? " hidden" : ""}><span class="pit-lap">L${Number(pit.lap_number)}</span><div class="pit-driver"><strong>${strategyEscape(name)}</strong><span>#${number}</span></div><span class="pit-duration">${formatStrategyDuration(stop)}</span><span class="pit-tyre">${strategyEscape(compound)}</span></div>`;
+    })
+    .join("");
 
   const stationaryPitRecords = sortedPits
-    .map((pit) => ({ pit, duration: Number(pit.stop_duration ?? pit.stopDuration) }))
+    .map((pit) => ({
+      pit,
+      duration: Number(pit.stop_duration ?? pit.stopDuration),
+    }))
     .filter(({ duration }) => Number.isFinite(duration) && duration > 0);
-  const fastestDurationRecord = stationaryPitRecords.slice().sort((a, b) => a.duration - b.duration)[0] || null;
-  const fastestPit = fastestDurationRecord ? fastestDurationRecord.duration : null;
+  const fastestDurationRecord =
+    stationaryPitRecords.slice().sort((a, b) => a.duration - b.duration)[0] ||
+    null;
+  const fastestPit = fastestDurationRecord
+    ? fastestDurationRecord.duration
+    : null;
   const fastestPitRecord = fastestDurationRecord?.pit || null;
-  const fastestPitDriver = fastestPitRecord ? strategyDriverName(Number(fastestPitRecord.driver_number), race, sessionType) : "—";
-  const averagePit = stationaryPitRecords.length ? stationaryPitRecords.reduce((sum, record) => sum + record.duration, 0) / stationaryPitRecords.length : null;
+  const fastestPitDriver = fastestPitRecord
+    ? strategyDriverName(
+        Number(fastestPitRecord.driver_number),
+        race,
+        sessionType,
+      )
+    : "—";
+  const averagePit = stationaryPitRecords.length
+    ? stationaryPitRecords.reduce((sum, record) => sum + record.duration, 0) /
+      stationaryPitRecords.length
+    : null;
   const durationSourceNote = stationaryPitRecords.length
     ? `${stationaryPitRecords.length} stops with stationary-time data`
     : "Stationary stop times unavailable for this session";
@@ -2693,25 +2826,45 @@ function renderRaceStrategy(race, sessionType = "race", state = null) {
     const number = Number(pit.driver_number);
     stopCounts.set(number, (stopCounts.get(number) || 0) + 1);
   });
-  const mostStopsEntry = [...stopCounts.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
-  const mostStopsName = mostStopsEntry ? strategyDriverName(mostStopsEntry[0], race, sessionType) : "—";
+  const mostStopsEntry = [...stopCounts.entries()].sort(
+    (a, b) => b[1] - a[1] || a[0] - b[0],
+  )[0];
+  const mostStopsName = mostStopsEntry
+    ? strategyDriverName(mostStopsEntry[0], race, sessionType)
+    : "—";
   const teamStopCounts = new Map();
   stopCounts.forEach((count, number) => {
     const team = driverTeam(number);
     if (!teamStopCounts.has(team)) teamStopCounts.set(team, []);
     teamStopCounts.get(team).push({ number, count });
   });
-  const differingTeammates = [...teamStopCounts.entries()].find(([, drivers]) => drivers.length > 1 && new Set(drivers.map((driver) => driver.count)).size > 1);
+  const differingTeammates = [...teamStopCounts.entries()].find(
+    ([, drivers]) =>
+      drivers.length > 1 &&
+      new Set(drivers.map((driver) => driver.count)).size > 1,
+  );
   const strategyInsights = [];
-  if (mostStopsEntry) strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">MOST STOPS</span><strong>${strategyEscape(mostStopsName)}</strong><span>${mostStopsEntry[1]} recorded ${mostStopsEntry[1] === 1 ? "stop" : "stops"}</span></div>`);
-  const oneStopDrivers = [...stopCounts.entries()].filter(([, count]) => count === 1).length;
-  const twoStopDrivers = [...stopCounts.entries()].filter(([, count]) => count === 2).length;
-  if (oneStopDrivers || twoStopDrivers) strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">STOP COUNT</span><strong>${oneStopDrivers} one-stop · ${twoStopDrivers} two-stop</strong><span>Among drivers with recorded pit stops</span></div>`);
+  if (mostStopsEntry)
+    strategyInsights.push(
+      `<div class="strategy-insight"><span class="strategy-insight-kicker">MOST STOPS</span><strong>${strategyEscape(mostStopsName)}</strong><span>${mostStopsEntry[1]} recorded ${mostStopsEntry[1] === 1 ? "stop" : "stops"}</span></div>`,
+    );
+  const oneStopDrivers = [...stopCounts.entries()].filter(
+    ([, count]) => count === 1,
+  ).length;
+  const twoStopDrivers = [...stopCounts.entries()].filter(
+    ([, count]) => count === 2,
+  ).length;
+  if (oneStopDrivers || twoStopDrivers)
+    strategyInsights.push(
+      `<div class="strategy-insight"><span class="strategy-insight-kicker">STOP COUNT</span><strong>${oneStopDrivers} one-stop · ${twoStopDrivers} two-stop</strong><span>Among drivers with recorded pit stops</span></div>`,
+    );
   if (differingTeammates) {
     const [team, drivers] = differingTeammates;
     const high = drivers.slice().sort((a, b) => b.count - a.count)[0];
     const low = drivers.slice().sort((a, b) => a.count - b.count)[0];
-    strategyInsights.push(`<div class="strategy-insight"><span class="strategy-insight-kicker">TEAMMATE SPLIT</span><strong>${strategyEscape(team)}</strong><span>${strategyEscape(strategyDriverName(high.number, race, sessionType))}: ${high.count} stops · ${strategyEscape(strategyDriverName(low.number, race, sessionType))}: ${low.count}</span></div>`);
+    strategyInsights.push(
+      `<div class="strategy-insight"><span class="strategy-insight-kicker">TEAMMATE SPLIT</span><strong>${strategyEscape(team)}</strong><span>${strategyEscape(strategyDriverName(high.number, race, sessionType))}: ${high.count} stops · ${strategyEscape(strategyDriverName(low.number, race, sessionType))}: ${low.count}</span></div>`,
+    );
   }
 
   const compoundCounts = new Map();
@@ -2719,7 +2872,12 @@ function renderRaceStrategy(race, sessionType = "race", state = null) {
     const compound = strategyCompoundLabel(stint.compound);
     compoundCounts.set(compound, (compoundCounts.get(compound) || 0) + 1);
   });
-  const legend = [...compoundCounts.keys()].map((compound) => `<span class="stint-legend-item"><i class="${strategyCompoundClass(compound)}"></i>${strategyEscape(compound)}</span>`).join("");
+  const legend = [...compoundCounts.keys()]
+    .map(
+      (compound) =>
+        `<span class="stint-legend-item"><i class="${strategyCompoundClass(compound)}"></i>${strategyEscape(compound)}</span>`,
+    )
+    .join("");
 
   raceStrategyContent.innerHTML = `
     <div class="strategy-summary"><span>${driverNumbers.length} DRIVERS TRACKED</span><span>${stints.length} RECORDED STINTS</span><span>${pits.length} RECORDED STOPS</span></div>
@@ -2744,8 +2902,10 @@ function renderRaceStrategy(race, sessionType = "race", state = null) {
 }
 
 async function loadRaceStrategyData(race, sessionType, selectionVersion) {
-  const sessionKey = sessionType === "sprint" ? race.sprintSessionKey : race.sessionKey;
-  const sessionStatus = sessionType === "sprint" ? race.sprintStatus : race.status;
+  const sessionKey =
+    sessionType === "sprint" ? race.sprintSessionKey : race.sessionKey;
+  const sessionStatus =
+    sessionType === "sprint" ? race.sprintStatus : race.status;
   if (!raceStrategySection || !raceStrategyContent) return;
   if (sessionStatus !== "COMPLETED" || !sessionKey) {
     renderRaceStrategy(race, sessionType);
@@ -2763,85 +2923,101 @@ async function loadRaceStrategyData(race, sessionType, selectionVersion) {
     return;
   }
 
-  const state = race.strategyBySession[cacheKey] = { loaded: false, stints: [], pits: [] };
+  const state = (race.strategyBySession[cacheKey] = {
+    loaded: false,
+    stints: [],
+    pits: [],
+  });
   renderRaceStrategy(race, sessionType, state);
   state.loading = (async () => {
     const [stintsResult, pitsResult] = await Promise.allSettled([
       fetchOpenF1("stints", { session_key: sessionKey }),
       fetchOpenF1("pit", { session_key: sessionKey }),
     ]);
-    if (stintsResult.status === "fulfilled") state.stints = Array.isArray(stintsResult.value) ? stintsResult.value : [];
-    if (pitsResult.status === "fulfilled") state.pits = Array.isArray(pitsResult.value) ? pitsResult.value : [];
+    if (stintsResult.status === "fulfilled")
+      state.stints = Array.isArray(stintsResult.value)
+        ? stintsResult.value
+        : [];
+    if (pitsResult.status === "fulfilled")
+      state.pits = Array.isArray(pitsResult.value) ? pitsResult.value : [];
 
     try {
-  const indexResponse = await fetch("/api/bigdataf1?raceId=jumper");
+      const indexResponse = await fetch("/api/bigdataf1?raceId=jumper");
 
-if (!indexResponse.ok) {
-  throw new Error(`BigDataF1 race index failed: ${indexResponse.status}`);
-}
+      if (!indexResponse.ok) {
+        throw new Error(`BigDataF1 race index failed: ${indexResponse.status}`);
+      }
 
-const raceIndex = await indexResponse.json();
+      const raceIndex = await indexResponse.json();
 
-const raceYear = Number(race.year ?? race.season ?? 2026);
-const raceRound = Number(race.round);
+      const raceYear = Number(race.year ?? race.season ?? 2026);
+      const raceRound = Number(race.round);
 
-const matchingRace = raceIndex.races?.find(
-  (item) => Number(item.year) === raceYear && Number(item.round) === raceRound
-);
-
-if (!matchingRace) {
-  throw new Error(`BigDataF1 race not found for ${raceYear}, round ${raceRound}`);
-}
-
-const bigDataResponse = await fetch(
-  `/api/bigdataf1?raceId=${matchingRace.raceId}`
-);
-
-  if (bigDataResponse.ok) {
-    const bigData = await bigDataResponse.json();
-    const bigDataPitStops = bigData.details?.pitstops ?? [];
-
-    const normalizePitDriverName = (value) =>
-      String(value ?? "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
-
-    const stationaryTimes = new Map();
-
-    for (const stop of bigDataPitStops) {
-      stationaryTimes.set(
-        `${normalizePitDriverName(stop.fullName)}:${Number(stop.lap)}`,
-        Number(stop.time)
+      const matchingRace = raceIndex.races?.find(
+        (item) =>
+          Number(item.year) === raceYear && Number(item.round) === raceRound,
       );
+
+      if (!matchingRace) {
+        throw new Error(
+          `BigDataF1 race not found for ${raceYear}, round ${raceRound}`,
+        );
+      }
+
+      const bigDataResponse = await fetch(
+        `/api/bigdataf1?raceId=${matchingRace.raceId}`,
+      );
+
+      if (bigDataResponse.ok) {
+        const bigData = await bigDataResponse.json();
+        const bigDataPitStops = bigData.details?.pitstops ?? [];
+
+        const normalizePitDriverName = (value) =>
+          String(value ?? "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
+
+        const stationaryTimes = new Map();
+
+        for (const stop of bigDataPitStops) {
+          stationaryTimes.set(
+            `${normalizePitDriverName(stop.fullName)}:${Number(stop.lap)}`,
+            Number(stop.time),
+          );
+        }
+
+        state.pits = state.pits.map((pit) => {
+          const driverName = strategyDriverName(
+            Number(pit.driver_number),
+            race,
+            sessionType,
+          );
+
+          const duration = stationaryTimes.get(
+            `${normalizePitDriverName(driverName)}:${Number(pit.lap_number)}`,
+          );
+
+          return {
+            ...pit,
+            stop_duration: Number.isFinite(duration) ? duration : null,
+          };
+        });
+      }
+    } catch (error) {
+      console.warn("BigDataF1 pit-stop data unavailable:", error);
     }
 
-    state.pits = state.pits.map((pit) => {
-      const driverName = strategyDriverName(
-        Number(pit.driver_number),
-        race,
-        sessionType
-      );
-
-      const duration = stationaryTimes.get(
-        `${normalizePitDriverName(driverName)}:${Number(pit.lap_number)}`
-      );
-
-      return {
-        ...pit,
-        stop_duration: Number.isFinite(duration) ? duration : null
-      };
-    });
-  }
-} catch (error) {
-  console.warn("BigDataF1 pit-stop data unavailable:", error);
-}
-
-    if (stintsResult.status === "rejected" && pitsResult.status === "rejected") state.error = true;
+    if (stintsResult.status === "rejected" && pitsResult.status === "rejected")
+      state.error = true;
     state.loaded = true;
     state.loading = null;
-    if (selectionVersion !== raceSelectionVersion || activeRaceSession !== sessionType) return;
+    if (
+      selectionVersion !== raceSelectionVersion ||
+      activeRaceSession !== sessionType
+    )
+      return;
     renderRaceStrategy(race, sessionType, state);
   })();
   return state.loading;
@@ -3088,9 +3264,10 @@ async function initializeDashboard() {
   await initializeOpenF1();
   await phase2Initialize();
 
-  pageLoader.classList.add("hidden");
-
-  setTimeout(() => pageLoader.remove(), 650);
+  if (!LOADER_DEV_MODE) {
+    pageLoader.classList.add("hidden");
+    setTimeout(() => pageLoader.remove(), 650);
+  }
 }
 
 initializeDashboard();
