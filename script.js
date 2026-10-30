@@ -4107,7 +4107,9 @@ const replayElements = {
   canvas: document.getElementById("replayCanvas"),
   canvasEmpty: document.getElementById("replayCanvasEmpty"),
   legend: document.getElementById("replayLegend"),
+  legendCount: document.getElementById("replayLegendCount"),
   lapLabel: document.getElementById("replayLapLabel"),
+  mobileLap: document.getElementById("replayMobileLap"),
   timingDriver: document.getElementById("replayTimingDriver"),
   lapTime: document.getElementById("replayLapTime"),
   sector1: document.getElementById("replaySector1"),
@@ -4122,6 +4124,8 @@ const replayElements = {
   progressEnd: document.getElementById("replayProgressEnd"),
   clock: document.getElementById("replayClock"),
   finishState: document.getElementById("replayFinishState"),
+  legendToggle: document.getElementById("replayLegendToggle"),
+  legendSection: document.getElementById("replayLegendSection"),
 };
 
 function replayEscape(value) {
@@ -4714,9 +4718,9 @@ function replayRenderTiming() {
     ? replayDriverPosition(timingDriver, replayState.currentTime)
     : null;
 
-  replayElements.lapLabel.textContent = lap?.lap_number
-    ? `LAP ${lap.lap_number}`
-    : "LAP —";
+  const lapText = lap?.lap_number ? `LAP ${lap.lap_number}` : "LAP —";
+  replayElements.lapLabel.textContent = lapText;
+  if (replayElements.mobileLap) replayElements.mobileLap.textContent = lapText;
   replayElements.timingDriver.textContent = timingDriver
     ? `${replayDriverName(timingDriver)} · ${replayDriverFullName(timingDriver)}`
     : "TOP 5";
@@ -4832,6 +4836,18 @@ async function replayEnsureLocationsAt(timestamp, options = {}) {
   return true;
 }
 
+function replayUpdateDriverReadiness(totalOverride = null) {
+  if (!replayElements.legendCount) return;
+  const total = Number.isFinite(totalOverride)
+    ? totalOverride
+    : replayState.drivers.length || 22;
+  const ready = replayState.drivers.filter((driver) => {
+    const number = Number(driver.driver_number);
+    return (replayState.locations.get(number) || []).length > 0;
+  }).length;
+  replayElements.legendCount.textContent = `${ready}/${total}`;
+}
+
 async function replayFetchLocations(
   driverNumbers,
   requestId,
@@ -4859,6 +4875,9 @@ async function replayFetchLocations(
     );
 
   const updateLocationStatus = (retrying = 0) => {
+    replayUpdateDriverReadiness(
+      replayState.drivers.length || requested.length || 22,
+    );
     if (!replayElements.loadStatus) return;
     const ready = getReady().length;
     const missing = getMissing().length;
@@ -5014,6 +5033,8 @@ async function replayLoadRace(race) {
   replayState.loading = true;
   replayState.race = race;
   replayElements.loadButton.disabled = true;
+  if (replayElements.legendCount)
+    replayElements.legendCount.textContent = "0/22";
   replayState.locations = new Map();
   replayState.locationLoading = new Set();
   replayState.locationRetryAt = new Map();
@@ -5052,6 +5073,7 @@ async function replayLoadRace(race) {
     replayState.drivers = drivers.filter((driver) =>
       Number.isFinite(Number(driver.driver_number)),
     );
+    replayUpdateDriverReadiness(replayState.drivers.length);
     replayState.driverByNumber = new Map(
       replayState.drivers.map((driver) => [
         Number(driver.driver_number),
@@ -5299,8 +5321,11 @@ function replayPrepareRaceSelection(sessionKey) {
   replayElements.driverPickerButton.disabled = !sessionKey;
   replayElements.driverMenu.hidden = true;
   replayElements.legend.innerHTML = "";
+  if (replayElements.legendCount)
+    replayElements.legendCount.textContent = "0/22";
   replayElements.driverList.innerHTML = "";
   replayElements.lapLabel.textContent = "LAP —";
+  if (replayElements.mobileLap) replayElements.mobileLap.textContent = "LAP —";
   replayElements.timingDriver.textContent = "TOP 5";
   replayElements.lapTime.textContent = "—";
   replayElements.sector1.textContent = "—";

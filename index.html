@@ -17,7 +17,7 @@
     <div class="page-loader" id="pageLoader" aria-label="Loading F1 dashboard">
       <div class="loader-content">
         <div class="loader-logo">
-          F1<span style="color: #fff; padding-left: 25px">26</span>
+          F1<span style="color: #fff; padding-left: 15px">26</span>
         </div>
         <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
         <div class="loader-progress" aria-hidden="true">
@@ -360,15 +360,82 @@
                 <div class="replay-clock" id="replayClock">00:00.000</div>
               </div>
               <div class="replay-canvas-wrap">
-                <canvas
-                  id="replayCanvas"
-                  aria-label="Race replay circuit and driver positions"
-                ></canvas>
-                <div class="replay-canvas-empty" id="replayCanvasEmpty">
-                  SELECT A COMPLETED RACE TO LOAD TELEMETRY
+                <div class="replay-canvas-stage">
+                  <canvas
+                    id="replayCanvas"
+                    aria-label="Race replay circuit and driver positions"
+                  ></canvas>
+                  <div class="replay-canvas-empty" id="replayCanvasEmpty">
+                    SELECT A COMPLETED RACE TO LOAD TELEMETRY
+                  </div>
+                  <div
+                    class="replay-mobile-lap"
+                    id="replayMobileLap"
+                    aria-live="polite"
+                  >
+                    LAP —
+                  </div>
+                </div>
+                <div class="replay-controls">
+                  <button class="replay-button" id="replayRewind" type="button">
+                    ↶ <span>REWIND</span>
+                  </button>
+                  <button
+                    class="replay-button replay-play"
+                    id="replayPlay"
+                    type="button"
+                  >
+                    PLAY
+                  </button>
+                  <div
+                    class="replay-speed-group"
+                    role="group"
+                    aria-label="Replay speed"
+                  >
+                    <button
+                      class="replay-speed active"
+                      data-speed="1"
+                      type="button"
+                    >
+                      1×
+                    </button>
+                    <button class="replay-speed" data-speed="2" type="button">
+                      2×
+                    </button>
+                    <button class="replay-speed" data-speed="6" type="button">
+                      6×
+                    </button>
+                  </div>
+                  <div class="replay-progress-wrap">
+                    <input
+                      id="replayProgress"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.001"
+                      value="0"
+                      aria-label="Replay position"
+                    />
+                    <div class="replay-progress-meta">
+                      <span id="replayProgressStart">START</span
+                      ><span id="replayProgressEnd">FINISH</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="replay-legend" id="replayLegend"></div>
+              <div class="replay-legend-section" id="replayLegendSection">
+                <div class="replay-legend-heading">
+                  <span>DRIVER POSITION READINESS</span>
+                  <span
+                    class="replay-legend-count"
+                    id="replayLegendCount"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    >0/22</span
+                  >
+                </div>
+                <div class="replay-legend" id="replayLegend"></div>
+              </div>
             </section>
 
             <aside class="replay-data-panel">
@@ -398,49 +465,6 @@
               </div>
               <div class="replay-driver-list" id="replayDriverList"></div>
             </aside>
-          </div>
-
-          <div class="replay-controls">
-            <button class="replay-button" id="replayRewind" type="button">
-              ↶ <span>REWIND</span>
-            </button>
-            <button
-              class="replay-button replay-play"
-              id="replayPlay"
-              type="button"
-            >
-              PLAY
-            </button>
-            <div
-              class="replay-speed-group"
-              role="group"
-              aria-label="Replay speed"
-            >
-              <button class="replay-speed active" data-speed="1" type="button">
-                1×
-              </button>
-              <button class="replay-speed" data-speed="2" type="button">
-                2×
-              </button>
-              <button class="replay-speed" data-speed="6" type="button">
-                6×
-              </button>
-            </div>
-            <div class="replay-progress-wrap">
-              <input
-                id="replayProgress"
-                type="range"
-                min="0"
-                max="1"
-                step="0.001"
-                value="0"
-                aria-label="Replay position"
-              />
-              <div class="replay-progress-meta">
-                <span id="replayProgressStart">START</span
-                ><span id="replayProgressEnd">FINISH</span>
-              </div>
-            </div>
           </div>
         </section>
       </section>

@@ -8194,7 +8194,7 @@ body {
 
 .replay-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(240px, 310px) 150px minmax(
+  grid-template-columns: minmax(360px, 390px) minmax(240px, 310px) 150px minmax(
       180px,
       1fr
     );
@@ -8474,8 +8474,11 @@ body {
 .replay-driver-list {
   margin-top: 16px;
   border-top: 1px solid var(--border);
-  max-height: calc(100% - 300px);
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: #444 transparent;
 }
@@ -11311,4 +11314,752 @@ body {
 }
 .strategy-pit-overview > .pit-strategy-block .strategy-block-heading {
   background: #0d0d0d;
+}
+
+/* MOBILE OVERFLOW FIXES */
+@media (max-width: 700px) {
+  /* Last-round Grand Prix title */
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #dashboardOverview
+    .overview-race-story.overview-race-last
+    .overview-race-copy
+    h4 {
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: clamp(25px, 7.2vw, 34px) !important;
+    line-height: 0.98 !important;
+    letter-spacing: -1.5px !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #dashboardDrivers .drivers-feature-copy {
+    transform: translateX(-20px);
+  }
+
+  #dashboardDrivers .drivers-feature-row > img {
+    transform: translateX(-50px);
+  }
+
+  #dashboardDrivers .drivers-feature-points {
+    top: 85px !important;
+    right: 5px !important;
+  }
+
+  /* RACE CENTER — MOBILE CONTENT WIDTH */
+  #dashboardRace .race-view {
+    width: 97%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #dashboardRace .hero-content {
+    min-height: auto;
+    padding: 35px 0 0;
+  }
+
+  #dashboardRace .race-meta {
+    margin-top: 30px;
+  }
+}
+
+/* DESKTOP RACE REPLAY — STICKY TIMING PANEL */
+@media (min-width: 1101px) {
+  #dashboardReplay .replay-data-panel {
+    position: sticky;
+    top: 76px;
+    align-self: start;
+    height: calc(100vh - 96px);
+    max-height: calc(100vh - 96px);
+    min-height: 480px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  #dashboardReplay .replay-data-head,
+  #dashboardReplay .replay-timing-driver,
+  #dashboardReplay .replay-timing-grid,
+  #dashboardReplay .replay-position-card {
+    flex-shrink: 0;
+  }
+}
+
+/* =====================================================
+   RACE REPLAY — INTEGRATED PLAYBACK BAR
+===================================================== */
+
+#dashboardReplay .replay-controls {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 112px 112px 156px minmax(260px, 1fr);
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 14px 0 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  background: #0d0d0d;
+  box-sizing: border-box;
+}
+
+#dashboardReplay .replay-controls .replay-button,
+#dashboardReplay .replay-controls .replay-speed {
+  height: 44px;
+}
+
+#dashboardReplay .replay-controls .replay-speed-group {
+  height: 44px;
+}
+
+#dashboardReplay .replay-controls .replay-progress-wrap {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+#dashboardReplay .replay-controls #replayProgress {
+  display: block;
+}
+
+#dashboardReplay .replay-controls .replay-progress-meta {
+  margin-top: 2px;
+}
+
+/* Tablet: preserve one compact playback row */
+@media (min-width: 701px) and (max-width: 1100px) {
+  #dashboardReplay .replay-controls {
+    grid-template-columns: 100px 100px 144px minmax(180px, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+}
+
+/* Mobile: timeline first, playback actions underneath */
+@media (max-width: 700px) {
+  #dashboardReplay .replay-shell {
+    padding-bottom: 0;
+  }
+
+  #dashboardReplay .replay-controls {
+    grid-column: 1;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(108px, 1.15fr);
+    grid-template-rows: auto auto;
+    gap: 9px;
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 12px;
+    background: #0d0d0d;
+    border: 1px solid var(--border);
+    box-sizing: border-box;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    order: 0;
+    padding: 0 2px 5px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button,
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-column: auto;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button {
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed {
+    height: 44px;
+    min-width: 0;
+    padding: 0 4px;
+    letter-spacing: 0;
+  }
+
+  #dashboardReplay .replay-controls #replayProgress {
+    height: 24px;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-meta {
+    font-size: 7px;
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardReplay .replay-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #dashboardReplay .replay-controls #replayRewind {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls #replayPlay {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+/* =====================================================
+   RACE REPLAY — INTEGRATED STICKY PLAYBACK STRIP
+===================================================== */
+
+#dashboardReplay .replay-controls {
+  position: sticky;
+  top: 88px;
+  z-index: 90;
+  grid-template-columns: 112px 112px 150px minmax(240px, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin: 14px 0 0;
+  padding: 12px 14px;
+  border: 1px solid #303030;
+  background: rgba(13, 13, 13, 0.97);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(12px);
+}
+
+#dashboardReplay .replay-controls .replay-button,
+#dashboardReplay .replay-controls .replay-speed-group {
+  height: 44px;
+}
+
+#dashboardReplay .replay-controls .replay-progress-wrap {
+  min-width: 0;
+  padding: 0 8px;
+}
+
+#dashboardReplay .replay-controls #replayProgress {
+  display: block;
+}
+
+#dashboardReplay .replay-legend-section {
+  min-width: 0;
+}
+
+#dashboardReplay .replay-legend-toggle {
+  display: none;
+}
+
+@media (min-width: 701px) and (max-width: 1100px) {
+  #dashboardReplay .replay-controls {
+    top: 78px;
+    grid-template-columns: 100px 100px 132px minmax(180px, 1fr);
+    gap: 8px;
+  }
+}
+
+@media (max-width: 700px) {
+  #dashboardReplay .replay-controls {
+    position: relative;
+    top: auto;
+    z-index: 1;
+    grid-column: 1;
+    grid-row: 3;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, 1fr);
+    grid-template-rows: auto auto;
+    gap: 9px;
+    margin: 10px 0 0;
+    padding: 11px;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding: 0 2px 4px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button,
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button {
+    white-space: nowrap;
+    letter-spacing: 1px;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed {
+    height: 44px;
+    min-width: 0;
+    padding: 0 4px;
+  }
+
+  #dashboardReplay .replay-legend-section {
+    border-top: 1px solid var(--border);
+  }
+
+  #dashboardReplay .replay-legend-toggle {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border: 0;
+    background: #0d0d0d;
+    color: #aaa;
+    font:
+      800 9px/1 Arial,
+      sans-serif;
+    letter-spacing: 1.6px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  #dashboardReplay .replay-legend-toggle-icon {
+    color: var(--red);
+    font-size: 17px;
+    transition: transform 0.2s ease;
+  }
+
+  #dashboardReplay
+    .replay-legend-section.mobile-collapsed
+    .replay-legend-toggle-icon {
+    transform: rotate(45deg);
+  }
+
+  #dashboardReplay .replay-legend-section.mobile-collapsed .replay-legend {
+    display: none;
+  }
+
+  #dashboardReplay
+    .replay-legend-section:not(.mobile-collapsed)
+    .replay-legend {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardReplay .replay-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #dashboardReplay .replay-controls #replayRewind {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls #replayPlay {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+#dashboardReplay .replay-shell {
+  padding-bottom: 42px;
+}
+
+@media (max-width: 700px) {
+  #dashboardReplay .replay-shell {
+    padding-bottom: 28px;
+  }
+}
+
+/* =====================================================
+   RACE REPLAY — CONTROLS OVERLAY THE CIRCUIT
+   Controls are anchored inside the circuit canvas, not
+   placed after the circuit/driver legend.
+===================================================== */
+
+#dashboardReplay .replay-canvas-wrap {
+  position: relative;
+  isolation: isolate;
+}
+
+#dashboardReplay .replay-controls {
+  position: absolute !important;
+  z-index: 20;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  top: auto;
+  display: grid;
+  grid-template-columns: 112px 112px 150px minmax(160px, 1fr);
+  align-items: center;
+  gap: 9px;
+  width: auto;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid rgba(100, 100, 100, 0.55);
+  border-radius: 3px;
+  background: rgba(8, 8, 8, 0.88);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-sizing: border-box;
+}
+
+#dashboardReplay .replay-controls .replay-button,
+#dashboardReplay .replay-controls .replay-speed-group {
+  height: 42px;
+  min-width: 0;
+}
+
+#dashboardReplay .replay-controls .replay-progress-wrap {
+  min-width: 0;
+  padding: 0 7px;
+}
+
+#dashboardReplay .replay-controls #replayProgress {
+  display: block;
+  width: 100%;
+}
+
+#dashboardReplay .replay-controls .replay-progress-meta {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Tablet: tighter controls while retaining the overlay */
+@media (min-width: 701px) and (max-width: 1100px) {
+  #dashboardReplay .replay-controls {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    grid-template-columns: 88px 88px 126px minmax(120px, 1fr);
+    gap: 6px;
+    padding: 8px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button,
+  #dashboardReplay .replay-controls .replay-speed-group {
+    height: 38px;
+  }
+}
+
+/* Mobile: timeline row + action row, still over the circuit */
+@media (max-width: 700px) {
+  #dashboardReplay .replay-controls {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(96px, 1.1fr);
+    grid-template-rows: auto auto;
+    gap: 7px;
+    padding: 8px;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding: 0 3px 3px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button,
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-row: 2;
+    width: 100%;
+    height: 38px;
+  }
+
+  #dashboardReplay .replay-controls .replay-button {
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed {
+    min-width: 0;
+    height: 38px;
+    padding: 0 3px;
+    font-size: 9px;
+  }
+
+  #dashboardReplay .replay-controls #replayProgress {
+    height: 22px;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-meta {
+    font-size: 7px;
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardReplay .replay-controls {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #dashboardReplay .replay-controls #replayRewind {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls #replayPlay {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+}
+
+/* =====================================================
+   REPLAY MOBILE REWORK
+   Desktop retains the circuit overlay; mobile gets a
+   separate circuit stage, lap badge and controls below.
+===================================================== */
+
+#dashboardReplay .replay-canvas-wrap {
+  position: relative;
+}
+
+#dashboardReplay .replay-canvas-stage {
+  position: absolute;
+  inset: 0;
+  min-width: 0;
+}
+
+#dashboardReplay .replay-mobile-lap {
+  display: none;
+}
+
+#dashboardReplay .replay-legend-heading {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 14px;
+  border-top: 1px solid var(--border);
+  background: #0d0d0d;
+  color: #c9c9c9;
+  font:
+    800 9px/1 Arial,
+    sans-serif;
+  letter-spacing: 1.6px;
+}
+
+#dashboardReplay .replay-legend-count {
+  color: #666;
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 700px) {
+  /* Keep the circuit clean: controls are below it, never over it. */
+  #dashboardReplay .replay-canvas-wrap {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+  }
+
+  #dashboardReplay .replay-canvas-stage {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    height: 92vw;
+    min-height: 300px;
+    max-height: 430px;
+    overflow: hidden;
+    background: #090909;
+  }
+
+  #dashboardReplay #replayCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  #dashboardReplay .replay-canvas-empty {
+    position: absolute;
+    inset: 0;
+  }
+
+  #dashboardReplay .replay-mobile-lap {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    top: 12px;
+    left: 12px;
+    z-index: 5;
+    min-height: 30px;
+    padding: 0 11px;
+    border-left: 2px solid var(--red);
+    background: rgba(13, 13, 13, 0.92);
+    color: #f5f5f5;
+    font:
+      800 10px/1 Arial,
+      sans-serif;
+    letter-spacing: 1.5px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  #dashboardReplay .replay-controls {
+    position: relative !important;
+    inset: auto !important;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-top: 0;
+    border-radius: 0;
+    background: #0d0d0d;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  #dashboardReplay .replay-controls .replay-progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding: 0 4px 4px;
+  }
+
+  #dashboardReplay .replay-controls #replayRewind {
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    height: 42px;
+  }
+
+  #dashboardReplay .replay-controls #replayPlay {
+    grid-column: 2;
+    grid-row: 2;
+    width: 100%;
+    height: 42px;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed-group {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    width: 100%;
+    height: 40px;
+  }
+
+  #dashboardReplay .replay-controls .replay-speed {
+    flex: 1 1 0;
+    height: 40px;
+  }
+
+  /* Replace the old 22-car accordion with a clear, always-visible field list. */
+  #dashboardReplay .replay-legend-toggle {
+    display: none !important;
+  }
+
+  #dashboardReplay .replay-legend-section {
+    border-bottom: 1px solid var(--border);
+  }
+
+  #dashboardReplay .replay-legend {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 8px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: #444 transparent;
+  }
+
+  #dashboardReplay .replay-legend-section.mobile-collapsed .replay-legend {
+    display: grid !important;
+  }
+
+  #dashboardReplay .replay-legend-item {
+    min-width: 0;
+  }
+
+  #dashboardReplay .replay-data-panel {
+    margin-top: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  #dashboardReplay .replay-canvas-stage {
+    height: 96vw;
+    min-height: 280px;
+  }
+
+  #dashboardReplay .replay-legend {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.replay-race-select-wrap {
+  position: relative;
+}
+
+#replayRaceSelect {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: none !important;
+  padding-right: 38px !important;
+}
+
+.replay-race-select-wrap::after {
+  content: "▾";
+  position: absolute;
+  right: 15px;
+  bottom: 15px;
+  color: #777;
+  font-size: 12px;
+  pointer-events: none;
 }
