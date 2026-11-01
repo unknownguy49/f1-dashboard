@@ -285,6 +285,44 @@ main {
   background: #3b3b3b;
 }
 
+.race-button.ongoing {
+  background: #0d1913;
+  border-color: #28583e;
+  color: #8bcba5;
+}
+
+.race-button.ongoing .race-number {
+  color: #55a878;
+}
+
+.race-button.ongoing .race-state {
+  background: #35c979;
+  box-shadow: 0 0 8px rgba(53, 201, 121, 0.45);
+}
+
+.race-button.ongoing.active {
+  background: #16834a;
+  border-color: #16834a;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(22, 131, 74, 0.4);
+}
+
+.race-button.ongoing.active .race-number {
+  color: #ffffff;
+}
+
+.race-button.ongoing.active .race-state {
+  background: #ffffff;
+  box-shadow: none;
+}
+
+.race-button.ongoing.active:hover {
+  background: #16834a;
+  border-color: #16834a;
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(22, 131, 74, 0.5);
+}
+
 .race-button.upcoming {
   background: #0d151e;
   border-color: #263746;
@@ -552,6 +590,10 @@ main {
 
 #raceStatus.upcoming-status {
   color: var(--red);
+}
+
+#raceStatus.ongoing-status {
+  color: #35c979;
 }
 
 /* =====================================================

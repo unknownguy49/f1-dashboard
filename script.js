@@ -464,6 +464,21 @@ function getRaceStatus(meeting, raceSession) {
   return getSessionStatus(meeting, raceSession);
 }
 
+function getWeekendStatus(race) {
+  if (race.status === "COMPLETED") return "COMPLETED";
+
+  const completedSessions = [
+    race.practice1Status,
+    race.practice2Status,
+    race.practice3Status,
+    race.qualifyingStatus,
+    race.sprintQualifyingStatus,
+    race.sprintStatus,
+  ];
+
+  return completedSessions.includes("COMPLETED") ? "ONGOING" : race.status;
+}
+
 async function loadOpenF1Calendar() {
   const [
     meetings,
@@ -790,7 +805,14 @@ async function loadRaceDetails(race) {
         });
 
         race.qualifying = qualifyingResults
-          .filter((result) => Number.isFinite(Number(result.position)))
+          .filter(
+            (result) =>
+              result.position !== null &&
+              result.position !== undefined &&
+              result.position !== "" &&
+              Number.isFinite(Number(result.position)) &&
+              Number(result.position) > 0,
+          )
           .sort((a, b) => Number(a.position) - Number(b.position))
           .map((result) => {
             const driver =
@@ -884,6 +906,89 @@ async function loadRaceDetails(race) {
   })();
 
   return race.detailsLoading;
+}
+
+async function loadQualifyingDetails(race) {
+  if (!race.qualifyingSessionKey || race.qualifyingStatus !== "COMPLETED") {
+    return race;
+  }
+
+  if (race.qualifying) return race;
+
+  if (race.qualifyingDetailsLoading) {
+    return race.qualifyingDetailsLoading;
+  }
+
+  race.qualifyingDetailsLoading = (async () => {
+    const [results, drivers] = await Promise.all([
+      fetchOpenF1("session_result", {
+        session_key: race.qualifyingSessionKey,
+      }),
+      fetchOpenF1("drivers", {
+        session_key: race.qualifyingSessionKey,
+      }).catch(() => []),
+    ]);
+
+    const driverByNumber = new Map(
+      drivers.map((driver) => [driver.driver_number, driver]),
+    );
+
+    const fallbackDriverMap = new Map(
+      phase2State.drivers.map((driver) => [
+        driver.number,
+        {
+          driver_number: driver.number,
+          full_name: driver.name,
+          team_name: driver.team,
+        },
+      ]),
+    );
+
+    fallbackDriverMap.forEach((driver, number) => {
+      if (!driverByNumber.has(number)) {
+        driverByNumber.set(number, driver);
+      }
+    });
+
+    race.qualifying = results
+      .filter((result) => Number.isFinite(Number(result.position)))
+      .sort((a, b) => Number(a.position) - Number(b.position))
+      .map((result) => {
+        const driver = driverByNumber.get(result.driver_number) || {};
+        const duration = Array.isArray(result.duration)
+          ? result.duration
+          : [result.duration];
+
+        const q1 = duration[0] ?? null;
+        const q2 = duration[1] ?? null;
+        const q3 = duration[2] ?? null;
+        const finalTime = q3 ?? q2 ?? q1 ?? result.duration ?? null;
+
+        return {
+          position: Number(result.position),
+          number: result.driver_number,
+          driver: driver.full_name || `Driver #${result.driver_number}`,
+          team: driver.team_name || "—",
+          class: getTeamClass(driver.team_name),
+          color: driver.team_colour
+            ? `#${String(driver.team_colour).replace(/^#/, "")}`
+            : null,
+          image: getDriverImage(driver),
+          time: formatQualifyingTime(finalTime),
+          q1: formatQualifyingTime(q1),
+          q2: formatQualifyingTime(q2),
+          q3: formatQualifyingTime(q3),
+        };
+      });
+
+    return race;
+  })();
+
+  try {
+    return await race.qualifyingDetailsLoading;
+  } finally {
+    race.qualifyingDetailsLoading = null;
+  }
 }
 
 async function loadSprintDetails(race) {
@@ -1435,7 +1540,7 @@ function buildRaceSelector() {
 
     button.className = "race-button";
 
-    button.classList.add(race.status.toLowerCase());
+    button.classList.add(getWeekendStatus(race).toLowerCase());
 
     button.dataset.index = index;
 
@@ -1527,14 +1632,15 @@ async function selectRace(index) {
 
   raceDate.textContent = race.weekendDate;
 
-  raceStatus.textContent = race.status;
+  const weekendStatus = getWeekendStatus(race);
 
-  raceStatusLabel.textContent = race.status;
+  raceStatus.textContent = weekendStatus;
+  raceStatusLabel.textContent = weekendStatus;
 
   raceStatus.classList.toggle(
     "upcoming-status",
 
-    race.status === "UPCOMING",
+    weekendStatus === "UPCOMING",
   );
 
   /* ---------------------------------------------
@@ -1621,9 +1727,12 @@ async function selectRaceSession(
   activeRaceSession = sessionType;
   updateSessionSelector(race);
 
-  raceStatusLabel.textContent = race.status;
-  raceStatus.textContent = race.status;
-  raceStatus.classList.toggle("upcoming-status", race.status === "UPCOMING");
+  const weekendStatus = getWeekendStatus(race);
+
+  raceStatusLabel.textContent = weekendStatus;
+  raceStatus.textContent = weekendStatus;
+  raceStatus.classList.toggle("upcoming-status", weekendStatus === "UPCOMING");
+  raceStatus.classList.toggle("ongoing-status", weekendStatus === "ONGOING");
 
   const isSprint = sessionType === "sprint";
 
@@ -1683,6 +1792,23 @@ async function selectRaceSession(
     if (sprintStrategy?.loaded)
       renderRaceStrategy(race, "sprint", sprintStrategy);
     return;
+  }
+
+  if (
+    race.status !== "COMPLETED" &&
+    race.qualifyingStatus === "COMPLETED" &&
+    !race.qualifying
+  ) {
+    try {
+      await loadQualifyingDetails(race);
+
+      if (selectionVersion !== raceSelectionVersion) return;
+      if (activeRaceSession !== "race") return;
+
+      renderQualifying(race, "race");
+    } catch (error) {
+      console.warn("OpenF1 qualifying detail load failed:", error);
+    }
   }
 
   renderStartingGridFinish(race);
@@ -2253,7 +2379,9 @@ function renderQualifying(race, sessionType = "race") {
     return;
   }
 
-  const results = qualifyingData;
+  const results = qualifyingData
+    .filter((result) => Number.isFinite(result.position) && result.position > 0)
+    .sort((a, b) => a.position - b.position);
   const first = results[0];
   const nextTwo = results.slice(1, 3);
   const rest = results.slice(3);
@@ -5528,8 +5656,10 @@ function setDashboardTab(name) {
     races.length &&
     !document.querySelector(".race-button.active")
   ) {
+    const currentRace = phase2CurrentRace();
     const latestCompleted = phase2LatestRace();
-    const defaultRace = latestCompleted || phase2NextRace() || races[0];
+    const defaultRace =
+      currentRace || latestCompleted || phase2NextRace() || races[0];
     const defaultIndex = races.indexOf(defaultRace);
 
     if (defaultIndex >= 0) {
@@ -5674,6 +5804,17 @@ function phase2NextRace() {
   return races.find((race) => race.status === "UPCOMING") || null;
 }
 
+function phase2CurrentRace() {
+  return (
+    races
+      .filter(
+        (race) =>
+          race.status !== "COMPLETED" && getWeekendStatus(race) === "ONGOING",
+      )
+      .at(-1) || null
+  );
+}
+
 async function phase2LoadSeasonData() {
   if (phase2State.loaded || phase2State.loading) return;
 
@@ -5689,8 +5830,8 @@ async function phase2LoadSeasonData() {
 
   try {
     const [driverStandings, teamStandings, latestDrivers] = await Promise.all([
-      phase2Fetch("championship_drivers", { session_key: "latest" }),
-      phase2Fetch("championship_teams", { session_key: "latest" }),
+      phase2Fetch("championship_drivers", { session_key: latest.sessionKey }),
+      phase2Fetch("championship_teams", { session_key: latest.sessionKey }),
       phase2Fetch("drivers", { session_key: latest.sessionKey }),
     ]);
 
