@@ -1287,7 +1287,7 @@ function formatLapTime(seconds) {
 }
 
 function getTeamClass(teamName = "") {
-  const team = teamName.toLowerCase();
+  const team = String(teamName || "").toLowerCase();
 
   if (team.includes("mercedes")) return "mercedes";
   if (team.includes("ferrari")) return "ferrari";
