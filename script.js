@@ -3567,8 +3567,8 @@ const overviewDriverImages = {
   "Pierre Gasly": "images/headshots/pierre-gasly.webp",
   "Sergio Perez": "images/headshots/sergio-perez.webp",
   "Valtteri Bottas": "images/headshots/valtteri-bottas.webp",
-  "Driver #22": "images/headshots/driver22.webp",
-  "Yuki Tsunoda": "images/headshots/driver22.webp",
+  "Yuki Tsunoda": "images/headshots/yuki-tsunoda.webp",
+  "Ryo Hirakawa": "images/headshots/ryo-hirakawa.webp",
 };
 
 const overviewTeamImages = {
@@ -5846,10 +5846,26 @@ async function phase2LoadSeasonData() {
       )
       .map((item) => {
         const driver = driverMap.get(item.driver_number) || {};
+        const driverNameFallbacks = {
+          22: "Yuki Tsunoda",
+          31: "Esteban Ocon",
+          50: "Ryo Hirakawa",
+        };
+        const driverTeamFallbacks = {
+          22: "Racing Bulls",
+          31: "Haas F1 Team",
+          50: "Haas F1 Team",
+        };
         return {
-          name: driver.full_name || `Driver #${item.driver_number}`,
+          name:
+            driver.full_name ||
+            driverNameFallbacks[item.driver_number] ||
+            `Driver #${item.driver_number}`,
           number: item.driver_number,
-          team: driver.team_name || "Unknown",
+          team:
+            driver.team_name ||
+            driverTeamFallbacks[item.driver_number] ||
+            "Unknown",
           points: phase2Number(item.points_current),
           position: phase2Number(item.position_current),
         };
