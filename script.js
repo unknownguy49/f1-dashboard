@@ -4035,6 +4035,66 @@ function phase2BindCalendarModal() {
   });
 }
 
+function phase2OpenChampionTribute() {
+  const modal = document.getElementById("championTributeModal");
+  if (!modal) return;
+
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  phase2LaunchChampionConfetti();
+  document.getElementById("championTributeClose")?.focus();
+}
+
+function phase2CloseChampionTribute() {
+  const modal = document.getElementById("championTributeModal");
+  if (!modal) return;
+
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function phase2BindChampionTribute() {
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("#championTributeTrigger")) {
+      phase2OpenChampionTribute();
+      return;
+    }
+
+    if (event.target.closest("[data-champion-close]")) {
+      phase2CloseChampionTribute();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      phase2CloseChampionTribute();
+    }
+  });
+}
+
+function phase2LaunchChampionConfetti() {
+  const container = document.getElementById("championConfetti");
+  if (!container) return;
+
+  container.replaceChildren();
+
+  const colors = ["#009246", "#ffffff", "#ce2b37"];
+
+  for (let i = 0; i < 150; i++) {
+    const piece = document.createElement("span");
+    piece.className = "champion-confetti-piece";
+    piece.style.width = "9px";
+    piece.style.height = "15px";
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.setProperty("--fall-duration", `${3 + Math.random() * 3}s`);
+    piece.style.setProperty("--fall-delay", `${Math.random() * 1.2}s`);
+    piece.style.setProperty("--drift", `${Math.random() * 240 - 120}px`);
+    piece.style.setProperty("--rotation", `${Math.random() * 1080 - 540}deg`);
+    container.appendChild(piece);
+  }
+}
+
 function phase2NextCountdownEvent(race) {
   if (!race) return null;
 
@@ -6211,7 +6271,7 @@ function phase2Render() {
         <div class="overview-hero-copy">
             <span class="overview-eyebrow">2026 / THE SEASON SO FAR</span>
             <h2>THE SEASON<br><i>IN MOTION.</i></h2>
-            <p class="overview-hero-description">Twenty-two drivers. Eleven teams. One championship still to be decided.</p>
+            <p class="overview-hero-description">Twenty-two drivers. Eleven teams. One championship.</p>
             <div class="overview-leader-line">
                 <span>CHAMPIONSHIP LEADER</span>
                 <strong data-h2h-driver="${leader?.number || ""}">${E(leader?.name || "—")}</strong>
@@ -6272,7 +6332,7 @@ function phase2Render() {
         <div class="overview-section-intro">
             <span class="overview-eyebrow">THE TITLE FIGHT</span>
             <h3>THE FRONT<br><i>RUNNERS.</i></h3>
-            <p>The five drivers currently carrying the championship fight.</p>
+            <p>The five drivers/teams currently carrying the championship fight.</p>
         </div>
         <div class="overview-column">
             <span class="overview-column-label">DRIVERS</span>
@@ -6290,7 +6350,7 @@ function phase2Render() {
     .slice(0, 3)
     .map(
       (d, i) =>
-        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TITLE CONTENDER"} / ${E(d.team)}</span><h3 data-h2h-driver="${d.number}">${E(d.name)}</h3></div>${overviewDriverImage(d.name) ? `<img src="${E(overviewDriverImage(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
+        `<article class="drivers-feature-row drivers-feature-${i + 1}" style="--driver-accent:${phase2TeamColor(d.team)}"><span class="drivers-feature-pos">${String(i + 1).padStart(2, "0")}</span><div class="drivers-feature-copy"><span class="rev-eyebrow">${i === 0 ? "CHAMPIONSHIP LEADER" : "TOP CONTENDER"} / ${E(d.team)}</span><h3 data-h2h-driver="${d.number}">${E(d.name)}</h3></div>${overviewDriverImage(d.name) ? `<img src="${E(overviewDriverImage(d.name))}" alt="${E(d.name)}">` : ``}<strong class="drivers-feature-points"><span>${P(d.points)}<small>PTS</small></span></strong></article>`,
     )
     .join("");
   const remainingDrivers = phase2State.drivers
@@ -8218,6 +8278,7 @@ async function phase2Initialize() {
   bindMobileNavigation();
   replayBind();
   phase2BindCalendarModal();
+  phase2BindChampionTribute();
   const savedTab = (() => {
     try {
       return sessionStorage.getItem("f1_active_tab");
@@ -8247,9 +8308,13 @@ async function phase2Initialize() {
       return null;
     }
   })();
-  setDashboardTab(
-    requestedTab || (validTabs.includes(savedTab) ? savedTab : "overview"),
-  );
+  const initialTab =
+    requestedTab || (validTabs.includes(savedTab) ? savedTab : "overview");
+  setDashboardTab(initialTab);
+
+  if (initialTab === "overview") {
+    phase2OpenChampionTribute();
+  }
 
   document.querySelector(".f1-logo")?.addEventListener("click", () => {
     document.querySelector(".navbar")?.classList.remove("mobile-nav-open");

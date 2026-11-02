@@ -1317,6 +1317,7 @@ footer > span {
   }
 
   footer {
+    padding-bottom: 30px;
     width: 90%;
   }
 }
@@ -12104,4 +12105,325 @@ body {
   color: #777;
   font-size: 12px;
   pointer-events: none;
+}
+
+.champion-tribute-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.champion-tribute-modal[hidden] {
+  display: none;
+}
+
+.champion-tribute-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  backdrop-filter: blur(4px);
+}
+
+.champion-tribute-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  width: min(1100px, 100%);
+  max-height: min(720px, 90vh);
+  overflow: hidden;
+  background: #090b0e;
+  border: 1px solid #30343a;
+  box-shadow: 0 25px 90px rgba(0, 0, 0, 0.7);
+}
+
+.champion-tribute-image {
+  min-height: 420px;
+  overflow: hidden;
+  background: #050505;
+}
+
+.champion-tribute-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: auto;
+}
+
+.champion-tribute-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 55px 42px;
+}
+
+.champion-tribute-eyebrow {
+  color: #e10600;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+}
+
+.champion-tribute-content h2 {
+  margin: 18px 0 12px;
+  color: #fff;
+  font-size: clamp(48px, 5vw, 76px);
+  font-weight: 950;
+  line-height: 0.88;
+  letter-spacing: -4px;
+}
+
+.champion-tribute-content h2 i {
+  color: #e10600;
+  font-style: italic;
+}
+
+.champion-tribute-content h3 {
+  margin: 18px 0 12px;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+.champion-tribute-description {
+  max-width: 390px;
+  margin: 0;
+  color: #a5a9af;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.champion-tribute-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 32px;
+  border-top: 1px solid #30343a;
+  border-bottom: 1px solid #30343a;
+}
+
+.champion-tribute-stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 17px 10px 17px 0;
+}
+
+.champion-tribute-stats span {
+  color: #777e87;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.champion-tribute-stats strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.champion-tribute-footer {
+  margin-top: 25px;
+  color: #e10600;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+}
+
+.champion-tribute-close {
+  position: absolute;
+  top: 13px;
+  right: 13px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid #555;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.champion-tribute-close:hover {
+  color: #fff;
+  background: #e10600;
+  border-color: #e10600;
+}
+
+@media (max-width: 700px) {
+  .champion-tribute-modal {
+    padding: 40px;
+  }
+
+  .champion-tribute-panel {
+    display: block;
+    width: 100%;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  .champion-tribute-image {
+    min-height: 0;
+    aspect-ratio: 1.5;
+  }
+
+  .champion-tribute-content {
+    padding: 30px 24px;
+  }
+
+  .champion-tribute-content h2 {
+    font-size: 55px;
+  }
+
+  .champion-tribute-content h3 {
+    font-size: 15px;
+  }
+
+  .champion-tribute-description {
+    font-size: 12px;
+  }
+
+  .champion-tribute-stats {
+    margin-top: 23px;
+  }
+
+  .champion-tribute-stats strong {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .champion-tribute-content {
+    padding: 25px 18px;
+  }
+
+  .champion-tribute-content h2 {
+    font-size: 46px;
+  }
+
+  .champion-tribute-stats span {
+    font-size: 7px;
+  }
+
+  .champion-tribute-stats strong {
+    font-size: 10px;
+  }
+}
+
+.champion-tribute-trigger {
+  position: fixed;
+  left: 28px;
+  bottom: 28px;
+  width: 46px;
+  height: 46px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e10600;
+  border-radius: 50%;
+  background: #111111;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow:
+    0 0 0 3px rgba(225, 6, 0, 0.18),
+    0 0 14px rgba(225, 6, 0, 0.45),
+    0 0 28px rgba(225, 6, 0, 0.18);
+  animation: championTrophyGlow 2s ease-in-out infinite;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.champion-tribute-trigger:hover {
+  background: #e10600;
+  border-color: #ff3838;
+  color: #ffffff;
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 4px rgba(225, 6, 0, 0.25),
+    0 0 20px rgba(225, 6, 0, 0.75),
+    0 0 38px rgba(225, 6, 0, 0.35);
+  animation: none;
+}
+
+.champion-tribute-trigger:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 4px;
+}
+
+@keyframes championTrophyGlow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(225, 6, 0, 0.15),
+      0 0 10px rgba(225, 6, 0, 0.35),
+      0 0 20px rgba(225, 6, 0, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px rgba(225, 6, 0, 0.25),
+      0 0 19px rgba(225, 6, 0, 0.7),
+      0 0 34px rgba(225, 6, 0, 0.3);
+  }
+}
+
+@media (max-width: 600px) {
+  .champion-tribute-trigger {
+    left: 12px;
+    bottom: 12px;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+.champion-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.champion-confetti-piece {
+  position: absolute;
+  top: -15px;
+  width: 8px;
+  height: 13px;
+  opacity: 0;
+  animation: championConfettiFall var(--fall-duration) ease-in forwards;
+  animation-delay: var(--fall-delay);
+}
+
+@keyframes championConfettiFall {
+  0% {
+    transform: translate3d(0, -20px, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--drift), 110vh, 0) rotate(var(--rotation));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .champion-confetti-piece {
+    animation: none;
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .champion-tribute-trigger {
+    animation: none;
+  }
 }
