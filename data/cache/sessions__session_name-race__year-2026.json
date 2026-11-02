@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-10-09T11:07:28.340Z",
+  "fetchedAt": "2026-11-02T03:46:55.653Z",
   "data": [
     {
       "session_key": 11234,
@@ -346,7 +346,7 @@
       "session_type": "Race",
       "session_name": "Race",
       "date_start": "2026-11-01T20:00:00+00:00",
-      "date_end": "2026-11-01T22:00:00+00:00",
+      "date_end": "2026-11-01T23:00:00+00:00",
       "meeting_key": 1298,
       "circuit_key": 65,
       "circuit_short_name": "Mexico City",
