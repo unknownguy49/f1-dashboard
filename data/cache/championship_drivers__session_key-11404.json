@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-02T03:57:46.597Z",
+  "fetchedAt": "2026-11-03T12:55:55.322Z",
   "data": [
     {
       "meeting_key": 1298,
@@ -62,7 +62,7 @@
       "position_start": 7,
       "position_current": 7,
       "points_start": 144,
-      "points_current": 150
+      "points_current": 144
     },
     {
       "meeting_key": 1298,
@@ -71,7 +71,7 @@
       "position_start": 8,
       "position_current": 8,
       "points_start": 105,
-      "points_current": 105
+      "points_current": 107
     },
     {
       "meeting_key": 1298,
@@ -80,7 +80,7 @@
       "position_start": 9,
       "position_current": 9,
       "points_start": 77,
-      "points_current": 79
+      "points_current": 83
     },
     {
       "meeting_key": 1298,
@@ -89,7 +89,7 @@
       "position_start": 10,
       "position_current": 10,
       "points_start": 42,
-      "points_current": 43
+      "points_current": 42
     },
     {
       "meeting_key": 1298,
@@ -107,7 +107,7 @@
       "position_start": 12,
       "position_current": 12,
       "points_start": 27,
-      "points_current": 31
+      "points_current": 27
     },
     {
       "meeting_key": 1298,
@@ -121,20 +121,20 @@
     {
       "meeting_key": 1298,
       "session_key": 11404,
-      "driver_number": 27,
-      "position_start": 14,
+      "driver_number": 5,
+      "position_start": 15,
       "position_current": 14,
-      "points_start": 13,
-      "points_current": 13
+      "points_start": 10,
+      "points_current": 14
     },
     {
       "meeting_key": 1298,
       "session_key": 11404,
-      "driver_number": 5,
-      "position_start": 15,
+      "driver_number": 27,
+      "position_start": 14,
       "position_current": 15,
-      "points_start": 10,
-      "points_current": 10
+      "points_start": 13,
+      "points_current": 13
     },
     {
       "meeting_key": 1298,
