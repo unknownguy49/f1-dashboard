@@ -5,9 +5,31 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>F1 26 - Race Dashboard</title>
+    <title>F1 Race Dashboard</title>
+
+    <script>
+      (() => {
+        try {
+          const season = Number(localStorage.getItem("f1_selected_season"));
+          const year = [2023, 2024, 2025, 2026].includes(season)
+            ? String(season).slice(-2)
+            : "26";
+          document.documentElement.style.setProperty(
+            "--initial-loader-year",
+            `"${year}"`,
+          );
+        } catch (error) {}
+      })();
+    </script>
 
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+    <link
+      rel="preload"
+      as="image"
+      href="images/loader-f1-car.png"
+      fetchpriority="high"
+    />
 
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -17,7 +39,7 @@
     <div class="page-loader" id="pageLoader" aria-label="Loading F1 dashboard">
       <div class="loader-content">
         <div class="loader-logo">
-          F1<span style="color: #fff; padding-left: 15px">26</span>
+          F1<span id="loaderLogoYear" style="color: #fff; padding-left: 15px"></span>
         </div>
         <div class="loader-label" id="loaderStatus">INITIALIZING RACE DATA</div>
         <div class="loader-progress" aria-hidden="true">
@@ -27,6 +49,9 @@
               src="images/loader-f1-car.png"
               alt=""
               aria-hidden="true"
+              fetchpriority="high"
+              loading="eager"
+              decoding="sync"
               draggable="false"
             />
           </div>
@@ -50,7 +75,7 @@
       <div class="brand">
         <div class="f1-logo">
           <span>F1</span>
-          <span class="logo-year">26</span>
+          <span class="logo-year" id="brandLogoYear">26</span>
         </div>
 
         <div class="brand-divider"></div>
@@ -96,7 +121,14 @@
         </nav>
       </div>
 
-      <div class="season">2026 SEASON</div>
+      <label class="season season-selector-label" aria-label="Select season">
+        <select class="season-select" aria-label="Select Formula 1 season">
+          <option value="2026">2026 SEASON</option>
+          <option value="2025">2025 SEASON</option>
+          <option value="2024">2024 SEASON</option>
+          <option value="2023">2023 SEASON</option>
+        </select>
+      </label>
       <button
         class="api-status-toggle"
         id="apiStatusToggle"
@@ -127,7 +159,14 @@
         aria-hidden="true"
       >
         <div class="mobile-dashboard-menu-inner">
-          <div class="mobile-dashboard-menu-label">2026 SEASON</div>
+          <label class="mobile-season-selector-label">SEASON
+            <select class="season-select" aria-label="Select Formula 1 season">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+            </select>
+          </label>
           <nav aria-label="Mobile dashboard sections">
             <button
               class="mobile-dashboard-tab active"
@@ -209,7 +248,7 @@
       <section class="dashboard-panel active" id="dashboardOverview">
         <div class="dashboard-heading">
           <div>
-            <span class="eyebrow">2026 SEASON</span>
+            <span class="eyebrow" data-season-label>2026 SEASON</span>
             <h1>Overview</h1>
           </div>
           <p>
@@ -229,7 +268,7 @@
             <h1>Drivers</h1>
           </div>
           <p>
-            Driver performance and championship position for the 2026 season.
+            Driver performance and championship position for the selected season.
           </p>
         </div>
         <div id="driversContent" class="dashboard-loading">
@@ -264,7 +303,7 @@
       <section class="dashboard-panel" id="dashboardHeadtohead">
         <div class="h2h-page">
           <header class="h2h-page-heading">
-            <span class="rev-eyebrow">2026 SEASON / DRIVER COMPARISON</span>
+            <span class="rev-eyebrow" data-season-label>2026 SEASON / DRIVER COMPARISON</span>
             <h1>HEAD-TO-<i>HEAD.</i></h1>
             <p>
               Compare two drivers across race weekends, qualifying and the
@@ -301,7 +340,7 @@
             <h1>Race Replay</h1>
           </div>
           <p>
-            Replay completed 2026 races using historical OpenF1 car location,
+            Replay completed races from the selected season using historical OpenF1 car location,
             position and lap telemetry.
           </p>
         </div>
@@ -317,7 +356,7 @@
               ></select>
             </div>
             <div class="replay-driver-select-wrap">
-              <span class="replay-control-label">DRIVERS · 22 CARS</span>
+              <span class="replay-control-label">DRIVERS</span>
               <div class="replay-driver-picker" id="replayDriverPicker">
                 <button
                   class="replay-select replay-driver-picker-button"
@@ -431,7 +470,7 @@
                     id="replayLegendCount"
                     aria-live="polite"
                     aria-atomic="true"
-                    >0/22</span
+                    >0/—</span
                   >
                 </div>
                 <div class="replay-legend" id="replayLegend"></div>
@@ -479,7 +518,7 @@
             <div>
               <span class="eyebrow"> RACE CENTER </span>
 
-              <h2>2026 Calendar</h2>
+              <h2 id="raceCalendarHeading">2026 Calendar</h2>
             </div>
 
             <div class="navigation-controls">
@@ -774,6 +813,93 @@
       </section>
     </main>
 
+    <div
+      class="historical-race-disclaimer"
+      id="historicalRaceDisclaimer"
+      aria-hidden="true"
+      hidden
+    >
+      <div
+        class="historical-race-disclaimer-backdrop"
+        data-race-disclaimer-close
+      ></div>
+
+      <section
+        class="historical-race-disclaimer-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="historicalRaceDisclaimerTitle"
+      >
+        <span class="historical-race-disclaimer-eyebrow">
+          HISTORICAL SEASON / DATA NOTICE
+        </span>
+
+        <h2 id="historicalRaceDisclaimerTitle">
+          BEFORE YOU<br /><i>CONTINUE.</i>
+        </h2>
+
+        <p>
+          Race Center data for historical seasons may be incomplete or inconsistent.
+          Some race results, session information, driver or team details, and images
+          may be unavailable or inaccurate due to limitations in the available
+          historical data and assets.
+        </p>
+
+        <button type="button" data-race-disclaimer-close>
+          CONTINUE TO RACE CENTER
+        </button>
+      </section>
+    </div>
+
+    <div
+      class="replay-disclaimer-modal"
+      id="replayDisclaimerModal"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="replay-disclaimer-backdrop" data-replay-disclaimer-close></div>
+
+      <div
+        class="replay-disclaimer-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="replayDisclaimerTitle"
+      >
+
+        <div class="replay-disclaimer-content">
+          <span class="replay-disclaimer-eyebrow">
+            RACE REPLAY / IMPORTANT NOTICE
+          </span>
+
+          <h2 id="replayDisclaimerTitle">
+            A FEW THINGS<br /><i>TO NOTE.</i>
+          </h2>
+
+          <p>
+            Race Replay is an experimental visualization built using available
+            historical session data. Some circuits, track layouts, driver
+            positions, telemetry, or replay elements may not render accurately
+            or may be unavailable for certain sessions.
+          </p>
+
+          <p>
+            Playback accuracy and completeness may vary depending on the data
+            provided by OpenF1. Enjoy the replay, but keep in mind that some
+            visualizations may not represent the actual on-track events perfectly.
+          </p>
+
+          <button
+            class="replay-disclaimer-continue"
+            type="button"
+            data-replay-disclaimer-close
+          >
+            CONTINUE TO RACE REPLAY
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- =================================================
          FOOTER
     ================================================== -->
@@ -782,12 +908,12 @@
       <div class="footer-logo">
         F1
 
-        <span> 26 </span>
+        <span id="footerBrandLogoYear"> 26 </span>
       </div>
 
       <p>OpenF1 race intelligence dashboard</p>
 
-      <span> 2026 </span>
+      <span id="footerSeasonYear"> 2026 </span>
     </footer>
 
     <!-- =================================================
@@ -807,10 +933,10 @@
       <div class="calendar-modal-panel">
         <div class="calendar-modal-header">
           <div>
-            <span class="eyebrow">2026 / THE CALENDAR</span>
+            <span class="eyebrow" data-season-label>2026 / THE CALENDAR</span>
             <h2 id="calendarModalTitle">SEASON<br /><i>CALENDAR.</i></h2>
             <p>
-              Practice, sprint, qualifying and race sessions across the 2026
+              Practice, sprint, qualifying and race sessions across the selected
               season.
             </p>
           </div>
@@ -883,10 +1009,10 @@
         </button>
 
         <div class="champion-tribute-image">
-          <img
-            src="images/kimi-antonelli-champion.jpg"
-            alt="2026 Formula One podium celebration"
-          />
+          <picture>
+            <source media="(max-width: 700px)" srcset="images/kimi-antonelli-champion-responsive.jpg" />
+            <img src="images/kimi-antonelli-champion.jpg" alt="2026 Formula One podium celebration" />
+          </picture>
         </div>
 
         <div class="champion-tribute-content">

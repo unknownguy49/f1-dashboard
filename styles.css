@@ -120,10 +120,68 @@ body {
 
 .season {
   color: #777;
-
   font-size: 9px;
-
   letter-spacing: 2px;
+}
+
+.season-selector-label {
+  display: flex;
+  align-items: center;
+  position: relative;
+  white-space: nowrap;
+}
+
+.season-selector-label::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  margin-left: 9px;
+  border-right: 1px solid #8b8b8b;
+  border-bottom: 1px solid #8b8b8b;
+  transform: rotate(45deg) translateY(-2px);
+  pointer-events: none;
+}
+
+.season-select {
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #8b8b8b;
+  font: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 10px 2px;
+}
+
+.season-select:hover,
+.season-select:focus-visible {
+  color: #f5f5f5;
+}
+
+.season-select option {
+  background: #111;
+  color: #f5f5f5;
+  letter-spacing: normal;
+}
+
+.mobile-season-selector-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  color: #777;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border-bottom: 1px solid #272727;
+}
+
+.mobile-season-selector-label .season-select {
+  color: #f5f5f5;
+  font-size: 10px;
 }
 
 /* =====================================================
@@ -1253,7 +1311,7 @@ footer > span {
     padding: 0 5%;
   }
 
-  .season {
+  .season-selector-label {
     display: none;
   }
 
@@ -1539,6 +1597,10 @@ body.cursor-hover .laser-cursor {
 .loader-content {
   width: min(420px, 78vw);
 }
+.loader-logo #loaderLogoYear::before {
+  content: var(--initial-loader-year, "26");
+}
+
 .loader-logo {
   margin-bottom: 2px;
   color: var(--red);
@@ -5998,7 +6060,7 @@ body.calendar-modal-open {
 
   .brand-divider,
   .brand-title,
-  .season {
+  .season-selector-label {
     display: none;
   }
 
@@ -6230,7 +6292,7 @@ body.calendar-modal-open {
   }
 
   .navbar-dashboard,
-  .navbar .season {
+  .navbar .season-selector-label {
     display: none;
   }
 
@@ -6869,7 +6931,7 @@ body {
   #dashboardDrivers .drivers-hero-copy h2 {
     max-width: 100% !important;
     margin: 14px 0 18px !important;
-    font-size: clamp(54px, 15vw, 70px) !important;
+    font-size: clamp(48px, 13vw, 64px) !important;
     line-height: 0.79 !important;
     letter-spacing: -0.09em !important;
   }
@@ -6945,7 +7007,7 @@ body {
 
   #dashboardDrivers .drivers-feature-row > img {
     width: 135px !important;
-    right: -7% !important;
+    right: -12% !important;
     opacity: 0.48 !important;
   }
 
@@ -12146,11 +12208,17 @@ body {
   background: #050505;
 }
 
+.champion-tribute-image picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .champion-tribute-image img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: auto;
+  object-fit: cover;
 }
 
 .champion-tribute-content {
@@ -12426,4 +12494,231 @@ body {
   .champion-tribute-trigger {
     animation: none;
   }
+}
+
+.champion-tribute-trigger[hidden] {
+  display: none !important;
+}
+
+/* =====================================================
+   HISTORICAL RACE CENTER DISCLAIMER
+===================================================== */
+
+.historical-race-disclaimer {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.historical-race-disclaimer[hidden] {
+  display: none;
+}
+
+.historical-race-disclaimer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.86);
+  backdrop-filter: blur(9px);
+}
+
+.historical-race-disclaimer-panel {
+  position: relative;
+  width: min(100%, 540px);
+  padding: 42px;
+  border: 1px solid #303030;
+  border-top: 3px solid #e10600;
+  background: #101010;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.7);
+}
+
+.historical-race-disclaimer-eyebrow {
+  color: #e10600;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.historical-race-disclaimer-panel h2 {
+  margin: 22px 0;
+  color: #f5f5f5;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 0.98;
+  font-weight: 900;
+}
+
+.historical-race-disclaimer-panel h2 i {
+  color: #e10600;
+  font-style: normal;
+}
+
+.historical-race-disclaimer-panel p {
+  color: #999;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.historical-race-disclaimer-panel button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 26px;
+  border: 0;
+  background: #e10600;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.historical-race-disclaimer-panel button:hover {
+  background: #ff1e16;
+}
+
+/* =====================================================
+   DESKTOP SEASON SELECTOR
+===================================================== */
+
+@media (min-width: 701px) {
+  .navbar .season-selector-label {
+    display: flex;
+    position: relative;
+    align-items: center;
+    min-width: 190px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid #333;
+    border-radius: 3px;
+    background: linear-gradient(135deg, #151515, #0b0b0b);
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .navbar .season-selector-label:hover,
+  .navbar .season-selector-label:focus-within {
+    border-color: #e10600;
+    background: #151010;
+    box-shadow: 0 0 16px rgba(225, 6, 0, 0.12);
+  }
+
+  .navbar .season-selector-label::after {
+    position: absolute;
+    right: 17px;
+    margin: 0;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .navbar .season-selector-label .season-select {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 46px;
+    padding: 0 42px 0 16px;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #f5f5f5;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    cursor: pointer;
+  }
+
+  .navbar .season-selector-label .season-select option {
+    padding: 12px;
+    background: #111;
+    color: #f5f5f5;
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+}
+
+/* =====================================================
+   RACE REPLAY DISCLAIMER
+===================================================== */
+
+.replay-disclaimer-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.replay-disclaimer-modal[hidden] {
+  display: none;
+}
+
+.replay-disclaimer-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.86);
+  backdrop-filter: blur(9px);
+}
+
+.replay-disclaimer-panel {
+  position: relative;
+  width: min(100%, 540px);
+  padding: 42px;
+  border: 1px solid #303030;
+  border-top: 3px solid #e10600;
+  background: #101010;
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.7);
+}
+
+.replay-disclaimer-eyebrow {
+  color: #e10600;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.replay-disclaimer-panel h2 {
+  margin: 22px 0;
+  color: #f5f5f5;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 0.98;
+  font-weight: 900;
+}
+
+.replay-disclaimer-panel h2 i {
+  color: #e10600;
+  font-style: normal;
+}
+
+.replay-disclaimer-panel p {
+  color: #999;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.replay-disclaimer-panel button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 26px;
+  border: 0;
+  background: #e10600;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.replay-disclaimer-panel button:hover {
+  background: #ff1e16;
+}
+
+body.replay-disclaimer-open {
+  overflow: hidden;
 }

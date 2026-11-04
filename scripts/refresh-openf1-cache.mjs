@@ -3,7 +3,7 @@ import path from "node:path";
 
 const BASE_URL = "https://api.openf1.org/v1";
 const CACHE_DIR = path.resolve("data/cache");
-const YEAR = 2026;
+const YEARS = [2023, 2024, 2025, 2026];
 const MIN_REQUEST_INTERVAL_MS = 2300;
 const MAX_ATTEMPTS = 5;
 const failures = [];
@@ -189,115 +189,140 @@ function sessionHasEnded(session, now = Date.now()) {
 }
 
 async function main() {
-  const meetings = await fetchAndCache("meetings", { year: YEAR });
-  const sessionGroups = {};
-
-  for (const name of [
+  const sessionNames = [
     "Race",
     "Qualifying",
     "Sprint",
     "Sprint Qualifying",
+    "Sprint Shootout",
     "Practice 1",
     "Practice 2",
     "Practice 3",
-  ]) {
-    sessionGroups[name] = await fetchAndCache("sessions", {
-      year: YEAR,
-      session_name: name,
-    });
-  }
+  ];
 
-  if (!meetings || !sessionGroups.Race) {
-    console.warn(
-      "Core calendar data could not be fully refreshed. Existing cache files were preserved where requests failed.",
-    );
-  }
+  for (const year of YEARS) {
+    console.log(`\n========== Refreshing ${year} ==========`);
 
-  const allSessions = Object.values(sessionGroups).flatMap((items) =>
-    Array.isArray(items) ? items : [],
-  );
+    const meetings = await fetchAndCache("meetings", { year });
+    const sessionGroups = {};
 
-  const completedSessions = allSessions.filter((session) =>
-    sessionHasEnded(session),
-  );
-  const completedRaces = (sessionGroups.Race || []).filter((session) =>
-    sessionHasEnded(session),
-  );
+    for (const name of sessionNames) {
+      sessionGroups[name] = await fetchAndCache("sessions", {
+        year,
+        session_name: name,
+      });
+    }
 
-  for (const session of completedSessions) {
-    const key = session.session_key;
-
-    if (!key) continue;
-
-    await fetchAndCache("session_result", { session_key: key });
-    await fetchAndCache("drivers", { session_key: key });
-
-    if (session.session_name === "Race" || session.session_name === "Sprint") {
-      await fetchAndCache("laps", { session_key: key });
-
-      const qualifyingName =
-        session.session_name === "Race" ? "Qualifying" : "Sprint Qualifying";
-
-      const qualifyingSession = allSessions.find(
-        (candidate) =>
-          String(candidate.meeting_key) === String(session.meeting_key) &&
-          candidate.session_name === qualifyingName &&
-          !candidate.is_cancelled &&
-          sessionHasEnded(candidate),
+    if (!meetings || !sessionGroups.Race) {
+      console.warn(
+        `${year}: Core calendar data could not be fully refreshed. Existing cache files were preserved where requests failed.`,
       );
+    }
 
-      if (qualifyingSession?.session_key) {
-        await fetchAndCache("starting_grid", {
-          session_key: qualifyingSession.session_key,
-        });
-      } else {
-        console.warn(
-          `Skipped starting_grid for ${session.session_name} session ${key}: matching ${qualifyingName} session not found or not completed.`,
+    const allSessions = Object.values(sessionGroups).flatMap((items) =>
+      Array.isArray(items) ? items : [],
+    );
+
+    const completedSessions = allSessions.filter((session) =>
+      sessionHasEnded(session),
+    );
+
+    const completedRacesAndSprints = completedSessions.filter(
+      (session) =>
+        session.session_name === "Race" ||
+        session.session_name === "Sprint",
+    );
+
+    for (const session of completedSessions) {
+      const key = session.session_key;
+      if (!key) continue;
+
+      // Race Center session classification and driver metadata.
+      await fetchAndCache("session_result", { session_key: key });
+      await fetchAndCache("drivers", { session_key: key });
+
+      // Laps are also used by Race Center for lap totals and fastest-lap details.
+      if (
+        session.session_name === "Race" ||
+        session.session_name === "Sprint"
+      ) {
+        await fetchAndCache("laps", { session_key: key });
+      }
+
+      // Race strategy uses stints and pit data for races and sprints.
+      if (
+        session.session_name === "Race" ||
+        session.session_name === "Sprint"
+      ) {
+        await fetchAndCache("stints", { session_key: key });
+        await fetchAndCache("pit", { session_key: key });
+      }
+
+      // Race Center requests the race grid using the qualifying session key.
+      if (session.session_name === "Race") {
+        const qualifyingSession = allSessions.find(
+          (candidate) =>
+            String(candidate.meeting_key) === String(session.meeting_key) &&
+            candidate.session_name === "Qualifying" &&
+            !candidate.is_cancelled &&
+            sessionHasEnded(candidate),
         );
+
+        if (qualifyingSession?.session_key) {
+          await fetchAndCache("starting_grid", {
+            session_key: qualifyingSession.session_key,
+          });
+        } else {
+          console.warn(
+            `${year}: Skipped race starting_grid for session ${key}: matching Qualifying session not found or not completed.`,
+          );
+        }
+      }
+
+      // The frontend requests the sprint grid using the sprint session key.
+      if (session.session_name === "Sprint") {
+        await fetchAndCache("starting_grid", { session_key: key });
       }
     }
+
+    // Historical championship snapshots are used by the Championship and H2H views.
+    for (const session of completedRacesAndSprints.filter(
+      (item) => item.session_name === "Race",
+    )) {
+      await fetchAndCache("championship_drivers", {
+        session_key: session.session_key,
+      });
+
+      await fetchAndCache("championship_teams", {
+        session_key: session.session_key,
+      });
+    }
+
+    console.log(`${year}: season cache pass complete.`);
   }
 
-  for (const session of completedRaces) {
-    if (!session.session_key) continue;
-
-    await fetchAndCache("championship_drivers", {
-      session_key: session.session_key,
-    });
-
-    await fetchAndCache("championship_teams", {
-      session_key: session.session_key,
-    });
-  }
-
+  // "latest" represents the current championship snapshot, not a historical season.
   await fetchAndCache("championship_drivers", { session_key: "latest" });
   await fetchAndCache("championship_teams", { session_key: "latest" });
 
   const metadataPath = path.join(CACHE_DIR, "metadata.json");
-  let metadataExists = true;
+  const metadata = {
+    seasons: YEARS,
+    refreshedAt: new Date().toISOString(),
+    filesUpdated: updated,
+    successfulRequests: successful,
+    retries,
+    requestFailures: failures.length,
+    failedRequests: failures,
+    replayTelemetryCached: false,
+  };
 
-  try {
-    await fs.access(metadataPath);
-  } catch {
-    metadataExists = false;
-  }
-
-  if (updated > 0 || !metadataExists) {
-    const metadata = {
-      season: YEAR,
-      refreshedAt: new Date().toISOString(),
-      filesUpdated: updated,
-      successfulRequests: successful,
-      retries,
-      requestFailures: failures.length,
-      failedRequests: failures,
-    };
-
-    await fs.writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`);
-  }
+  await fs.mkdir(CACHE_DIR, { recursive: true });
+  await fs.writeFile(metadataPath, `${JSON.stringify(metadata, null, 2)}\n`);
 
   console.log("");
-  console.log("OpenF1 cache refresh complete.");
+  console.log("OpenF1 multi-season cache refresh complete.");
+  console.log(`Seasons processed: ${YEARS.join(", ")}`);
   console.log(`Successful requests: ${successful}`);
   console.log(`Retries performed: ${retries}`);
   console.log(`Cache files changed: ${updated}`);
@@ -309,6 +334,7 @@ async function main() {
     );
     console.log("Review the individual failure messages above.");
   }
+
 }
 
 await main();

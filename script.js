@@ -2,9 +2,127 @@
    OPENF1 RACE STATE
 ===================================================== */
 
+const AVAILABLE_SEASONS = [2026, 2025, 2024, 2023];
+const SELECTED_SEASON_STORAGE_KEY = "f1_selected_season";
+let selectedSeason = (() => {
+  try {
+    const saved = Number(localStorage.getItem(SELECTED_SEASON_STORAGE_KEY));
+    return AVAILABLE_SEASONS.includes(saved) ? saved : 2026;
+  } catch (error) {
+    return 2026;
+  }
+})();
 let races = [];
 let activeRaceSession = "race";
 let raceSelectionVersion = 0;
+
+function updateSeasonSelectorLabels() {
+  document.querySelectorAll(".season-select").forEach((select) => {
+    select.value = String(selectedSeason);
+  });
+  const mobileLabel = document.querySelector(".mobile-dashboard-menu-label");
+  if (mobileLabel) mobileLabel.textContent = `${selectedSeason} SEASON`;
+  document.querySelectorAll("[data-season-label]").forEach((element) => {
+    element.textContent = element.textContent.replace(/\b(?:2023|2024|2025|2026)\b/g, String(selectedSeason));
+  });
+  const calendarHeading = document.getElementById("raceCalendarHeading");
+  if (calendarHeading) calendarHeading.textContent = `${selectedSeason} Calendar`;
+  const brandYear = document.getElementById("brandLogoYear");
+  if (brandYear) brandYear.textContent = String(selectedSeason).slice(-2);
+  const footerBrandYear = document.getElementById("footerBrandLogoYear");
+  if (footerBrandYear) footerBrandYear.textContent = String(selectedSeason).slice(-2);
+  document.documentElement.style.setProperty(
+    "--initial-loader-year",
+    `"${String(selectedSeason).slice(-2)}"`,
+  );
+  const footerYear = document.getElementById("footerSeasonYear");
+  if (footerYear) footerYear.textContent = ` ${selectedSeason} `;
+  const championTrigger = document.getElementById("championTributeTrigger");
+  if (championTrigger) championTrigger.hidden = selectedSeason !== 2026;
+  if (selectedSeason !== 2026) phase2CloseChampionTribute();
+}
+
+function resetSeasonDependentState() {
+  if (phase2State.nextRaceCountdownTimer) {
+    clearInterval(phase2State.nextRaceCountdownTimer);
+    phase2State.nextRaceCountdownTimer = null;
+  }
+  Object.assign(phase2State, {
+    drivers: [], teams: [], positionHistory: [], selectedHistoryDriver: null,
+    loaded: false, loading: false, positionHistoryLoaded: false,
+    positionHistoryLoading: false,
+  });
+  h2hState.requestId += 1;
+  h2hState.initialized = false;
+  h2hState.loading = false;
+  h2hState.driverA = null;
+  h2hState.driverB = null;
+  h2hState.pendingDriver = null;
+  h2hState.requestCache.clear();
+  h2hState.sessionData.clear();
+  h2hState.comparison = null;
+  races = [];
+  raceSelectionVersion += 1;
+  activeRaceSession = "race";
+  document.querySelectorAll(".race-button.active").forEach((button) => button.classList.remove("active"));
+  if (raceTrack) raceTrack.innerHTML = "";
+  if (raceView) raceView.hidden = true;
+  if (emptyState) emptyState.hidden = false;
+}
+
+async function changeSeason(year) {
+  const nextSeason = Number(year);
+  if (!AVAILABLE_SEASONS.includes(nextSeason) || nextSeason === selectedSeason) return;
+  document.querySelectorAll(".season-select").forEach((select) => { select.disabled = true; });
+  selectedSeason = nextSeason;
+  try {
+    localStorage.setItem(SELECTED_SEASON_STORAGE_KEY, String(selectedSeason));
+  } catch (error) {}
+  updateSeasonSelectorLabels();
+  showSeasonLoader();
+  resetSeasonDependentState();
+  openF1CacheUsed = false;
+  openF1RequestFailedWithoutCache = false;
+  openF1SuccessfulRequest = false;
+  if (loaderStatus && !LOADER_DEV_MODE) loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
+  try {
+    const calendarLoaded = await initializeOpenF1();
+    if (!calendarLoaded) return;
+    try {
+      await phase2LoadSeasonData();
+    } catch (error) {
+      console.error(`${selectedSeason} season data failed:`, error);
+      phase2RenderUnavailable(String(error.message || error));
+    }
+    if (document.querySelector('.dashboard-tab[data-dashboard="headtohead"]')?.classList.contains("active")) await h2hInitialize();
+    if (document.querySelector('.dashboard-tab[data-dashboard="race"]')?.classList.contains("active")) {
+      const defaultRace = phase2CurrentRace() || phase2LatestRace() || phase2NextRace() || races[0];
+      const defaultIndex = races.indexOf(defaultRace);
+      if (defaultIndex >= 0) await selectRace(defaultIndex);
+    }
+    replayPopulateRaceSelect();
+    replayPrepareRaceSelection("");
+    setLoaderProgress(100);
+  } finally {
+    setTimeout(() => {
+      hideSeasonLoader();
+
+      const raceCenterActive = document
+        .querySelector('.dashboard-tab[data-dashboard="race"]')
+        ?.classList.contains("active");
+
+      if (raceCenterActive && selectedSeason !== 2026) {
+        phase2OpenHistoricalRaceDisclaimer();
+      } else {
+        phase2CloseHistoricalRaceDisclaimer();
+      }
+    }, 350);
+
+    document.querySelectorAll(".season-select").forEach((select) => {
+      select.disabled = false;
+    });
+  }
+}
 
 /* =====================================================
    OPENF1 DATA LAYER
@@ -160,12 +278,16 @@ function openF1MarkCached(payload) {
 }
 
 const openF1CircuitImages = {
+  Jeddah: "images/jeddah.avif",
+  "Saudi Arabia": "images/jeddah.avif",
   15: "images/barcelona-catalunya.avif",
   153: "images/spain.avif",
 };
 
 const localCircuitImages = {
   Australia: "images/australia.avif",
+  Jeddah: "images/jeddah.avif",
+  "Saudi Arabia": "images/jeddah.avif",
   China: "images/china.avif",
   Japan: "images/japan.avif",
   Bahrain: "images/bahrain.avif",
@@ -174,6 +296,7 @@ const localCircuitImages = {
   Monaco: "images/monaco.avif",
   Spain: "images/spain.avif",
   Madring: "images/spain.avif",
+  "Barcelona-Catalunya": "images/barcelona-catalunya.avif",
   Canada: "images/canada.avif",
   Austria: "images/austria.avif",
   "Great Britain": "images/great-britain.avif",
@@ -181,6 +304,7 @@ const localCircuitImages = {
   Hungary: "images/hungary.avif",
   Netherlands: "images/netherlands.avif",
   Italy: "images/italy.avif",
+  Imola: "images/imola.avif",
   Azerbaijan: "images/azerbaijan.avif",
   Singapore: "images/singapore.avif",
   "United States": "images/usa.avif",
@@ -302,7 +426,7 @@ const circuitImageAliases = {
   Shanghai: "China",
   Suzuka: "Japan",
   Sakhir: "Bahrain",
-  Jeddah: "Saudi Arabia",
+  Jeddah: "Jeddah",
   Miami: "Miami",
   Imola: "Emilia-Romagna",
   "Emilia-Romagna": "Emilia-Romagna",
@@ -390,6 +514,42 @@ function getDriverImage(driver) {
   const driverName = (driver.full_name || driver.driver || "")
     .trim()
     .toLowerCase();
+
+  if (selectedSeason === 2025 && driverName === "isack hadjar") {
+    return "images/drivers/isack-hadjar-2025.png";
+  }
+
+  if (selectedSeason === 2024) {
+    const season2024Images = {
+      "sergio perez": "images/drivers/sergio-perez-2024.png",
+      "carlos sainz": "images/drivers/carlos-sainz-2024.png",
+      "lewis hamilton": "images/drivers/lewis-hamilton-2024.png",
+      "daniel ricciardo": "images/drivers/daniel-ricciardo-2024.png",
+      "max verstappen": "images/drivers/max-verstappen-2024.png",
+      "esteban ocon": "images/drivers/esteban-ocon-2024.png",
+      "pierre gasly": "images/drivers/pierre-gasly.png",
+      "kevin magnussen": "images/drivers/kevin-magnussen-2024.png",
+    };
+
+    const seasonImage = season2024Images[driverName];
+    if (seasonImage) return seasonImage;
+  }
+
+  if (selectedSeason === 2023) {
+    const season2023Images = {
+      "sergio perez": "images/drivers/sergio-perez-2024.png",
+      "max verstappen": "images/drivers/max-verstappen-2024.png",
+      "zhou guanyu": "images/drivers/zhou-guanyu-2023.png",
+      "lewis hamilton": "images/drivers/lewis-hamilton-2024.png",
+      "esteban ocon": "images/drivers/esteban-ocon-2024.png",
+      "carlos sainz": "images/drivers/carlos-sainz-2024.png",
+      "nico hulkenberg": "images/drivers/nico-hulkenberg-2023.png",
+      "yuki tsunoda": "images/drivers/yuki-tsunoda-2023.png",
+    };
+
+    const seasonImage = season2023Images[driverName];
+    if (seasonImage) return seasonImage;
+  }  
 
   const local = Object.entries(driverImages).find(
     ([name]) => name.trim().toLowerCase() === driverName,
@@ -479,26 +639,36 @@ function getWeekendStatus(race) {
   return completedSessions.includes("COMPLETED") ? "ONGOING" : race.status;
 }
 
-async function loadOpenF1Calendar() {
-  const [
-    meetings,
-    raceSessions,
-    qualifyingSessions,
-    sprintSessions,
-    sprintQualifyingSessions,
-    practice1Sessions,
-    practice2Sessions,
-    practice3Sessions,
-  ] = await Promise.all([
-    fetchOpenF1("meetings", { year: 2026 }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Race" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Qualifying" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Sprint" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Sprint Qualifying" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 1" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 2" }),
-    fetchOpenF1("sessions", { year: 2026, session_name: "Practice 3" }),
-  ]);
+async function loadOpenF1Calendar(year = selectedSeason) {
+  const requestCalendarData = async (sessionName, optional = false) => {
+    const data = await fetchOpenF1(
+      "sessions",
+      { year, session_name: sessionName },
+      optional ? { allow404: true } : {},
+    );
+
+    // Avoid sending a burst of requests to OpenF1 and triggering HTTP 429.
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    return data;
+  };
+
+  const meetings = await fetchOpenF1("meetings", { year });
+  await new Promise((resolve) => setTimeout(resolve, 350));
+
+  const raceSessions = await requestCalendarData("Race");
+  const qualifyingSessions = await requestCalendarData("Qualifying");
+  const sprintSessions = await requestCalendarData("Sprint", true);
+  const sprintQualifyingSessions = await requestCalendarData(
+    "Sprint Qualifying",
+    true,
+  );
+  const sprintShootoutSessions = await requestCalendarData(
+    "Sprint Shootout",
+    true,
+  );
+  const practice1Sessions = await requestCalendarData("Practice 1", true);
+  const practice2Sessions = await requestCalendarData("Practice 2", true);
+  const practice3Sessions = await requestCalendarData("Practice 3", true);
 
   const sessionByMeeting = new Map(
     raceSessions
@@ -526,10 +696,10 @@ async function loadOpenF1Calendar() {
   );
 
   const sprintQualifyingByMeeting = new Map(
-    sprintQualifyingSessions
+    [...sprintQualifyingSessions, ...sprintShootoutSessions]
       .filter(
         (session) =>
-          session.session_name === "Sprint Qualifying" && !session.is_cancelled,
+          ["Sprint Qualifying", "Sprint Shootout"].includes(session.session_name) && !session.is_cancelled,
       )
       .map((session) => [session.meeting_key, session]),
   );
@@ -553,16 +723,10 @@ async function loadOpenF1Calendar() {
   });
 
   return meetings
-    .filter((meeting) => meeting.year === 2026)
+    .filter((meeting) => Number(meeting.year) === Number(year))
     .filter((meeting) => !meeting.is_cancelled)
     .filter((meeting) => sessionByMeeting.has(meeting.meeting_key))
-    .filter((meeting) => {
-      const name =
-        `${meeting.meeting_name || ""} ${meeting.location || ""} ${meeting.circuit_short_name || ""}`.toLowerCase();
-      return !name.includes("saudi") && !name.includes("jeddah");
-    })
     .sort((a, b) => new Date(a.date_start) - new Date(b.date_start))
-    .slice(0, 23)
     .map((meeting, index) => {
       const raceSession = sessionByMeeting.get(meeting.meeting_key);
       const qualifyingSession = qualifyingByMeeting.get(meeting.meeting_key);
@@ -605,6 +769,7 @@ async function loadOpenF1Calendar() {
         meeting.location;
 
       return {
+        year: Number(meeting.year || year),
         meetingKey: meeting.meeting_key,
         sessionKey: raceSession?.session_key || null,
         qualifyingSessionKey: qualifyingSession?.session_key || null,
@@ -1291,6 +1456,9 @@ function getTeamClass(teamName = "") {
 
   if (team.includes("mercedes")) return "mercedes";
   if (team.includes("ferrari")) return "ferrari";
+  if (team.includes("kick sauber") || team.includes("stake sauber") || team === "sauber") return "kicksauber";
+  if (team.includes("alfa romeo")) return "alfaromeo";
+  if (team.includes("alphatauri") || team.includes("toro rosso")) return "alphatauri";
   if (team.includes("red bull")) return "redbull";
   if (team.includes("mclaren")) return "mclaren";
   if (team.includes("aston martin")) return "astonmartin";
@@ -1311,14 +1479,14 @@ async function initializeOpenF1() {
     const liveRaces = await loadOpenF1Calendar();
 
     if (!liveRaces.length) {
-      throw new Error("No 2026 meetings returned");
+      throw new Error(`No ${selectedSeason} meetings returned`);
     }
 
     races = liveRaces;
     const navigationControls = document.querySelector(".navigation-controls");
     if (navigationControls) navigationControls.hidden = false;
     if (emptyState) emptyState.hidden = false;
-    if (!LOADER_DEV_MODE) loaderStatus.textContent = "BUILDING 2026 CALENDAR";
+    if (!LOADER_DEV_MODE) loaderStatus.textContent = `BUILDING ${selectedSeason} CALENDAR`;
     raceTrack.innerHTML = "";
     buildRaceSelector();
 
@@ -1344,7 +1512,7 @@ async function initializeOpenF1() {
         <div class="calendar-api-unavailable">
           <span class="dashboard-empty-kicker">RACE DATA OFFLINE</span>
           <h2>Race calendar temporarily unavailable</h2>
-          <p>We could not retrieve the 2026 race calendar, and no saved calendar is available on this visit. OpenF1 public access may be restricted during a live session. Please try again after the session ends.</p>
+          <p>We could not retrieve the ${selectedSeason} race calendar, and no saved calendar is available on this visit. OpenF1 public access may be restricted during a live session. Please try again after the session ends.</p>
           <button class="dashboard-empty-retry" type="button" onclick="window.location.reload()">TRY AGAIN</button>
         </div>`;
     }
@@ -1412,22 +1580,20 @@ let activePracticeType = "practice1";
 ===================================================== */
 
 const driverImages = {
-  "George Russell": "images/drivers/george-russell.png",
-
-  "Kimi Antonelli": "images/drivers/kimi-antonelli.png",
-
+  "Alexander Albon": "images/drivers/alexander-albon.png",
+  "Alex Albon": "images/drivers/alexander-albon.png",
+  "Carlos Sainz": "images/drivers/carlos-sainz.png",
   "Charles Leclerc": "images/drivers/charles-leclerc.png",
-
-  "Lewis Hamilton": "images/drivers/lewis-hamilton.png",
-
-  "Max Verstappen": "images/drivers/max-verstappen.png",
-
-  "Lando Norris": "images/drivers/lando-norris.png",
-
-  "Oscar Piastri": "images/drivers/oscar-piastri.png",
-
+  "Fernando Alonso": "images/drivers/fernando-alonso.png",
+  "George Russell": "images/drivers/george-russell.png",
   "Isack Hadjar": "images/drivers/isack-hadjar.png",
-
+  "Kimi Antonelli": "images/drivers/kimi-antonelli.png",
+  "Lando Norris": "images/drivers/lando-norris.png",
+  "Lewis Hamilton": "images/drivers/lewis-hamilton.png",
+  "Max Verstappen": "images/drivers/max-verstappen.png",
+  "Nico Hulkenberg": "images/drivers/nico-hulkenberg.png",
+  "Nico Hülkenberg": "images/drivers/nico-hulkenberg.png",
+  "Oscar Piastri": "images/drivers/oscar-piastri.png",
   "Pierre Gasly": "images/drivers/pierre-gasly.png",
 };
 
@@ -1442,6 +1608,22 @@ const loaderProgressBar = document.getElementById("loaderProgressBar");
 const loaderPercentage = document.getElementById("loaderPercentage");
 const loaderStatus = document.getElementById("loaderStatus");
 const loaderCar = document.getElementById("loaderCar");
+
+function showSeasonLoader() {
+  if (!pageLoader) return;
+  updateSeasonSelectorLabels();
+  if (loaderStatus) loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
+  if (loaderProgressBar) loaderProgressBar.style.width = "0%";
+  if (loaderPercentage) loaderPercentage.textContent = "0%";
+  setLoaderProgress(0);
+  pageLoader.classList.remove("hidden");
+  pageLoader.setAttribute("aria-label", `Loading ${selectedSeason} season`);
+}
+
+function hideSeasonLoader() {
+  if (pageLoader) pageLoader.classList.add("hidden");
+}
+
 if (LOADER_DEV_MODE) {
   loaderStatus.textContent = "INITIALIZING RACE DATA";
   setTimeout(() => setLoaderProgress(0), 0);
@@ -1455,7 +1637,7 @@ function setLoaderProgress(percentage) {
   const trackWidth = loaderProgressBar.parentElement.clientWidth;
   const carWidth = loaderCar.offsetWidth;
   const isMobile = window.matchMedia("(max-width: 600px)").matches;
-  const startOffset = isMobile ? 0 : -46;
+  const startOffset = isMobile ? 0 : -28;
   const endOffset = isMobile ? 0 : 23;
 
   const start = startOffset;
@@ -2203,10 +2385,10 @@ function createPodiumCard(driver) {
             </div>
 
 
-            <div class="
-                team-color
-                ${driver.class}
-            "></div>
+            <div
+                class="team-color ${driver.class}"
+                style="${(selectedSeason === 2023 || selectedSeason === 2024 || selectedSeason === 2025) && driver.color ? `background: ${driver.color};` : ""}"
+            ></div>
 
 
         </div>
@@ -2536,7 +2718,7 @@ function renderStartingGridFinish(race) {
         !driver.dsq &&
         Number.isInteger(finish) &&
         finish >= 1 &&
-        finish <= 22;
+        finish <= Math.max(phase2State.drivers.length, 20);
       const change = classified ? start - finish : null;
 
       return {
@@ -3394,7 +3576,6 @@ async function initializeDashboard() {
 
   if (!LOADER_DEV_MODE) {
     pageLoader.classList.add("hidden");
-    setTimeout(() => pageLoader.remove(), 650);
   }
 }
 
@@ -3538,15 +3719,28 @@ function phase2Points(value) {
     : number.toFixed(1).replace(/\.0$/, "");
 }
 
+function phase2ChampionLeaderImage(variant = "") {
+  const suffix = variant ? `-${variant}` : "";
+  const seasonSuffix = {
+    2026: "",
+    2025: "-2025",
+    2024: "-2023",
+    2023: "-2023",
+  }[selectedSeason];
+
+  return seasonSuffix === undefined
+    ? ""
+    : `images/championship-leader${suffix}${seasonSuffix}.png`;
+}
+
 function phase2DriverImage(name) {
-  return typeof driverImages !== "undefined"
-    ? driverImages[name] || null
-    : null;
+  return overviewDriverImage(name) || null;
 }
 
 const overviewDriverImages = {
   "Alexander Albon": "images/headshots/alex-albon.webp",
   "Arvid Lindblad": "images/headshots/arvid-lindblad.webp",
+  "Daniel Ricciardo": "images/headshots/daniel-ricciardo.webp",
   "Carlos Sainz": "images/headshots/carlos-sainz.webp",
   "Charles Leclerc": "images/headshots/charles-leclerc.webp",
   "Esteban Ocon": "images/headshots/esteban-ocon.webp",
@@ -3555,13 +3749,17 @@ const overviewDriverImages = {
   "Gabriel Bortoleto": "images/headshots/gabriel-bortoleto.webp",
   "George Russell": "images/headshots/george-russell.webp",
   "Isack Hadjar": "images/headshots/isack-hadjar.webp",
+  "Jack Doohan": "images/headshots/jack-doohan.webp",
+  "Kevin Magnussen": "images/headshots/kevin-magnussen.webp",
   "Kimi Antonelli": "images/headshots/kimi-antonelli.webp",
   "Lance Stroll": "images/headshots/lance-stroll.webp",
   "Lando Norris": "images/headshots/lando-norris.webp",
   "Lewis Hamilton": "images/headshots/lewis-hamilton.webp",
   "Liam Lawson": "images/headshots/liam-lawson.webp",
+  "Logan Sargeant": "images/headshots/logan-sargeant.webp",
   "Max Verstappen": "images/headshots/max-verstappen.webp",
   "Nico Hulkenberg": "images/headshots/nico-hulkenberg.webp",
+  "Nyck de Vries": "images/headshots/nyck-de-vries.webp",
   "Oliver Bearman": "images/headshots/oliver-bearman.webp",
   "Oscar Piastri": "images/headshots/oscar-piastri.webp",
   "Pierre Gasly": "images/headshots/pierre-gasly.webp",
@@ -3569,9 +3767,16 @@ const overviewDriverImages = {
   "Valtteri Bottas": "images/headshots/valtteri-bottas.webp",
   "Yuki Tsunoda": "images/headshots/yuki-tsunoda.webp",
   "Ryo Hirakawa": "images/headshots/ryo-hirakawa.webp",
+  "Zhou Guanyu": "images/headshots/zhou-guanyu.webp",
 };
 
 const overviewTeamImages = {
+  "Alfa Romeo": "images/teams/alfa-romeo.png",
+  Sauber: "images/teams/kick-sauber.png",
+  "Kick Sauber": "images/teams/kick-sauber.png",
+  AlphaTauri: "images/teams/alphatauri.png",
+  "Alpha Tauri": "images/teams/alphatauri.png",
+  "Toro Rosso": "images/teams/alphatauri.png",
   Alpine: "images/teams/alpine.png",
   "Aston Martin": "images/teams/aston-martin.png",
   Audi: "images/teams/audi.png",
@@ -3599,7 +3804,19 @@ function overviewDriverImage(name) {
 }
 
 function overviewTeamImage(name) {
-  return overviewTeamImages[name] || null;
+  const normalized = String(name || "").trim().toLowerCase();
+  const aliases = {
+    "alfa romeo racing": "Alfa Romeo",
+    "stake f1 team kick sauber": "Kick Sauber",
+    "kick sauber": "Kick Sauber",
+    sauber: "Sauber",
+    alphatauri: "AlphaTauri",
+    "scuderia alphatauri": "AlphaTauri",
+    "toro rosso": "Toro Rosso",
+    rb: "Racing Bulls",
+  };
+  const key = aliases[normalized] || name;
+  return overviewTeamImages[key] || null;
 }
 
 function phase2CalendarEvent(race, type) {
@@ -4036,6 +4253,7 @@ function phase2BindCalendarModal() {
 }
 
 function phase2OpenChampionTribute() {
+  if (selectedSeason !== 2026) return;
   const modal = document.getElementById("championTributeModal");
   if (!modal) return;
 
@@ -4217,9 +4435,16 @@ function phase2RenderNextRaceCountdown(next) {
 }
 
 function phase2TeamClass(name) {
-  const n = String(name || "").toLowerCase();
+  const n = String(name || "").trim().toLowerCase();
+  if (n === "rb" || n.includes("racing bulls")) return "racingbulls";
   if (n.includes("mercedes")) return "mercedes";
   if (n.includes("ferrari")) return "ferrari";
+  if (n.includes("alfa romeo")) return "alfaromeo";
+  if (n.includes("kick sauber") || n.includes("stake sauber") || n === "sauber") return "kicksauber";
+  if (n.includes("alphatauri") || n.includes("toro rosso")) return "alphatauri";
+  if (n.includes("renault")) return "renault";
+  if (n.includes("force india")) return "forceindia";
+  if (n.includes("racing point")) return "racingpoint";
   if (n.includes("mclaren")) return "mclaren";
   if (n.includes("red bull")) return "redbull";
   if (n.includes("racing bulls")) return "racingbulls";
@@ -4237,6 +4462,9 @@ function phase2TeamLogo(name) {
   const logos = {
     mercedes: "mercedes",
     ferrari: "ferrari",
+    alfaromeo: "alfa-romeo",
+    kicksauber: "kick-sauber",
+    alphatauri: "alphatauri",
     mclaren: "mclaren",
     redbull: "red-bull",
     racingbulls: "racing-bulls",
@@ -5028,7 +5256,7 @@ function replayUpdateDriverReadiness(totalOverride = null) {
   if (!replayElements.legendCount) return;
   const total = Number.isFinite(totalOverride)
     ? totalOverride
-    : replayState.drivers.length || 22;
+    : replayState.drivers.length || phase2State.drivers.length || 20;
   const ready = replayState.drivers.filter((driver) => {
     const number = Number(driver.driver_number);
     return (replayState.locations.get(number) || []).length > 0;
@@ -5064,7 +5292,7 @@ async function replayFetchLocations(
 
   const updateLocationStatus = (retrying = 0) => {
     replayUpdateDriverReadiness(
-      replayState.drivers.length || requested.length || 22,
+      replayState.drivers.length || requested.length || phase2State.drivers.length || 20,
     );
     if (!replayElements.loadStatus) return;
     const ready = getReady().length;
@@ -5222,7 +5450,7 @@ async function replayLoadRace(race) {
   replayState.race = race;
   replayElements.loadButton.disabled = true;
   if (replayElements.legendCount)
-    replayElements.legendCount.textContent = "0/22";
+    replayElements.legendCount.textContent = `0/${replayState.drivers.length || phase2State.drivers.length || 20}`;
   replayState.locations = new Map();
   replayState.locationLoading = new Set();
   replayState.locationRetryAt = new Map();
@@ -5505,12 +5733,12 @@ function replayPrepareRaceSelection(sessionKey) {
   replayElements.canvasEmpty.textContent = sessionKey
     ? "PRESS LOAD REPLAY TO FETCH TELEMETRY"
     : "SELECT A COMPLETED RACE OR SPRINT TO LOAD TELEMETRY";
-  replayElements.driverPickerButton.textContent = "22 DRIVERS";
+  replayElements.driverPickerButton.textContent = `${replayState.drivers.length || phase2State.drivers.length || 20} DRIVERS`;
   replayElements.driverPickerButton.disabled = !sessionKey;
   replayElements.driverMenu.hidden = true;
   replayElements.legend.innerHTML = "";
   if (replayElements.legendCount)
-    replayElements.legendCount.textContent = "0/22";
+    replayElements.legendCount.textContent = `0/${replayState.drivers.length || phase2State.drivers.length || 20}`;
   replayElements.driverList.innerHTML = "";
   replayElements.lapLabel.textContent = "LAP —";
   if (replayElements.mobileLap) replayElements.mobileLap.textContent = "LAP —";
@@ -5698,6 +5926,80 @@ function replayBind() {
   window.addEventListener("resize", () => replayDraw());
 }
 
+function phase2OpenHistoricalRaceDisclaimer() {
+  if (selectedSeason === 2026) return;
+
+  const modal = document.getElementById("historicalRaceDisclaimer");
+  if (!modal || !modal.hidden) return;
+
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("historical-race-disclaimer-open");
+
+  modal.querySelector("button")?.focus();
+}
+
+function phase2CloseHistoricalRaceDisclaimer() {
+  const modal = document.getElementById("historicalRaceDisclaimer");
+  if (!modal || modal.hidden) return;
+
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("historical-race-disclaimer-open");
+}
+
+function phase2BindHistoricalRaceDisclaimer() {
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-race-disclaimer-close]")) {
+      phase2CloseHistoricalRaceDisclaimer();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (
+      event.key === "Escape" &&
+      !document.getElementById("historicalRaceDisclaimer")?.hidden
+    ) {
+      phase2CloseHistoricalRaceDisclaimer();
+    }
+  });
+}
+
+function phase2OpenReplayDisclaimer() {
+  const modal = document.getElementById("replayDisclaimerModal");
+  if (!modal) return;
+
+  modal.hidden = false;
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("replay-disclaimer-open");
+}
+
+function phase2CloseReplayDisclaimer() {
+  const modal = document.getElementById("replayDisclaimerModal");
+  if (!modal) return;
+
+  modal.hidden = true;
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("replay-disclaimer-open");
+}
+
+function phase2BindReplayDisclaimer() {
+  const modal = document.getElementById("replayDisclaimerModal");
+  if (!modal) return;
+
+  modal.addEventListener("click", (event) => {
+    if (event.target.closest("[data-replay-disclaimer-close]")) {
+      phase2CloseReplayDisclaimer();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) {
+      phase2CloseReplayDisclaimer();
+    }
+  });
+}
+
 function setDashboardTab(name) {
   try {
     sessionStorage.setItem("f1_active_tab", name);
@@ -5751,6 +6053,16 @@ function setDashboardTab(name) {
     name === "overview",
   );
   document.body.classList.toggle("overview-mode", name === "overview");
+  if (name === "race" && selectedSeason !== 2026) {
+    phase2OpenHistoricalRaceDisclaimer();
+  } else {
+    phase2CloseHistoricalRaceDisclaimer();
+  }
+  if (name === "replay") {
+    phase2OpenReplayDisclaimer();
+  } else {
+    phase2CloseReplayDisclaimer();
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -5788,7 +6100,7 @@ function phase2RenderUnavailable(
       id: "overviewContent",
       title: "Season overview unavailable",
       description: hasNoCachedData
-        ? "We couldn't retrieve the 2026 season data from OpenF1, and no saved copy is available on this visit."
+        ? `We couldn't retrieve the ${selectedSeason} season data from OpenF1, and no saved copy is available on this visit.`
         : hasCachedData
           ? "Saved API responses were available, but they did not contain enough completed-race information to assemble the season overview."
           : "A completed race session is not currently available, so the season overview cannot be assembled yet.",
@@ -5906,15 +6218,43 @@ async function phase2LoadSeasonData() {
       )
       .map((item) => {
         const driver = driverMap.get(item.driver_number) || {};
+        const seasonDriverNameFallbacks = {
+          2023: {
+            21: "Nyck de Vries",
+            40: "Liam Lawson",
+          },
+          2024: {
+            2: "Logan Sargeant",
+            3: "Daniel Ricciardo",
+          },
+          2025: {
+            7: "Jack Doohan",
+          },
+        };
+        const seasonDriverTeamFallbacks = {
+          2023: {
+            21: "AlphaTauri",
+            40: "AlphaTauri",
+          },
+          2024: {
+            2: "Williams",
+            3: "Racing Bulls",
+          },
+          2025: {
+            7: "Alpine",
+          },
+        };
         const driverNameFallbacks = {
           22: "Yuki Tsunoda",
           31: "Esteban Ocon",
           50: "Ryo Hirakawa",
+          ...(seasonDriverNameFallbacks[selectedSeason] || {}),
         };
         const driverTeamFallbacks = {
-          22: "Racing Bulls",
-          31: "Haas F1 Team",
+          22: selectedSeason >= 2025 ? "Racing Bulls" : "AlphaTauri",
+          31: selectedSeason >= 2025 ? "Haas F1 Team" : "Alpine",
           50: "Haas F1 Team",
+          ...(seasonDriverTeamFallbacks[selectedSeason] || {}),
         };
         return {
           name:
@@ -5937,7 +6277,10 @@ async function phase2LoadSeasonData() {
           phase2Number(a.position_current) - phase2Number(b.position_current),
       )
       .map((item) => ({
-        name: item.team_name || "Unknown",
+        name:
+          String(item.team_name || "").trim().toLowerCase() === "rb"
+            ? "Racing Bulls"
+            : item.team_name || "Unknown",
         points: phase2Number(item.points_current),
         position: phase2Number(item.position_current),
       }));
@@ -5995,7 +6338,7 @@ async function phase2LoadPositionHistory() {
               return;
             }
 
-            if (Number.isInteger(position) && position >= 1 && position <= 22) {
+            if (Number.isInteger(position) && position >= 1 && position <= Math.max(phase2State.drivers.length, 20)) {
               positions[number] = position;
             } else {
               statuses[number] = "DNF/DNS";
@@ -6091,7 +6434,7 @@ function phase2RenderChampionshipHistory() {
     (point) =>
       Number.isInteger(point.position) &&
       point.position >= 1 &&
-      point.position <= 22,
+      point.position <= Math.max(phase2State.drivers.length, 20),
   );
   const statusPoints = points.filter((point) => point.status);
   const width = 1100;
@@ -6102,8 +6445,8 @@ function phase2RenderChampionshipHistory() {
   const bottom = 58;
   const plotWidth = width - left - right;
   const plotHeight = height - top - bottom;
-  const maxPosition = 22;
-  const dnfLevel = 23;
+  const maxPosition = Math.max(drivers.length, 20);
+  const dnfLevel = maxPosition + 1;
 
   const x = (index) =>
     left +
@@ -6112,10 +6455,7 @@ function phase2RenderChampionshipHistory() {
       : (index * plotWidth) / (phase2State.positionHistory.length - 1));
   const y = (position) => top + ((position - 1) / (dnfLevel - 1)) * plotHeight;
 
-  const gridPositions = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-    22,
-  ];
+  const gridPositions = Array.from({ length: maxPosition }, (_, index) => index + 1);
   const grid =
     gridPositions
       .map(
@@ -6210,7 +6550,7 @@ function phase2RenderChampionshipHistory() {
                 ${statusMarkers}
             </svg>
         </div>
-        <div class="position-history-note">HIGHER ON THE CHART = BETTER POSITION · DNF/DNS SHOWN BELOW P22 · FINAL POSITIONS FROM OPENF1 SESSION RESULT</div>
+        <div class="position-history-note">HIGHER ON THE CHART = BETTER POSITION · DNF/DNS SHOWN BELOW P${maxPosition} · FINAL POSITIONS FROM OPENF1 SESSION RESULT</div>
     `;
 }
 
@@ -6263,23 +6603,23 @@ function phase2Render() {
       })
       .join("")}</div>`;
   };
-  const heroImage = I(leader?.name);
+  const heroImage = phase2ChampionLeaderImage();
   const latestImage = phase2RaceImage(latest);
 
   document.getElementById("overviewContent").innerHTML = `
     <section class="overview-hero-new">
         <div class="overview-hero-copy">
-            <span class="overview-eyebrow">2026 / THE SEASON SO FAR</span>
+            <span class="overview-eyebrow">${selectedSeason} / THE SEASON SO FAR</span>
             <h2>THE SEASON<br><i>IN MOTION.</i></h2>
-            <p class="overview-hero-description">Twenty-two drivers. Eleven teams. One championship.</p>
+            <p class="overview-hero-description">${phase2State.drivers.length} drivers. ${phase2State.teams.length} teams. One championship.</p>
             <div class="overview-leader-line">
                 <span>CHAMPIONSHIP LEADER</span>
                 <strong data-h2h-driver="${leader?.number || ""}">${E(leader?.name || "—")}</strong>
                 <b>${P(leader?.points)} <small>PTS</small></b>
             </div>
         </div>
-        <img class="overview-hero-championship-image" src="images/championship-leader.png" alt="">
-        <div class="overview-hero-number">2026</div>
+        ${heroImage ? `<img class="overview-hero-championship-image" src="${E(heroImage)}" alt="">` : ""}
+        <div class="overview-hero-number">${selectedSeason}</div>
     </section>
 
     <section class="overview-metrics">
@@ -6313,8 +6653,8 @@ function phase2Render() {
                         class="overview-calendar-button"
                         id="overviewCalendarButton"
                         type="button"
-                        aria-label="Open 2026 season calendar"
-                        title="View 2026 season calendar"
+                        aria-label="Open ${selectedSeason} season calendar"
+                        title="View ${selectedSeason} season calendar"
                     >
                         <span aria-hidden="true">▦</span>
                         <span>CALENDAR</span>
@@ -6366,11 +6706,12 @@ function phase2Render() {
       </article>`,
     )
     .join("");
+  const driversHeroImage = phase2ChampionLeaderImage("2");
   document.getElementById("driversContent").innerHTML =
-    `<img class="drivers-hero-championship-image" src="images/championship-leader-2.png" alt=""><section class="drivers-hero" style="--driver-accent:${phase2TeamColor(leader?.team)}"><div class="drivers-hero-watermark">01</div><div class="drivers-hero-copy"><span class="rev-eyebrow">01 / THE CHAMPIONSHIP LEADER</span><h2>${E(leader?.name || "—")}</h2><p>${E(leader?.team || "—")} / ${P(leader?.points)} POINTS</p></div></section><section class="drivers-featured"><div class="drivers-section-intro"><span class="rev-eyebrow">THE TITLE FIGHT</span><h3>THREE<br><i>FRONT-RUNNERS.</i></h3><p>The drivers currently setting the pace of the 2026 championship.</p></div><div class="drivers-feature-list">${driverFeatures}</div></section><section class="drivers-grid-section"><div class="drivers-section-intro"><span class="rev-eyebrow">THE PURSUIT</span><h3>THE<br><i>GRID.</i></h3><p>Every driver. Every point. Every position.</p></div><div class="drivers-roster">${remainingDrivers}</div></section>`;
+    `${driversHeroImage ? `<img class="drivers-hero-championship-image" src="${E(driversHeroImage)}" alt="">` : ""}<section class="drivers-hero" style="--driver-accent:${phase2TeamColor(leader?.team)}"><div class="drivers-hero-watermark">01</div><div class="drivers-hero-copy"><span class="rev-eyebrow">01 / THE CHAMPIONSHIP LEADER</span><h2>${E(leader?.name || "—")}</h2><p>${E(leader?.team || "—")} / ${P(leader?.points)} POINTS</p></div></section><section class="drivers-featured"><div class="drivers-section-intro"><span class="rev-eyebrow">THE TITLE FIGHT</span><h3>THREE<br><i>FRONT-RUNNERS.</i></h3><p>The drivers currently setting the pace of the ${selectedSeason} championship.</p></div><div class="drivers-feature-list">${driverFeatures}</div></section><section class="drivers-grid-section"><div class="drivers-section-intro"><span class="rev-eyebrow">THE PURSUIT</span><h3>THE<br><i>GRID.</i></h3><p>Every driver. Every point. Every position.</p></div><div class="drivers-roster">${remainingDrivers}</div></section>`;
 
   document.getElementById("teamsContent").innerHTML =
-    `<section class="rev-teams-intro"><img class="rev-teams-hero-mercedes" src="images/teams/mercedes.png" alt="" aria-hidden="true"><span class="rev-eyebrow">THE CONSTRUCTOR CHAMPIONSHIP</span><h2>ELEVEN TEAMS.<br><i>ONE CROWN.</i></h2><p>Engineering. Strategy. Two drivers. One result.</p></section><section class="rev-teams-roster">${phase2State.teams
+    `<section class="rev-teams-intro">${phase2TeamLogo(phase2State.teams[0]?.name) ? `<img class="rev-teams-hero-mercedes" src="${E(phase2TeamLogo(phase2State.teams[0]?.name))}" alt="" aria-hidden="true">` : ""}<span class="rev-eyebrow">THE CONSTRUCTOR CHAMPIONSHIP</span><h2>${phase2State.teams.length} TEAMS.<br><i>ONE CROWN.</i></h2><p>Engineering. Strategy. Two drivers. One result.</p></section><section class="rev-teams-roster">${phase2State.teams
       .map((t, i) => {
         const pair = phase2State.drivers
           .filter((d) => d.team === t.name)
@@ -6401,9 +6742,9 @@ function phase2Render() {
   document.getElementById("championshipContent").innerHTML = `
         <section class="championship-hero">
             <img class="championship-hero-trophy" src="images/championship-trophy.png" alt="" aria-hidden="true">
-            <div class="championship-hero-watermark">2026</div>
+            <div class="championship-hero-watermark">${selectedSeason}</div>
             <div class="championship-hero-copy">
-                <span class="rev-eyebrow">2026 / WORLD CHAMPIONSHIP</span>
+                <span class="rev-eyebrow">${selectedSeason} / WORLD CHAMPIONSHIP</span>
                 <h2>EVERY<br>POINT<br><i>COUNTS.</i></h2>
                 <p>Every point changes the championship. Every round changes the fight.</p>
                 <div class="championship-leader">
@@ -6477,6 +6818,11 @@ function phase2TeamColor(name) {
   const n = String(name || "").toLowerCase();
   if (n.includes("mercedes")) return "#00d2be";
   if (n.includes("ferrari")) return "#e10600";
+  if (n.includes("alfa romeo")) return "#900000";
+  if (n.includes("alphatauri")) return "#2b4562";
+  if (n.includes("renault")) return "#fff500";
+  if (n.includes("force india")) return "#f596c8";
+  if (n.includes("racing point")) return "#f596c8";
   if (n.includes("mclaren")) return "#ff8700";
   if (n.includes("red bull")) return "#3671c6";
   if (n.includes("racing bulls")) return "#6a91e8";
@@ -8279,6 +8625,12 @@ async function phase2Initialize() {
   replayBind();
   phase2BindCalendarModal();
   phase2BindChampionTribute();
+  phase2BindHistoricalRaceDisclaimer();
+  phase2BindReplayDisclaimer();
+  updateSeasonSelectorLabels();
+  document.querySelectorAll(".season-select").forEach((select) => {
+    select.addEventListener("change", () => changeSeason(select.value));
+  });
   const savedTab = (() => {
     try {
       return sessionStorage.getItem("f1_active_tab");
@@ -8312,7 +8664,7 @@ async function phase2Initialize() {
     requestedTab || (validTabs.includes(savedTab) ? savedTab : "overview");
   setDashboardTab(initialTab);
 
-  if (initialTab === "overview") {
+  if (initialTab === "overview" && selectedSeason === 2026) {
     phase2OpenChampionTribute();
   }
 
@@ -8367,12 +8719,16 @@ async function phase2Initialize() {
   document.getElementById("overviewContent").innerHTML = `
         <div class="overview-hero preview">
             <article class="overview-leader"><div class="overview-leader-copy"><span class="overview-kicker">CHAMPIONSHIP LEADER</span><h2>Loading</h2></div></article>
-            <div class="overview-race-stack"><article class="overview-next"><span class="overview-kicker">SEASON DATA</span><h3>Syncing OpenF1</h3></article><article class="overview-next"><span class="overview-kicker">PLEASE WAIT</span><h3>Building the 2026 dashboard</h3></article></div>
+            <div class="overview-race-stack"><article class="overview-next"><span class="overview-kicker">SEASON DATA</span><h3>Syncing OpenF1</h3></article><article class="overview-next"><span class="overview-kicker">PLEASE WAIT</span><h3>Building the ${selectedSeason} dashboard</h3></article></div>
         </div>
     `;
 
   try {
     await phase2LoadSeasonData();
+    if (initialTab === "replay") {
+      replayPopulateRaceSelect();
+      replayPrepareRaceSelection("");
+    }
     h2hBindPopupEvents();
     h2hDecorateDriverReferences();
     const h2hObserver = new MutationObserver(() =>
