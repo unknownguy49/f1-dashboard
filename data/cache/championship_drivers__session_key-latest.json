@@ -1,5 +1,5 @@
 {
-  "fetchedAt": "2026-11-03T12:55:59.927Z",
+  "fetchedAt": "2026-11-05T00:16:03.194Z",
   "data": [
     {
       "meeting_key": 1298,
@@ -184,9 +184,18 @@
     {
       "meeting_key": 1298,
       "session_key": 11404,
+      "driver_number": 50,
+      "position_start": 24,
+      "position_current": 21,
+      "points_start": 0,
+      "points_current": 1
+    },
+    {
+      "meeting_key": 1298,
+      "session_key": 11404,
       "driver_number": 18,
       "position_start": 21,
-      "position_current": 21,
+      "position_current": 22,
       "points_start": 0,
       "points_current": 0
     },
@@ -195,15 +204,6 @@
       "session_key": 11404,
       "driver_number": 77,
       "position_start": 22,
-      "position_current": 22,
-      "points_start": 0,
-      "points_current": 0
-    },
-    {
-      "meeting_key": 1298,
-      "session_key": 11404,
-      "driver_number": 50,
-      "position_start": 24,
       "position_current": 23,
       "points_start": 0,
       "points_current": 0

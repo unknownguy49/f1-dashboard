@@ -1,0 +1,185 @@
+{
+  "fetchedAt": "2026-11-04T23:29:28.395Z",
+  "data": [
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 1,
+      "position_current": 1,
+      "position_start": null,
+      "points_current": 25,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 11,
+      "position_current": 2,
+      "position_start": null,
+      "points_current": 18,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 14,
+      "position_current": 3,
+      "position_start": null,
+      "points_current": 15,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 55,
+      "position_current": 4,
+      "position_start": null,
+      "points_current": 12,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 44,
+      "position_current": 5,
+      "position_start": null,
+      "points_current": 10,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 18,
+      "position_current": 6,
+      "position_start": null,
+      "points_current": 8,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 63,
+      "position_current": 7,
+      "position_start": null,
+      "points_current": 6,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 77,
+      "position_current": 8,
+      "position_start": null,
+      "points_current": 4,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 10,
+      "position_current": 9,
+      "position_start": null,
+      "points_current": 2,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 23,
+      "position_current": 10,
+      "position_start": null,
+      "points_current": 1,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 22,
+      "position_current": 11,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 2,
+      "position_current": 12,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 20,
+      "position_current": 13,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 21,
+      "position_current": 14,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 27,
+      "position_current": 15,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 24,
+      "position_current": 16,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 4,
+      "position_current": 17,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 16,
+      "position_current": 18,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 31,
+      "position_current": 19,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    },
+    {
+      "meeting_key": 1141,
+      "session_key": 7953,
+      "driver_number": 81,
+      "position_current": 20,
+      "position_start": null,
+      "points_current": 0,
+      "points_start": 0
+    }
+  ]
+}

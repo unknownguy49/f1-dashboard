@@ -1,0 +1,95 @@
+{
+  "fetchedAt": "2026-11-04T23:46:20.442Z",
+  "data": [
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Red Bull Racing",
+      "position_start": 1,
+      "position_current": 1,
+      "points_start": 389,
+      "points_current": 404
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "McLaren",
+      "position_start": 2,
+      "position_current": 2,
+      "points_start": 338,
+      "points_current": 361
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Ferrari",
+      "position_start": 3,
+      "position_current": 3,
+      "points_start": 322,
+      "points_current": 340
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Mercedes",
+      "position_start": 4,
+      "position_current": 4,
+      "points_start": 241,
+      "points_current": 284
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Aston Martin",
+      "position_start": 5,
+      "position_current": 5,
+      "points_start": 69,
+      "points_current": 71
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "RB",
+      "position_start": 6,
+      "position_current": 6,
+      "points_start": 33,
+      "points_current": 33
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Haas F1 Team",
+      "position_start": 7,
+      "position_current": 7,
+      "points_start": 27,
+      "points_current": 27
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Alpine",
+      "position_start": 8,
+      "position_current": 8,
+      "points_start": 9,
+      "points_current": 10
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Williams",
+      "position_start": 9,
+      "position_current": 9,
+      "points_start": 4,
+      "points_current": 4
+    },
+    {
+      "meeting_key": 1242,
+      "session_key": 9574,
+      "team_name": "Kick Sauber",
+      "position_start": 10,
+      "position_current": 10,
+      "points_start": 0,
+      "points_current": 0
+    }
+  ]
+}

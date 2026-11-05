@@ -1,0 +1,15 @@
+{
+  "fetchedAt": "2026-11-05T00:09:41.207Z",
+  "data": [
+    {
+      "date": "2026-05-02T16:25:14.670000+00:00",
+      "session_key": 11275,
+      "driver_number": 23,
+      "pit_duration": 40.821,
+      "stop_duration": 20.6,
+      "lap_number": 13,
+      "lane_duration": 40.821,
+      "meeting_key": 1284
+    }
+  ]
+}

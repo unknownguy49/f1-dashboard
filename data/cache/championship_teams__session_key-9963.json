@@ -1,0 +1,95 @@
+{
+  "fetchedAt": "2026-11-05T00:02:01.193Z",
+  "data": [
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "McLaren",
+      "position_start": 1,
+      "position_current": 1,
+      "points_start": 362,
+      "points_current": 374
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Mercedes",
+      "position_start": 3,
+      "position_current": 2,
+      "points_start": 159,
+      "points_current": 199
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Ferrari",
+      "position_start": 2,
+      "position_current": 3,
+      "points_start": 165,
+      "points_current": 183
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Red Bull Racing",
+      "position_start": 4,
+      "position_current": 4,
+      "points_start": 144,
+      "points_current": 162
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Williams",
+      "position_start": 5,
+      "position_current": 5,
+      "points_start": 54,
+      "points_current": 55
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Haas F1 Team",
+      "position_start": 7,
+      "position_current": 6,
+      "points_start": 26,
+      "points_current": 28
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Racing Bulls",
+      "position_start": 6,
+      "position_current": 7,
+      "points_start": 28,
+      "points_current": 28
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Aston Martin",
+      "position_start": 9,
+      "position_current": 8,
+      "points_start": 16,
+      "points_current": 22
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Kick Sauber",
+      "position_start": 8,
+      "position_current": 9,
+      "points_start": 16,
+      "points_current": 20
+    },
+    {
+      "meeting_key": 1263,
+      "session_key": 9963,
+      "team_name": "Alpine",
+      "position_start": 10,
+      "position_current": 10,
+      "points_start": 11,
+      "points_current": 11
+    }
+  ]
+}

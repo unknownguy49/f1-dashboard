@@ -1,9 +1,307 @@
 {
-  "season": 2026,
-  "refreshedAt": "2026-11-03T12:56:02.227Z",
-  "filesUpdated": 7,
-  "successfulRequests": 288,
+  "seasons": [
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "refreshedAt": "2026-11-05T00:16:05.342Z",
+  "filesUpdated": 1238,
+  "successfulRequests": 1517,
   "retries": 0,
-  "requestFailures": 0,
-  "failedRequests": []
+  "requestFailures": 41,
+  "failedRequests": [
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2023,
+        "session_name": "Sprint Shootout"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 7953
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 7779
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 7787
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9070
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9078
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9094
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9069
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9069
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9117
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9140
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9220
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9212
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9212
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9204
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9204
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2024,
+        "session_name": "Sprint Shootout"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9672
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9506
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9549
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9549
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9616
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9616
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9635
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9635
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9654
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2025,
+        "session_name": "Sprint Shootout"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9993
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 10028
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "pit",
+      "params": {
+        "session_key": 9934
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9934
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9883
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9864
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 9845
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Sprint Shootout"
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11240
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11275
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11286
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11321
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11348
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    },
+    {
+      "endpoint": "starting_grid",
+      "params": {
+        "session_key": 11383
+      },
+      "error": "HTTP 404: {\"detail\":\"No results found.\"}"
+    }
+  ],
+  "replayTelemetryCached": false
 }
