@@ -1,9 +1,10 @@
-name: Refresh OpenF1 cache
+
+name: Refresh OpenF1 Historical Cache
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 5 * * *'
+    - cron: '17 5 1 * *'
 
 permissions:
   contents: write
@@ -25,8 +26,8 @@ jobs:
         with:
           node-version: 22
 
-      - name: Refresh cached OpenF1 data
-        run: node scripts/refresh-openf1-cache.mjs
+      - name: Refresh 2023–2025 OpenF1 cache
+        run: node scripts/refresh-historical-cache.mjs
 
       - name: Commit cache updates
         run: |
@@ -36,6 +37,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No cache changes to commit."
           else
-            git commit -m "Refresh OpenF1 data cache"
+            git commit -m "Refresh historical OpenF1 data cache"
             git push
           fi

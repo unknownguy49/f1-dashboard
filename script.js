@@ -3738,6 +3738,7 @@ function phase2DriverImage(name) {
 }
 
 const overviewDriverImages = {
+  "Rafael Camara": "images/headshots/rafael-camara.webp",
   "Alexander Albon": "images/headshots/alex-albon.webp",
   "Arvid Lindblad": "images/headshots/arvid-lindblad.webp",
   "Daniel Ricciardo": "images/headshots/daniel-ricciardo.webp",
