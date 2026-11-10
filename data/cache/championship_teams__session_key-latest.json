@@ -1,54 +1,54 @@
 {
-  "fetchedAt": "2026-11-03T12:56:02.227Z",
+  "fetchedAt": "2026-11-10T03:28:25.779Z",
   "data": [
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Mercedes",
       "position_start": 1,
       "position_current": 1,
-      "points_start": 607,
-      "points_current": 630
+      "points_start": 630,
+      "points_current": 652
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Ferrari",
       "position_start": 2,
       "position_current": 2,
-      "points_start": 474,
-      "points_current": 504
+      "points_start": 504,
+      "points_current": 510
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Red Bull Racing",
       "position_start": 3,
       "position_current": 3,
-      "points_start": 355,
-      "points_current": 382
+      "points_start": 382,
+      "points_current": 415
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "McLaren",
       "position_start": 4,
       "position_current": 4,
-      "points_start": 355,
-      "points_current": 365
+      "points_start": 365,
+      "points_current": 398
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Racing Bulls",
       "position_start": 5,
       "position_current": 5,
-      "points_start": 102,
-      "points_current": 108
+      "points_start": 108,
+      "points_current": 114
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Alpine",
       "position_start": 6,
       "position_current": 6,
@@ -56,26 +56,26 @@
       "points_current": 69
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Haas F1 Team",
       "position_start": 7,
       "position_current": 7,
-      "points_start": 30,
+      "points_start": 31,
       "points_current": 31
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Audi",
       "position_start": 8,
       "position_current": 8,
-      "points_start": 23,
-      "points_current": 27
+      "points_start": 27,
+      "points_current": 28
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Williams",
       "position_start": 9,
       "position_current": 9,
@@ -83,8 +83,8 @@
       "points_current": 12
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Aston Martin",
       "position_start": 10,
       "position_current": 10,
@@ -92,8 +92,8 @@
       "points_current": 7
     },
     {
-      "meeting_key": 1298,
-      "session_key": 11404,
+      "meeting_key": 1299,
+      "session_key": 11412,
       "team_name": "Cadillac",
       "position_start": 11,
       "position_current": 11,
