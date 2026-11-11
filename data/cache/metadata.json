@@ -5,19 +5,19 @@
     2025,
     2026
   ],
-  "refreshedAt": "2026-11-10T11:25:00.801Z",
+  "refreshedAt": "2026-11-11T12:58:11.105Z",
   "filesUpdated": 0,
-  "successfulRequests": 1185,
+  "successfulRequests": 348,
   "retries": 0,
   "requestFailures": 0,
   "failedRequests": [],
   "replayTelemetryCached": false,
-  "known404sAdded": 34,
-  "known404sSkipped": 0,
+  "known404sAdded": 0,
+  "known404sSkipped": 7,
   "known404sTotal": 41,
   "refreshes": {
     "current": {
-      "refreshedAt": "2026-11-10T10:04:45.418Z",
+      "refreshedAt": "2026-11-11T12:58:11.105Z",
       "seasons": [
         2026
       ],
@@ -26,8 +26,8 @@
       "retries": 0,
       "requestFailures": 0,
       "failedRequests": [],
-      "known404sAdded": 7,
-      "known404sSkipped": 0
+      "known404sAdded": 0,
+      "known404sSkipped": 7
     },
     "historical": {
       "refreshedAt": "2026-11-10T11:25:00.801Z",
