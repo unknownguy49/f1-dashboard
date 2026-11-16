@@ -23,14 +23,19 @@ function updateSeasonSelectorLabels() {
   const mobileLabel = document.querySelector(".mobile-dashboard-menu-label");
   if (mobileLabel) mobileLabel.textContent = `${selectedSeason} SEASON`;
   document.querySelectorAll("[data-season-label]").forEach((element) => {
-    element.textContent = element.textContent.replace(/\b(?:2023|2024|2025|2026)\b/g, String(selectedSeason));
+    element.textContent = element.textContent.replace(
+      /\b(?:2023|2024|2025|2026)\b/g,
+      String(selectedSeason),
+    );
   });
   const calendarHeading = document.getElementById("raceCalendarHeading");
-  if (calendarHeading) calendarHeading.textContent = `${selectedSeason} Calendar`;
+  if (calendarHeading)
+    calendarHeading.textContent = `${selectedSeason} Calendar`;
   const brandYear = document.getElementById("brandLogoYear");
   if (brandYear) brandYear.textContent = String(selectedSeason).slice(-2);
   const footerBrandYear = document.getElementById("footerBrandLogoYear");
-  if (footerBrandYear) footerBrandYear.textContent = String(selectedSeason).slice(-2);
+  if (footerBrandYear)
+    footerBrandYear.textContent = String(selectedSeason).slice(-2);
   document.documentElement.style.setProperty(
     "--initial-loader-year",
     `"${String(selectedSeason).slice(-2)}"`,
@@ -48,8 +53,13 @@ function resetSeasonDependentState() {
     phase2State.nextRaceCountdownTimer = null;
   }
   Object.assign(phase2State, {
-    drivers: [], teams: [], positionHistory: [], selectedHistoryDriver: null,
-    loaded: false, loading: false, positionHistoryLoaded: false,
+    drivers: [],
+    teams: [],
+    positionHistory: [],
+    selectedHistoryDriver: null,
+    loaded: false,
+    loading: false,
+    positionHistoryLoaded: false,
     positionHistoryLoading: false,
   });
   h2hState.requestId += 1;
@@ -64,7 +74,9 @@ function resetSeasonDependentState() {
   races = [];
   raceSelectionVersion += 1;
   activeRaceSession = "race";
-  document.querySelectorAll(".race-button.active").forEach((button) => button.classList.remove("active"));
+  document
+    .querySelectorAll(".race-button.active")
+    .forEach((button) => button.classList.remove("active"));
   if (raceTrack) raceTrack.innerHTML = "";
   if (raceView) raceView.hidden = true;
   if (emptyState) emptyState.hidden = false;
@@ -72,8 +84,11 @@ function resetSeasonDependentState() {
 
 async function changeSeason(year) {
   const nextSeason = Number(year);
-  if (!AVAILABLE_SEASONS.includes(nextSeason) || nextSeason === selectedSeason) return;
-  document.querySelectorAll(".season-select").forEach((select) => { select.disabled = true; });
+  if (!AVAILABLE_SEASONS.includes(nextSeason) || nextSeason === selectedSeason)
+    return;
+  document.querySelectorAll(".season-select").forEach((select) => {
+    select.disabled = true;
+  });
   selectedSeason = nextSeason;
   try {
     localStorage.setItem(SELECTED_SEASON_STORAGE_KEY, String(selectedSeason));
@@ -84,7 +99,8 @@ async function changeSeason(year) {
   openF1CacheUsed = false;
   openF1RequestFailedWithoutCache = false;
   openF1SuccessfulRequest = false;
-  if (loaderStatus && !LOADER_DEV_MODE) loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
+  if (loaderStatus && !LOADER_DEV_MODE)
+    loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
   try {
     const calendarLoaded = await initializeOpenF1();
     if (!calendarLoaded) return;
@@ -94,9 +110,22 @@ async function changeSeason(year) {
       console.error(`${selectedSeason} season data failed:`, error);
       phase2RenderUnavailable(String(error.message || error));
     }
-    if (document.querySelector('.dashboard-tab[data-dashboard="headtohead"]')?.classList.contains("active")) await h2hInitialize();
-    if (document.querySelector('.dashboard-tab[data-dashboard="race"]')?.classList.contains("active")) {
-      const defaultRace = phase2CurrentRace() || phase2LatestRace() || phase2NextRace() || races[0];
+    if (
+      document
+        .querySelector('.dashboard-tab[data-dashboard="headtohead"]')
+        ?.classList.contains("active")
+    )
+      await h2hInitialize();
+    if (
+      document
+        .querySelector('.dashboard-tab[data-dashboard="race"]')
+        ?.classList.contains("active")
+    ) {
+      const defaultRace =
+        phase2CurrentRace() ||
+        phase2LatestRace() ||
+        phase2NextRace() ||
+        races[0];
       const defaultIndex = races.indexOf(defaultRace);
       if (defaultIndex >= 0) await selectRace(defaultIndex);
     }
@@ -549,7 +578,7 @@ function getDriverImage(driver) {
 
     const seasonImage = season2023Images[driverName];
     if (seasonImage) return seasonImage;
-  }  
+  }
 
   const local = Object.entries(driverImages).find(
     ([name]) => name.trim().toLowerCase() === driverName,
@@ -699,7 +728,9 @@ async function loadOpenF1Calendar(year = selectedSeason) {
     [...sprintQualifyingSessions, ...sprintShootoutSessions]
       .filter(
         (session) =>
-          ["Sprint Qualifying", "Sprint Shootout"].includes(session.session_name) && !session.is_cancelled,
+          ["Sprint Qualifying", "Sprint Shootout"].includes(
+            session.session_name,
+          ) && !session.is_cancelled,
       )
       .map((session) => [session.meeting_key, session]),
   );
@@ -1456,9 +1487,15 @@ function getTeamClass(teamName = "") {
 
   if (team.includes("mercedes")) return "mercedes";
   if (team.includes("ferrari")) return "ferrari";
-  if (team.includes("kick sauber") || team.includes("stake sauber") || team === "sauber") return "kicksauber";
+  if (
+    team.includes("kick sauber") ||
+    team.includes("stake sauber") ||
+    team === "sauber"
+  )
+    return "kicksauber";
   if (team.includes("alfa romeo")) return "alfaromeo";
-  if (team.includes("alphatauri") || team.includes("toro rosso")) return "alphatauri";
+  if (team.includes("alphatauri") || team.includes("toro rosso"))
+    return "alphatauri";
   if (team.includes("red bull")) return "redbull";
   if (team.includes("mclaren")) return "mclaren";
   if (team.includes("aston martin")) return "astonmartin";
@@ -1486,7 +1523,8 @@ async function initializeOpenF1() {
     const navigationControls = document.querySelector(".navigation-controls");
     if (navigationControls) navigationControls.hidden = false;
     if (emptyState) emptyState.hidden = false;
-    if (!LOADER_DEV_MODE) loaderStatus.textContent = `BUILDING ${selectedSeason} CALENDAR`;
+    if (!LOADER_DEV_MODE)
+      loaderStatus.textContent = `BUILDING ${selectedSeason} CALENDAR`;
     raceTrack.innerHTML = "";
     buildRaceSelector();
 
@@ -1612,7 +1650,8 @@ const loaderCar = document.getElementById("loaderCar");
 function showSeasonLoader() {
   if (!pageLoader) return;
   updateSeasonSelectorLabels();
-  if (loaderStatus) loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
+  if (loaderStatus)
+    loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
   if (loaderProgressBar) loaderProgressBar.style.width = "0%";
   if (loaderPercentage) loaderPercentage.textContent = "0%";
   setLoaderProgress(0);
@@ -1634,17 +1673,29 @@ function setLoaderProgress(percentage) {
   loaderProgressBar.style.width = `${progress}%`;
   loaderPercentage.textContent = `${progress}%`;
 
-  const trackWidth = loaderProgressBar.parentElement.clientWidth;
-  const carWidth = loaderCar.offsetWidth;
   const isMobile = window.matchMedia("(max-width: 600px)").matches;
-  const startOffset = isMobile ? 0 : -28;
-  const endOffset = isMobile ? 0 : 23;
+  const trackWidth =
+    loaderProgressBar.parentElement.getBoundingClientRect().width ||
+    loaderProgressBar.parentElement.clientWidth;
+  const carWidth =
+    loaderCar.getBoundingClientRect().width ||
+    loaderCar.offsetWidth ||
+    (isMobile ? 90 : Math.min(174, Math.max(129, window.innerWidth * 0.135)));
+
+  // Scale the transparent-padding offsets proportionally to the car's rendered width
+  const startOffset = isMobile ? 0 : -Math.round(carWidth * 0.161);
+  const endOffset = isMobile ? 0 : Math.round(carWidth * 0.132);
 
   const start = startOffset;
   const end = trackWidth - carWidth + endOffset;
 
   loaderCar.style.left = `${start + (end - start) * (progress / 100)}px`;
 }
+
+loaderCar?.querySelector("img")?.addEventListener("load", () => {
+  const currentProgress = Number.parseFloat(loaderPercentage.textContent) || 0;
+  setLoaderProgress(currentProgress);
+});
 
 window.addEventListener("resize", () => {
   const currentProgress = Number.parseFloat(loaderPercentage.textContent) || 0;
@@ -3569,6 +3620,48 @@ document
   .getElementById("apiStatusToggle")
   ?.addEventListener("click", openF1ToggleStatusBanner);
 
+function setupSmoothImageFadeIn(root = document) {
+  const attachFade = (img) => {
+    if (!img || img.id === "trackImage" || img.closest("#pageLoader")) return;
+    if (img.dataset.fadeBound === "true") return;
+    img.dataset.fadeBound = "true";
+    img.setAttribute("data-fade-in", "");
+
+    const reveal = () => {
+      requestAnimationFrame(() => img.classList.add("is-loaded"));
+    };
+
+    if (img.complete && img.naturalWidth > 0) {
+      reveal();
+    } else {
+      img.addEventListener("load", reveal, { once: true });
+      img.addEventListener(
+        "error",
+        () => {
+          img.hidden = true;
+        },
+        { once: true },
+      );
+    }
+  };
+
+  root.querySelectorAll("img").forEach(attachFade);
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType !== 1) continue;
+        if (node.tagName === "IMG") attachFade(node);
+        else node.querySelectorAll?.("img").forEach(attachFade);
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+setupSmoothImageFadeIn();
+
 async function initializeDashboard() {
   await preloadInitialImages();
   await initializeOpenF1();
@@ -3805,7 +3898,9 @@ function overviewDriverImage(name) {
 }
 
 function overviewTeamImage(name) {
-  const normalized = String(name || "").trim().toLowerCase();
+  const normalized = String(name || "")
+    .trim()
+    .toLowerCase();
   const aliases = {
     "alfa romeo racing": "Alfa Romeo",
     "stake f1 team kick sauber": "Kick Sauber",
@@ -4436,12 +4531,15 @@ function phase2RenderNextRaceCountdown(next) {
 }
 
 function phase2TeamClass(name) {
-  const n = String(name || "").trim().toLowerCase();
+  const n = String(name || "")
+    .trim()
+    .toLowerCase();
   if (n === "rb" || n.includes("racing bulls")) return "racingbulls";
   if (n.includes("mercedes")) return "mercedes";
   if (n.includes("ferrari")) return "ferrari";
   if (n.includes("alfa romeo")) return "alfaromeo";
-  if (n.includes("kick sauber") || n.includes("stake sauber") || n === "sauber") return "kicksauber";
+  if (n.includes("kick sauber") || n.includes("stake sauber") || n === "sauber")
+    return "kicksauber";
   if (n.includes("alphatauri") || n.includes("toro rosso")) return "alphatauri";
   if (n.includes("renault")) return "renault";
   if (n.includes("force india")) return "forceindia";
@@ -5293,7 +5391,10 @@ async function replayFetchLocations(
 
   const updateLocationStatus = (retrying = 0) => {
     replayUpdateDriverReadiness(
-      replayState.drivers.length || requested.length || phase2State.drivers.length || 20,
+      replayState.drivers.length ||
+        requested.length ||
+        phase2State.drivers.length ||
+        20,
     );
     if (!replayElements.loadStatus) return;
     const ready = getReady().length;
@@ -6279,7 +6380,9 @@ async function phase2LoadSeasonData() {
       )
       .map((item) => ({
         name:
-          String(item.team_name || "").trim().toLowerCase() === "rb"
+          String(item.team_name || "")
+            .trim()
+            .toLowerCase() === "rb"
             ? "Racing Bulls"
             : item.team_name || "Unknown",
         points: phase2Number(item.points_current),
@@ -6339,7 +6442,11 @@ async function phase2LoadPositionHistory() {
               return;
             }
 
-            if (Number.isInteger(position) && position >= 1 && position <= Math.max(phase2State.drivers.length, 20)) {
+            if (
+              Number.isInteger(position) &&
+              position >= 1 &&
+              position <= Math.max(phase2State.drivers.length, 20)
+            ) {
               positions[number] = position;
             } else {
               statuses[number] = "DNF/DNS";
@@ -6456,7 +6563,10 @@ function phase2RenderChampionshipHistory() {
       : (index * plotWidth) / (phase2State.positionHistory.length - 1));
   const y = (position) => top + ((position - 1) / (dnfLevel - 1)) * plotHeight;
 
-  const gridPositions = Array.from({ length: maxPosition }, (_, index) => index + 1);
+  const gridPositions = Array.from(
+    { length: maxPosition },
+    (_, index) => index + 1,
+  );
   const grid =
     gridPositions
       .map(

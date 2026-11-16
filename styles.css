@@ -1639,6 +1639,7 @@ body.cursor-hover .laser-cursor {
   position: absolute;
   z-index: 2;
   top: calc(50% - 15px);
+  left: calc(var(--loader-car-width) * -0.161);
   width: var(--loader-car-width);
   height: 45px;
   transform: translateY(-50%);
@@ -1679,6 +1680,7 @@ body.cursor-hover .laser-cursor {
   }
   .loader-car {
     --loader-car-width: 90px;
+    left: 0px;
     height: 45px;
   }
 }
@@ -9662,7 +9664,6 @@ body {
   max-height: 36px;
   object-fit: cover;
   border-radius: 50%;
-  opacity: 1;
 }
 #dashboardOverview .overview-standing-team-logo {
   display: block;
@@ -9675,7 +9676,6 @@ body {
   min-height: 30px;
   max-height: 30px;
   object-fit: contain;
-  opacity: 1;
 }
 #dashboardOverview .overview-standing-score {
   display: flex;
@@ -12721,4 +12721,42 @@ body {
 
 body.replay-disclaimer-open {
   overflow: hidden;
+}
+
+/* =====================================================
+   SMOOTH IMAGE FADE-IN REVEAL
+===================================================== */
+img[data-fade-in] {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+img[data-fade-in].is-loaded {
+  opacity: 1;
+}
+
+.overview-race-story img[data-fade-in].is-loaded {
+  opacity: 0.42;
+}
+.overview-race-last:hover img[data-fade-in].is-loaded {
+  opacity: 0.58;
+}
+.fastest-lap-driver-image[data-fade-in].is-loaded,
+#polePositionCard .pole-position-card > img[data-fade-in].is-loaded {
+  opacity: 0.95;
+}
+#dashboardTeams .rev-team-hero-logo[data-fade-in].is-loaded {
+  opacity: 0.16;
+}
+.rev-teams-intro > .rev-teams-hero-mercedes[data-fade-in].is-loaded {
+  opacity: 0.07;
+}
+.championship-hero-trophy[data-fade-in].is-loaded {
+  opacity: 0.3;
+}
+
+@media (max-width: 700px) {
+  #dashboardTeams .rev-team-hero-logo[data-fade-in].is-loaded {
+    opacity: 0.05;
+  }
 }
