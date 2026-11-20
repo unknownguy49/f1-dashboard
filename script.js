@@ -436,6 +436,10 @@ async function fetchOpenF1(path, params = {}, options = {}) {
     return cached.data;
   }
 
+  if (options.allow404) {
+    return [];
+  }
+
   if (!openF1CacheUsed && !openF1SuccessfulRequest) {
     openF1RequestFailedWithoutCache = true;
     openF1SetStatus(
