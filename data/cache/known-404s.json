@@ -371,5 +371,32 @@
     "firstSeen": "2026-11-10T11:18:06.764Z",
     "lastSeen": "2026-11-10T11:18:06.764Z",
     "response": "{\"detail\":\"No results found.\"}"
+  },
+  "session_result__session_key-11413": {
+    "endpoint": "session_result",
+    "params": {
+      "session_key": 11413
+    },
+    "firstSeen": "2026-11-20T14:13:35.569Z",
+    "lastSeen": "2026-11-20T14:13:35.569Z",
+    "response": "{\"detail\":\"No results found.\"}"
+  },
+  "championship_drivers__session_key-latest": {
+    "endpoint": "championship_drivers",
+    "params": {
+      "session_key": "latest"
+    },
+    "firstSeen": "2026-11-20T14:17:25.613Z",
+    "lastSeen": "2026-11-20T14:17:25.613Z",
+    "response": "{\"detail\":\"No results found.\"}"
+  },
+  "championship_teams__session_key-latest": {
+    "endpoint": "championship_teams",
+    "params": {
+      "session_key": "latest"
+    },
+    "firstSeen": "2026-11-20T14:17:27.912Z",
+    "lastSeen": "2026-11-20T14:17:27.912Z",
+    "response": "{\"detail\":\"No results found.\"}"
   }
 }
