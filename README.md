@@ -1,24 +1,34 @@
-# F1 2026 Dashboard
+# F1 Dashboard
 
-A responsive Formula 1 season dashboard focused on giving fans a clear overview of the current season, individual Grand Prix weekends, championship standings, and race replay.
+A responsive, multi-season Formula 1 dashboard covering the **2023, 2024, 2025, and 2026** seasons, focused on giving fans a clear overview of the championship, individual Grand Prix weekends, standings, tyre strategies, and race replay.
 
 The project uses the OpenF1 API for live/historical Formula 1 data and the BigDataF1 API for additional race information.
 
 ## Features
 
-### Season Calendar
-- 2026 Grand Prix calendar and session schedules
-- Grand Prix weekend information
-- Sprint weekend sessions: Sprint Qualifying (SQ), Sprint (S), Qualifying (Q), and Race (R)
+### Multi-Season Support
+
+- Switch seamlessly between the **2023, 2024, 2025, and 2026** seasons via the navigation bar season selector
+- Persists the selected season across page reloads using `localStorage` (`f1_selected_season`)
+- Displays an informational notice when viewing historical seasons (2023–2025) in Race Center where third-party telemetry or assets may be partial
+
+### Season Calendar & Dual Timezones
+
+- Interactive Season Calendar modal accessible from the Overview Race Pulse section
+- Monthly grid layout with color-coded completed and upcoming session badges (`P1`, `P2`, `P3`, `SQ`, `S`, `Q`, `R`)
+- Hover and tap session schedule previews displaying both **Track Local Time** and **IST (`Asia/Kolkata`)**
 - Responsive calendar layout for desktop and mobile
 
 ### Overview and Countdown
+
 - Season overview and current session context
 - Countdown to the next relevant session
 - Normal weekends follow the Practice → Qualifying → Race sequence
 - Sprint weekends follow Practice → Sprint Qualifying → Sprint → Qualifying → Race
+- Interactive **2026 World Champion Tribute** modal accessible via the corner trophy trigger when viewing the 2026 season
 
 ### Race Center
+
 Provides session-specific information for selected Grand Prix weekends.
 
 - Race results
@@ -31,16 +41,20 @@ Provides session-specific information for selected Grand Prix weekends.
 - Race/Sprint selection when the selected meeting includes a Sprint
 
 ### Championship
+
 - Driver championship standings
 - Constructor championship standings
 - Race-by-race championship position history
 
 ### Drivers
+
 - Driver information
 - Driver number and team association
 - Championship context and driver-related information where available
+- Interactive quick-inspect popups across Overview, Teams, and Race Replay showing current points, championship rank, and a direct jump to Head-to-Head comparison
 
 ### Teams
+
 - Constructor information
 - Team standings
 - Driver associations
@@ -52,28 +66,32 @@ Compare two drivers using season and race-weekend performance metrics.
 
 - Side-by-side driver comparison
 - Season Performance Score (SPS), combining race performance (45%), qualifying performance (25%), weekend points (20%), and sprint performance (10%)
-- Two-Driver Matchup Score (TMS), combining race performance (40%), qualifying performance (25%), points (25%), and sprint performance (10%)
+- Teammate Matchup Score (TMS), combining race performance (40%), qualifying performance (25%), points (25%), and sprint performance (10%)
 - Missing data is excluded from calculations, with remaining weights normalized
 - SPS and TMS comparison charts with legends
 - Comparison tables for driver performance
 - Responsive chart layouts, mobile stacking, and horizontally scrollable results tables
+- Three interactive SVG points-progression charts: **Cumulative Championship Points**, **Cumulative Points Gap**, and **Points Gap by Weekend**
 
 ### Race Replay
-- Select a completed race/sprint for replay
+
+- Select a completed race or sprint for replay
 - Visual representation of race-car movement around the circuit
-- 22 drivers at a time, with the ability to select a single driver for focused playback
-- Initial loading of the leading drivers before playback
-- Playback controls, timeline seeking, and rewind
-- Playback speed controls
-- Telemetry loaded on demand to reduce unnecessary requests
-- Additional telemetry can be loaded when seeking to data that has not yet been loaded
+- Multi-driver selection via checkbox dropdown (`ALL DRIVERS` or custom driver selections) with a live **Driver Position Readiness** counter (`ready/total`)
+- Automatic DNF/DNS retirement detection when car telemetry movement ceases
+- Playback controls, timeline seeking, and 10-second rewind
+- Playback speed controls (`1×`, `2×`, and `6×`)
+- Telemetry loaded on demand to reduce unnecessary requests, with an experimental telemetry notice on launch
+- Additional telemetry loaded dynamically when seeking to buffered segments
 
 Race Replay does not automatically load telemetry for the latest race simply because the Race Replay page is opened.
 
-### Pit Strategy
+### Tyre Stints & Pit Strategy
 
-Provides pit-stop information for a selected Grand Prix.
+Provides tyre strategy and pit-stop analytics for a selected Grand Prix.
 
+- Horizontal lap-by-lap tyre stint timelines (`SOFT`, `MEDIUM`, `HARD`, `INTERMEDIATE`, `WET`) grouped by constructor and ordered by race classification, with expandable breakdowns on mobile
+- Automated strategy insights summarizing total stops, one-stop vs. two-stop driver counts, highest stop counts, and teammate strategy splits
 - Pit-stop records with driver, pit lap, and tyre compound information where available
 - Stationary pit-stop duration, sourced from BigDataF1
 - Pit-lane duration from OpenF1, kept separate from stationary stop time
@@ -81,16 +99,16 @@ Provides pit-stop information for a selected Grand Prix.
 - Dynamic race lookup by season and round using the BigDataF1 race index
 - Graceful fallback when BigDataF1 data is unavailable, where supported by the application
 
-Pit-stop data availability depends on the selected race and the completeness of the third-party data source.
-
 ### Data Availability and Cache Status
+
 - Displays API/cache availability status
 - Attempts to use cached data when a supported API request fails
 - Retains previously cached data when a refresh does not return usable replacement data, where implemented by the cache workflow
 - Data availability depends on OpenF1 and the existence of matching cached responses
 
-### Persistent Tab State
-The dashboard remembers the last selected main section in browser storage using the `f1_active_tab` key. Refreshing the page can therefore return the user to the previously selected section.
+### Persistent Session & Season State
+
+The dashboard remembers the last selected main section in `sessionStorage` using the `f1_active_tab` key and persists the active championship year in `localStorage` using `f1_selected_season`.
 
 ## Technology Stack
 
@@ -125,18 +143,20 @@ Race details endpoint pattern: https://api.bigdataf1.com/api/races/{raceId}
 
 The application currently uses the following OpenF1 endpoints:
 
-| Endpoint               | Purpose                                                 |
-| ---------------------- | ------------------------------------------------------- |
-| `meetings`             | 2026 Grand Prix meeting/calendar information            |
-| `sessions`             | Race, Qualifying, Sprint and Sprint Qualifying sessions |
-| `session_result`       | Race, Sprint, Practice and Qualifying results           |
-| `drivers`              | Driver information for a session                        |
-| `laps`                 | Lap information and fastest-lap related data            |
-| `starting_grid`        | Starting grid information                               |
-| `position`             | Race position data                                      |
-| `location`             | Car location/telemetry used by Race Replay              |
-| `championship_drivers` | Driver championship standings                           |
-| `championship_teams`   | Constructor championship standings                      |
+| Endpoint               | Purpose                                                   |
+| ---------------------- | --------------------------------------------------------- |
+| `meetings`             | Multi-season Grand Prix meeting/calendar information      |
+| `sessions`             | Practice, Race, Qualifying, Sprint, and Sprint Qualifying |
+| `session_result`       | Race, Sprint, Practice, and Qualifying results            |
+| `drivers`              | Driver information for a session                          |
+| `laps`                 | Lap information and fastest-lap related data              |
+| `starting_grid`        | Starting grid information                                 |
+| `position`             | Race position data                                        |
+| `location`             | Car location/telemetry used by Race Replay                |
+| `stints`               | Tyre compound and lap stint sequences                     |
+| `pit`                  | Pit-lane transit durations                                |
+| `championship_drivers` | Driver championship standings                             |
+| `championship_teams`   | Constructor championship standings                        |
 
 The dashboard retrieves data from the OpenF1 API at runtime and can use matching JSON files in `data/cache/` when cached responses are available. The cache is maintained by the GitHub Actions workflow. New data can become available without a Vercel redeployment, provided OpenF1 has published it or an updated cache has been committed and deployed as static content.
 
@@ -144,17 +164,19 @@ The dashboard retrieves data from the OpenF1 API at runtime and can use matching
 
 A simplified view of the application:
 
-```text
+```
 User
  │
  ├── Overview
- │     └── Season / countdown / current context
+ │     ├── Season selector (2023–2026) / countdown / current context
+ │     ├── Interactive Season Calendar modal (Track Local & IST)
+ │     └── 2026 World Champion Tribute modal
  │
  ├── Drivers
- │     └── Driver information
+ │     └── Driver information & quick-inspect popups
  │
  ├── Teams
- │     └── Constructor information
+ │     └── Constructor information & historical team mapping
  │
  ├── Championship
  │     ├── Driver standings
@@ -162,18 +184,19 @@ User
  │     └── Position history
  │
  ├── Head-to-Head
- │     └── Driver vs Driver comparison
+ │     ├── Driver vs Driver comparison (SPS & TMS)
+ │     └── Cumulative points & weekend gap charts
  │
  ├── Race Center
  │     ├── Grand Prix information
  │     ├── Calendar/session schedule
  │     ├── Race
- │     │    ├── Practice
+ │     │    ├── Practice (P1, P2, P3)
  │     │    ├── Qualifying
  │     │    ├── Starting Grid
  │     │    ├── Race Result
  │     │    ├── Race Movement
- │     │    ├── Tire Stints
+ │     │    ├── Tyre Stints & Strategy Insights
  │     │    ├── Pit Strategy
  │     │    └── Fastest Lap
  │     │
@@ -183,11 +206,10 @@ User
  │
  └── Race Replay
        └── Select a completed race
-         └── Driver selection
+         └── Multi-driver selection & readiness tracking
            └── Track movement visualization
-             └── Playback and timeline controls
+             └── Playback, speed (1x/2x/6x), and timeline controls
                └── On-demand telemetry
-
 ```
 
 ## Cache Fallback
@@ -224,7 +246,10 @@ Cached data may be older than the live API response. Cache fallback improves res
 
 This is a client-side application and does not require a custom backend or database. Open the project in a browser using a local static server, or deploy it to Vercel.
 
-The browser stores only the selected dashboard tab (`f1_active_tab`) in `sessionStorage`. Updating cached data does not require a Vercel redeployment; a deployment is needed when the source code changes.
+Browser storage is used for:
+
+- `sessionStorage` (`f1_active_tab`): Restores the active dashboard tab on refresh
+- `localStorage` (`f1_selected_season`): Persists the chosen season (`2023`–`2026`)
 
 ## Project Goals
 
@@ -234,13 +259,14 @@ Instead, it is designed as a season companion and recap dashboard.
 
 The project focuses on answering:
 
-- What races have happened this season?
+- What races have happened across the 2023–2026 seasons?
 - What happened at a particular Grand Prix?
 - How did qualifying and the race finish?
 - What was the starting grid?
 - How did positions change?
 - Who set the fastest lap?
 - What happened on Sprint weekends?
+- What tyre compounds and pit-stop strategies were used?
 - How is the championship developing?
 - Can a completed race be replayed visually?
 
@@ -249,7 +275,7 @@ This keeps the application focused on useful season-level information rather tha
 ## Limitations
 
 - The dashboard focuses on the 2026 season.
-- OpenF1 availability and publication timing affect which data can be displayed.
+- OpenF1 availability and publication timing affect which data can be displayed, particularly for historical seasons (2023–2025).
 - Race Replay loads telemetry on demand and may require additional requests.
 - The project does not provide authentication or a custom backend.
 - Pit-stop data depends on BigDataF1 availability and the completeness of its race records.

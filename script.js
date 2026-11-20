@@ -160,9 +160,23 @@ async function changeSeason(year) {
 const OPENF1_BASE_URL = "https://api.openf1.org/v1";
 const OPENF1_CACHE_DIRECTORY = "data/cache";
 const OPENF1_LOCAL_CACHE_PREFIX = "f1_openf1_cache:";
+const openF1MemoryCache = new Map();
 let openF1CacheUsed = false;
 let openF1RequestFailedWithoutCache = false;
 let openF1SuccessfulRequest = false;
+
+(function purgeLegacyOpenF1LocalStorage() {
+  try {
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i += 1) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(OPENF1_LOCAL_CACHE_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  } catch (error) {}
+})();
 
 function openF1CacheKey(path, params = {}) {
   const query = Object.entries(params)
@@ -242,27 +256,22 @@ function openF1FormatTimestamp(value) {
 }
 
 function openF1SaveLocalCache(key, data, fetchedAt) {
-  try {
-    const payload = JSON.stringify({ data, fetchedAt });
-    if (payload.length > 900000) return;
-    localStorage.setItem(`${OPENF1_LOCAL_CACHE_PREFIX}${key}`, payload);
-  } catch (error) {}
+  if (openF1MemoryCache.size >= 40) {
+    const oldestKey = openF1MemoryCache.keys().next().value;
+    openF1MemoryCache.delete(oldestKey);
+  }
+  openF1MemoryCache.set(key, { data, fetchedAt });
 }
 
 function openF1ReadLocalCache(key) {
-  try {
-    const raw = localStorage.getItem(`${OPENF1_LOCAL_CACHE_PREFIX}${key}`);
-    if (!raw) return null;
-    const payload = JSON.parse(raw);
-    if (
-      !payload ||
-      (!Array.isArray(payload.data) && typeof payload.data !== "object")
-    )
-      return null;
-    return payload;
-  } catch (error) {
+  const payload = openF1MemoryCache.get(key);
+  if (
+    !payload ||
+    (!Array.isArray(payload.data) && typeof payload.data !== "object")
+  ) {
     return null;
   }
+  return payload;
 }
 
 async function openF1ReadStaticCache(key) {
