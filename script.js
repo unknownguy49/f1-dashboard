@@ -99,6 +99,7 @@ async function changeSeason(year) {
   openF1CacheUsed = false;
   openF1RequestFailedWithoutCache = false;
   openF1SuccessfulRequest = false;
+  openF1DegradedUntil = 0;
   if (loaderStatus && !LOADER_DEV_MODE)
     loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
   try {
@@ -275,9 +276,12 @@ function openF1ReadLocalCache(key) {
 }
 
 async function openF1ReadStaticCache(key) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
     const response = await fetch(`${OPENF1_CACHE_DIRECTORY}/${key}.json`, {
       cache: "no-store",
+      signal: controller.signal,
     });
     if (!response.ok) return null;
     const payload = await response.json();
@@ -289,6 +293,8 @@ async function openF1ReadStaticCache(key) {
     return payload;
   } catch (error) {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -365,16 +371,63 @@ function openF1Url(path, params = {}) {
   return url.toString();
 }
 
+const OPENF1_OFFLINE_TEST = false;
+let openF1DegradedUntil = 0;
+
 async function fetchOpenF1(path, params = {}, options = {}) {
-  let lastError = null;
   const key = openF1CacheKey(path, params);
 
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  const fallbackToCache = async (failureError) => {
+    const cached = await openF1GetCachedData(path, params);
+
+    if (cached) {
+      openF1MarkCached(cached);
+      return cached.data;
+    }
+
+    if (options.allow404) {
+      return [];
+    }
+
+    if (!openF1CacheUsed && !openF1SuccessfulRequest) {
+      openF1RequestFailedWithoutCache = true;
+      openF1SetStatus(
+        "unavailable",
+        "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
+      );
+    }
+
+    throw new Error(
+      `OpenF1 request failed and no cached copy is available for ${path}: ${failureError?.message || "network error"}`,
+    );
+  };
+
+  if (OPENF1_OFFLINE_TEST) {
+    return fallbackToCache(new Error(`[TEST] OpenF1 offline for ${path}`));
+  }
+
+  if (openF1DegradedUntil && Date.now() < openF1DegradedUntil) {
+    return fallbackToCache(
+      new Error(`OpenF1 degraded cooldown active for ${path}`),
+    );
+  }
+
+  const timeoutMs = Number.isFinite(options.timeoutMs)
+    ? options.timeoutMs
+    : 5000;
+  let lastError = null;
+
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
       const response = await fetch(openF1Url(path, params), {
         headers: { Accept: "application/json" },
         cache: "no-store",
+        signal: controller.signal,
       });
+      clearTimeout(timer);
 
       if (!response.ok) {
         const error = new Error(`OpenF1 request failed: ${response.status}`);
@@ -391,19 +444,20 @@ async function fetchOpenF1(path, params = {}, options = {}) {
           return [];
         }
 
-        if (
-          (response.status === 429 || response.status >= 500) &&
-          attempt < 2
-        ) {
+        if (response.status === 429 && attempt < 1) {
           lastError = error;
           const retryAfter = Number(response.headers.get("Retry-After"));
           const wait =
             Number.isFinite(retryAfter) && retryAfter > 0
-              ? retryAfter * 1000
-              : Math.min(2000 * 2 ** attempt, 10000);
+              ? Math.min(retryAfter * 1000, 3000)
+              : 600;
 
           await new Promise((resolve) => setTimeout(resolve, wait));
           continue;
+        }
+
+        if (response.status >= 502 && response.status <= 504) {
+          openF1DegradedUntil = Date.now() + 60000;
         }
 
         lastError = error;
@@ -413,6 +467,7 @@ async function fetchOpenF1(path, params = {}, options = {}) {
       const data = await response.json();
       const fetchedAt = new Date().toISOString();
 
+      openF1DegradedUntil = 0;
       openF1SaveLocalCache(key, data, fetchedAt);
       openF1SuccessfulRequest = true;
 
@@ -425,41 +480,20 @@ async function fetchOpenF1(path, params = {}, options = {}) {
 
       return data;
     } catch (error) {
+      clearTimeout(timer);
       lastError = error;
 
-      if (attempt < 2 && !error.status) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, 1000 * (attempt + 1)),
-        );
-        continue;
+      if (error.name === "AbortError") {
+        openF1DegradedUntil = Date.now() + 60000;
+        lastError = new Error(`OpenF1 request timed out after ${timeoutMs}ms`);
       }
 
+      // Fail fast to cache on timeout or network error without retrying
       break;
     }
   }
 
-  const cached = await openF1GetCachedData(path, params);
-
-  if (cached) {
-    openF1MarkCached(cached);
-    return cached.data;
-  }
-
-  if (options.allow404) {
-    return [];
-  }
-
-  if (!openF1CacheUsed && !openF1SuccessfulRequest) {
-    openF1RequestFailedWithoutCache = true;
-    openF1SetStatus(
-      "unavailable",
-      "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
-    );
-  }
-
-  throw new Error(
-    `OpenF1 request failed and no cached copy is available for ${path}: ${lastError?.message || "network error"}`,
-  );
+  return fallbackToCache(lastError);
 }
 
 const circuitImageAliases = {
@@ -682,6 +716,11 @@ function getWeekendStatus(race) {
 }
 
 async function loadOpenF1Calendar(year = selectedSeason) {
+  const throttleIfHealthy = async () => {
+    if (openF1DegradedUntil && Date.now() < openF1DegradedUntil) return;
+    await new Promise((resolve) => setTimeout(resolve, 350));
+  };
+
   const requestCalendarData = async (sessionName, optional = false) => {
     const data = await fetchOpenF1(
       "sessions",
@@ -690,12 +729,12 @@ async function loadOpenF1Calendar(year = selectedSeason) {
     );
 
     // Avoid sending a burst of requests to OpenF1 and triggering HTTP 429.
-    await new Promise((resolve) => setTimeout(resolve, 350));
+    await throttleIfHealthy();
     return data;
   };
 
   const meetings = await fetchOpenF1("meetings", { year });
-  await new Promise((resolve) => setTimeout(resolve, 350));
+  await throttleIfHealthy();
 
   const raceSessions = await requestCalendarData("Race");
   const qualifyingSessions = await requestCalendarData("Qualifying");
@@ -1646,6 +1685,7 @@ const driverImages = {
   "Nico Hülkenberg": "images/drivers/nico-hulkenberg.png",
   "Oscar Piastri": "images/drivers/oscar-piastri.png",
   "Pierre Gasly": "images/drivers/pierre-gasly.png",
+  "Liam Lawson": "images/drivers/liam-lawson.png",
 };
 
 /* =====================================================
@@ -6185,24 +6225,17 @@ async function phase2Fetch(path, params) {
   return fetchOpenF1(path, params);
 }
 
-function phase2LatestRace() {
-  const now = Date.now();
+function phase2CompletedRaces() {
   return races
-    .filter((race) => {
-      if (!race.sessionKey) return false;
-      const sessionEnd = new Date(
-        race.dateEnd || race.dateStart || race.date,
-      ).getTime();
-      return (
-        race.status === "COMPLETED" ||
-        (Number.isFinite(sessionEnd) && sessionEnd < now)
-      );
-    })
+    .filter((race) => race.sessionKey && race.status === "COMPLETED")
     .sort(
       (a, b) =>
-        new Date(a.dateStart || a.date) - new Date(b.dateStart || b.date),
-    )
-    .at(-1);
+        new Date(b.dateStart || b.date) - new Date(a.dateStart || a.date),
+    );
+}
+
+function phase2LatestRace() {
+  return phase2CompletedRaces()[0] || null;
 }
 
 function phase2RenderUnavailable(
@@ -6305,8 +6338,9 @@ function phase2CurrentRace() {
 async function phase2LoadSeasonData() {
   if (phase2State.loaded || phase2State.loading) return;
 
-  const latest = phase2LatestRace();
-  if (!latest?.sessionKey) {
+  const completedRaces = phase2CompletedRaces();
+
+  if (!completedRaces.length) {
     phase2RenderUnavailable(
       "No completed race session is available yet, so championship standings cannot be calculated.",
     );
@@ -6316,11 +6350,153 @@ async function phase2LoadSeasonData() {
   phase2State.loading = true;
 
   try {
-    const [driverStandings, teamStandings, latestDrivers] = await Promise.all([
-      phase2Fetch("championship_drivers", { session_key: latest.sessionKey }),
-      phase2Fetch("championship_teams", { session_key: latest.sessionKey }),
-      phase2Fetch("drivers", { session_key: latest.sessionKey }),
-    ]);
+    let standingsSnapshot = null;
+    let latestError = null;
+
+    const latest = completedRaces[0];
+    const latestParams = { session_key: latest.sessionKey };
+
+    const [latestDriverCache, latestTeamCache, latestDriverDetailsCache] =
+      await Promise.all([
+        openF1GetCachedData("championship_drivers", latestParams),
+        openF1GetCachedData("championship_teams", latestParams),
+        openF1GetCachedData("drivers", latestParams),
+      ]);
+
+    const hasCompleteLatestCache =
+      Array.isArray(latestDriverCache?.data) &&
+      latestDriverCache.data.length > 0 &&
+      Array.isArray(latestTeamCache?.data) &&
+      latestTeamCache.data.length > 0 &&
+      Array.isArray(latestDriverDetailsCache?.data) &&
+      latestDriverDetailsCache.data.length > 0;
+
+    if (
+      openF1DegradedUntil &&
+      Date.now() < openF1DegradedUntil &&
+      hasCompleteLatestCache
+    ) {
+      openF1MarkCached(latestDriverCache);
+      openF1MarkCached(latestTeamCache);
+      openF1MarkCached(latestDriverDetailsCache);
+
+      standingsSnapshot = {
+        driverStandings: latestDriverCache.data,
+        teamStandings: latestTeamCache.data,
+        latestDrivers: latestDriverDetailsCache.data,
+      };
+    } else {
+      try {
+        const [driverStandings, teamStandings, latestDrivers] =
+          await Promise.all([
+            phase2Fetch("championship_drivers", {
+              session_key: latest.sessionKey,
+            }),
+            phase2Fetch("championship_teams", {
+              session_key: latest.sessionKey,
+            }),
+            phase2Fetch("drivers", {
+              session_key: latest.sessionKey,
+            }),
+          ]);
+
+        if (
+          !Array.isArray(driverStandings) ||
+          !driverStandings.length ||
+          !Array.isArray(teamStandings) ||
+          !teamStandings.length ||
+          !Array.isArray(latestDrivers) ||
+          !latestDrivers.length
+        ) {
+          throw new Error(
+            `Championship data is not available yet for session ${latest.sessionKey}.`,
+          );
+        }
+
+        standingsSnapshot = {
+          driverStandings,
+          teamStandings,
+          latestDrivers,
+        };
+      } catch (error) {
+        latestError = error;
+
+        console.warn(
+          `Latest completed race session ${latest.sessionKey} has no usable championship snapshot yet. Checking cached snapshots.`,
+          error,
+        );
+      }
+
+      if (!standingsSnapshot && hasCompleteLatestCache) {
+        openF1MarkCached(latestDriverCache);
+        openF1MarkCached(latestTeamCache);
+        openF1MarkCached(latestDriverDetailsCache);
+
+        standingsSnapshot = {
+          driverStandings: latestDriverCache.data,
+          teamStandings: latestTeamCache.data,
+          latestDrivers: latestDriverDetailsCache.data,
+        };
+
+        console.info(
+          `Using the cached championship snapshot for the latest completed race ${latest.name} (session ${latest.sessionKey}).`,
+        );
+      }
+    }
+
+    if (!standingsSnapshot) {
+      for (const race of completedRaces.slice(1)) {
+        const params = { session_key: race.sessionKey };
+
+        const [driverCache, teamCache, driverDetailsCache] = await Promise.all([
+          openF1GetCachedData("championship_drivers", params),
+          openF1GetCachedData("championship_teams", params),
+          openF1GetCachedData("drivers", params),
+        ]);
+
+        const driverStandings = driverCache?.data;
+        const teamStandings = teamCache?.data;
+        const latestDrivers = driverDetailsCache?.data;
+
+        if (
+          !Array.isArray(driverStandings) ||
+          !driverStandings.length ||
+          !Array.isArray(teamStandings) ||
+          !teamStandings.length ||
+          !Array.isArray(latestDrivers) ||
+          !latestDrivers.length
+        ) {
+          continue;
+        }
+
+        openF1MarkCached(driverCache);
+        openF1MarkCached(teamCache);
+        openF1MarkCached(driverDetailsCache);
+
+        standingsSnapshot = {
+          driverStandings,
+          teamStandings,
+          latestDrivers,
+        };
+
+        console.info(
+          `Using the latest complete cached championship snapshot from ${race.name} (session ${race.sessionKey}).`,
+        );
+
+        break;
+      }
+    }
+
+    if (!standingsSnapshot) {
+      throw (
+        latestError ||
+        new Error(
+          "No completed race session has a complete championship data snapshot available.",
+        )
+      );
+    }
+
+    const { driverStandings, teamStandings, latestDrivers } = standingsSnapshot;
 
     const driverMap = new Map(
       latestDrivers.map((driver) => [driver.driver_number, driver]),
@@ -8591,7 +8767,10 @@ function h2hDecorateDriverReferences() {
   document.querySelectorAll(targets.join(",")).forEach((element) => {
     if (
       element.closest("#headToHeadContent") ||
-      element.closest("#h2hDriverPopup")
+      element.closest("#h2hDriverPopup") ||
+      element.closest(
+        "#dashboardDrivers, #dashboardChampionship, #dashboardRace",
+      )
     )
       return;
     if (element.closest(".championship-team-row")) return;
@@ -8626,27 +8805,6 @@ function h2hDecorateDriverReferences() {
     );
   });
 }
-
-document
-  .querySelectorAll(
-    "#dashboardDrivers [data-h2h-driver], " +
-      "#dashboardChampionship [data-h2h-driver], " +
-      "#dashboardRace [data-h2h-driver]",
-  )
-  .forEach((element) => {
-    element.removeAttribute("data-h2h-driver");
-    element.removeAttribute("aria-haspopup");
-
-    if (
-      element.getAttribute("aria-label")?.endsWith(", show driver information")
-    ) {
-      element.removeAttribute("aria-label");
-    }
-
-    if (element.getAttribute("tabindex") === "0") {
-      element.removeAttribute("tabindex");
-    }
-  });
 
 function h2hPopupAllowed(target) {
   return (
