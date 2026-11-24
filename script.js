@@ -1,3 +1,11 @@
+const DASHBOARD_SILENT_CONSOLE = true;
+if (DASHBOARD_SILENT_CONSOLE) {
+  console.log = () => {};
+  console.info = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+}
+
 /* =====================================================
    OPENF1 RACE STATE
 ===================================================== */
@@ -100,6 +108,8 @@ async function changeSeason(year) {
   openF1RequestFailedWithoutCache = false;
   openF1SuccessfulRequest = false;
   openF1DegradedUntil = 0;
+  openF1RateLimitedUntil = 0;
+  openF1OutageDetected = false;
   if (loaderStatus && !LOADER_DEV_MODE)
     loaderStatus.textContent = `LOADING ${selectedSeason} SEASON`;
   try {
@@ -373,127 +383,199 @@ function openF1Url(path, params = {}) {
 
 const OPENF1_OFFLINE_TEST = false;
 let openF1DegradedUntil = 0;
+let openF1RateLimitedUntil = 0;
+let openF1OutageDetected = false;
+const openF1InFlight = new Map();
+let openF1QueueTail = Promise.resolve();
+
+function openF1ScheduleSlot(minGapMs = 350) {
+  const run = openF1QueueTail.then(async () => {
+    const now = Date.now();
+    const waitUntil = Math.max(openF1RateLimitedUntil, now);
+    if (waitUntil > now) {
+      await new Promise((resolve) => setTimeout(resolve, waitUntil - now));
+    }
+    await new Promise((resolve) => setTimeout(resolve, minGapMs));
+  });
+  openF1QueueTail = run.catch(() => {});
+  return run;
+}
 
 async function fetchOpenF1(path, params = {}, options = {}) {
   const key = openF1CacheKey(path, params);
 
-  const fallbackToCache = async (failureError) => {
-    const cached = await openF1GetCachedData(path, params);
-
-    if (cached) {
-      openF1MarkCached(cached);
-      return cached.data;
-    }
-
-    if (options.allow404) {
-      return [];
-    }
-
-    if (!openF1CacheUsed && !openF1SuccessfulRequest) {
-      openF1RequestFailedWithoutCache = true;
-      openF1SetStatus(
-        "unavailable",
-        "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
-      );
-    }
-
-    throw new Error(
-      `OpenF1 request failed and no cached copy is available for ${path}: ${failureError?.message || "network error"}`,
-    );
-  };
-
-  if (OPENF1_OFFLINE_TEST) {
-    return fallbackToCache(new Error(`[TEST] OpenF1 offline for ${path}`));
+  if (openF1InFlight.has(key)) {
+    return openF1InFlight.get(key);
   }
 
-  if (openF1DegradedUntil && Date.now() < openF1DegradedUntil) {
-    return fallbackToCache(
-      new Error(`OpenF1 degraded cooldown active for ${path}`),
-    );
-  }
+  const task = (async () => {
+    // 1. For immutable historical/session endpoints, check memory & static cache FIRST
+    // so completed races never hit OpenF1 or trigger 429s
+    const cacheFirstPaths = new Set([
+      "session_result",
+      "drivers",
+      "starting_grid",
+      "laps",
+      "stints",
+      "pit",
+      "position",
+      "location",
+    ]);
 
-  const timeoutMs = Number.isFinite(options.timeoutMs)
-    ? options.timeoutMs
-    : 5000;
-  let lastError = null;
+    if (cacheFirstPaths.has(path) && !options.forceLive) {
+      const preCached = await openF1GetCachedData(path, params);
+      if (
+        preCached &&
+        Array.isArray(preCached.data) &&
+        preCached.data.length > 0
+      ) {
+        return preCached.data;
+      }
+    }
 
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const fallbackToCache = async (failureError, isGenuineOutage = false) => {
+      const cached = await openF1GetCachedData(path, params);
 
-    try {
-      const response = await fetch(openF1Url(path, params), {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-        signal: controller.signal,
-      });
-      clearTimeout(timer);
-
-      if (!response.ok) {
-        const error = new Error(`OpenF1 request failed: ${response.status}`);
-        error.status = response.status;
-
-        if (response.status === 404 && options.allow404) {
-          const local = openF1ReadLocalCache(key);
-
-          if (local) {
-            openF1MarkCached(local);
-            return local.data;
-          }
-
-          return [];
+      if (cached) {
+        // ONLY turn the indicator yellow when OpenF1 is genuinely down/restricted,
+        // NOT when a 429 rate limit occurred
+        if (isGenuineOutage) {
+          openF1OutageDetected = true;
+          openF1MarkCached(cached);
         }
-
-        if (response.status === 429 && attempt < 1) {
-          lastError = error;
-          const retryAfter = Number(response.headers.get("Retry-After"));
-          const wait =
-            Number.isFinite(retryAfter) && retryAfter > 0
-              ? Math.min(retryAfter * 1000, 3000)
-              : 600;
-
-          await new Promise((resolve) => setTimeout(resolve, wait));
-          continue;
-        }
-
-        if (response.status >= 502 && response.status <= 504) {
-          openF1DegradedUntil = Date.now() + 60000;
-        }
-
-        lastError = error;
-        break;
+        return cached.data;
       }
 
-      const data = await response.json();
-      const fetchedAt = new Date().toISOString();
+      if (options.allow404) {
+        return [];
+      }
 
-      openF1DegradedUntil = 0;
-      openF1SaveLocalCache(key, data, fetchedAt);
-      openF1SuccessfulRequest = true;
-
-      if (!openF1CacheUsed) {
+      if (isGenuineOutage && !openF1CacheUsed && !openF1SuccessfulRequest) {
+        openF1RequestFailedWithoutCache = true;
         openF1SetStatus(
-          "operational",
-          `OpenF1 responded successfully. Last successful request: ${openF1FormatTimestamp(fetchedAt)}.`,
+          "unavailable",
+          "OpenF1 data could not be retrieved and no saved copy is available. This can happen during a live-session restriction. Please try again after the session ends.",
         );
       }
 
-      return data;
-    } catch (error) {
-      clearTimeout(timer);
-      lastError = error;
+      throw new Error(
+        `OpenF1 request failed and no cached copy is available for ${path}: ${failureError?.message || "network error"}`,
+      );
+    };
 
-      if (error.name === "AbortError") {
-        openF1DegradedUntil = Date.now() + 60000;
-        lastError = new Error(`OpenF1 request timed out after ${timeoutMs}ms`);
-      }
-
-      // Fail fast to cache on timeout or network error without retrying
-      break;
+    if (OPENF1_OFFLINE_TEST) {
+      return fallbackToCache(
+        new Error(`[TEST] OpenF1 offline for ${path}`),
+        true,
+      );
     }
-  }
 
-  return fallbackToCache(lastError);
+    if (openF1DegradedUntil && Date.now() < openF1DegradedUntil) {
+      return fallbackToCache(
+        new Error(`OpenF1 degraded cooldown active for ${path}`),
+        true,
+      );
+    }
+
+    const timeoutMs = Number.isFinite(options.timeoutMs)
+      ? options.timeoutMs
+      : 6000;
+    let lastError = null;
+    let genuineOutage = false;
+
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      await openF1ScheduleSlot(350);
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const response = await fetch(openF1Url(path, params), {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        clearTimeout(timer);
+
+        if (!response.ok) {
+          const error = new Error(`OpenF1 request failed: ${response.status}`);
+          error.status = response.status;
+
+          if (response.status === 404 && options.allow404) {
+            const local = openF1ReadLocalCache(key);
+            return local ? local.data : [];
+          }
+
+          // 429 = rate limit (API is UP). Back off globally and retry without marking an outage.
+          if (response.status === 429) {
+            lastError = error;
+            const retryAfter = Number(response.headers.get("Retry-After"));
+            const wait =
+              Number.isFinite(retryAfter) && retryAfter > 0
+                ? Math.min(retryAfter * 1000, 4000)
+                : 1200 * (attempt + 1);
+            openF1RateLimitedUntil = Date.now() + wait;
+            if (attempt < 2) continue;
+            genuineOutage = false;
+            break;
+          }
+
+          // 5xx or 401/403 (live session lockout) = genuine OpenF1 outage/restriction
+          if (
+            response.status >= 500 ||
+            response.status === 401 ||
+            response.status === 403
+          ) {
+            genuineOutage = true;
+            if (response.status >= 502 && response.status <= 504) {
+              openF1DegradedUntil = Date.now() + 60000;
+            }
+          }
+
+          lastError = error;
+          break;
+        }
+
+        const data = await response.json();
+        const fetchedAt = new Date().toISOString();
+
+        openF1DegradedUntil = 0;
+        openF1OutageDetected = false;
+        openF1SaveLocalCache(key, data, fetchedAt);
+        openF1SuccessfulRequest = true;
+
+        if (!openF1CacheUsed) {
+          openF1SetStatus(
+            "operational",
+            `OpenF1 responded successfully. Last successful request: ${openF1FormatTimestamp(fetchedAt)}.`,
+          );
+        }
+
+        return data;
+      } catch (error) {
+        clearTimeout(timer);
+        lastError = error;
+        genuineOutage = true;
+
+        if (error.name === "AbortError") {
+          openF1DegradedUntil = Date.now() + 60000;
+          lastError = new Error(
+            `OpenF1 request timed out after ${timeoutMs}ms`,
+          );
+        }
+        break;
+      }
+    }
+
+    return fallbackToCache(lastError, genuineOutage);
+  })();
+
+  openF1InFlight.set(key, task);
+  try {
+    return await task;
+  } finally {
+    openF1InFlight.delete(key);
+  }
 }
 
 const circuitImageAliases = {
@@ -2589,20 +2671,6 @@ function renderRaceClassification(race, sessionType = "race") {
     remaining.hidden = !opening;
     button.textContent = opening ? "VIEW LESS" : "VIEW MORE";
   };
-}
-
-function createClassificationCard(driver) {
-  return `
-        <article class="classification-card team-${driver.class}" style="--team-color:${driver.color || "#333333"}">
-            <div class="classification-position">${String(driver.position).padStart(2, "0")}</div>
-            <div class="classification-driver">
-                <span>#${driver.number}</span>
-                <strong data-h2h-driver="${driver.number}">${driver.driver}</strong>
-                <small>${driver.team}</small>
-            </div>
-            <div class="classification-status">${driver.dsq ? "DSQ" : driver.dnf ? "DNF" : driver.dns ? "DNS" : driver.gap ? driver.gap : "FINISHED"}</div>
-        </article>
-    `;
 }
 
 function createClassificationRow(driver) {
@@ -5333,14 +5401,6 @@ function replaySetStatus(text) {
   if (replayElements.loadStatus) replayElements.loadStatus.textContent = text;
 }
 
-function replayLocationCoversTime(driverNumber, timestamp) {
-  const points = replayState.locations.get(Number(driverNumber)) || [];
-  if (!points.length || !Number.isFinite(timestamp)) return false;
-  return (
-    timestamp >= points[0].time && timestamp <= points[points.length - 1].time
-  );
-}
-
 function replayRequiredDriversAt(timestamp) {
   return [
     ...new Set(
@@ -5353,7 +5413,7 @@ function replayRequiredDriversAt(timestamp) {
 
 function replayMissingDriversAt(timestamp) {
   return replayRequiredDriversAt(timestamp).filter(
-    (number) => !replayLocationCoversTime(number, timestamp),
+    (number) => !replayState.locations.has(number),
   );
 }
 
@@ -5365,8 +5425,13 @@ async function replayEnsureLocationsAt(timestamp, options = {}) {
     requestId !== replayState.requestId
   )
     return false;
+
   const missing = replayMissingDriversAt(timestamp);
-  if (!missing.length) return true;
+  if (!missing.length) {
+    replayElements.play.disabled = false;
+    if (!replayState.playing) replayElements.play.textContent = "PLAY";
+    return true;
+  }
 
   const wasPlaying = Boolean(options.wasPlaying);
   replayState.playing = false;
@@ -5374,9 +5439,6 @@ async function replayEnsureLocationsAt(timestamp, options = {}) {
   cancelAnimationFrame(replayState.animationFrame);
   replayElements.play.textContent = "LOADING…";
   replayElements.play.disabled = true;
-  replaySetStatus(
-    `LOADING ${missing.length} DRIVER${missing.length === 1 ? "" : "S"} FOR THIS POINT`,
-  );
 
   try {
     await replayFetchLocations(missing, requestId, true);
@@ -5385,22 +5447,32 @@ async function replayEnsureLocationsAt(timestamp, options = {}) {
   }
 
   if (requestId !== replayState.requestId) return false;
+
   const stillMissing = replayMissingDriversAt(timestamp);
   if (stillMissing.length) {
-    replayElements.play.textContent = "LOADING…";
-    replayElements.play.disabled = true;
+    replayElements.play.disabled = false;
+    replayElements.play.textContent = "PLAY";
     replaySetStatus(
-      `${replayRequiredDriversAt(timestamp).length - stillMissing.length}/${replayRequiredDriversAt(timestamp).length} TELEMETRY · LOADING`,
+      `${replayRequiredDriversAt(timestamp).length - stillMissing.length}/${replayRequiredDriversAt(timestamp).length} TELEMETRY · PARTIAL READY`,
     );
     return false;
   }
 
   replayElements.play.disabled = false;
-  replayElements.play.textContent = "PLAY";
   const required = replayRequiredDriversAt(timestamp).length;
   replaySetStatus(`${required}/${required} DRIVERS · TELEMETRY READY`);
   replayRenderTiming();
   replayDraw();
+
+  if (wasPlaying) {
+    replayState.playing = true;
+    replayElements.play.textContent = "PAUSE";
+    replayState.lastFrameTime = 0;
+    replayState.animationFrame = requestAnimationFrame(replayAnimationFrame);
+  } else {
+    replayElements.play.textContent = "PLAY";
+  }
+
   return true;
 }
 
