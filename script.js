@@ -825,10 +825,6 @@ async function loadOpenF1Calendar(year = selectedSeason) {
     "Sprint Qualifying",
     true,
   );
-  const sprintShootoutSessions = await requestCalendarData(
-    "Sprint Shootout",
-    true,
-  );
   const practice1Sessions = await requestCalendarData("Practice 1", true);
   const practice2Sessions = await requestCalendarData("Practice 2", true);
   const practice3Sessions = await requestCalendarData("Practice 3", true);
@@ -859,12 +855,10 @@ async function loadOpenF1Calendar(year = selectedSeason) {
   );
 
   const sprintQualifyingByMeeting = new Map(
-    [...sprintQualifyingSessions, ...sprintShootoutSessions]
+    sprintQualifyingSessions
       .filter(
         (session) =>
-          ["Sprint Qualifying", "Sprint Shootout"].includes(
-            session.session_name,
-          ) && !session.is_cancelled,
+          session.session_name === "Sprint Qualifying" && !session.is_cancelled,
       )
       .map((session) => [session.meeting_key, session]),
   );

@@ -1682,6 +1682,7 @@ body.cursor-hover .laser-cursor {
     --loader-car-width: 90px;
     left: 0px;
     height: 45px;
+    top: -10px;
   }
 }
 
