@@ -6980,7 +6980,7 @@ function phase2Render() {
             <p class="overview-hero-description">${phase2State.drivers.length} drivers. ${phase2State.teams.length} teams. One championship.</p>
             <div class="overview-leader-line">
                 <span>CHAMPIONSHIP LEADER</span>
-                <strong data-h2h-driver="${leader?.number || ""}">${E(leader?.name || "—")}</strong>
+                <strong>${E(leader?.name || "—")}</strong>
                 <b>${P(leader?.points)} <small>PTS</small></b>
             </div>
         </div>
@@ -8826,7 +8826,6 @@ function h2hDecorateDriverReferences() {
     ".driver-info h3",
     ".qualifying-driver strong",
     ".overview-leader h2",
-    ".overview-leader-line strong",
     ".overview-standing-name strong",
     ".drivers-hero-copy h2",
   ];
@@ -8875,7 +8874,7 @@ function h2hDecorateDriverReferences() {
 function h2hPopupAllowed(target) {
   return (
     Boolean(target) &&
-    !target.closest("#dashboardDrivers, #dashboardChampionship, #dashboardRace")
+    !target.closest("#dashboardDrivers, #dashboardChampionship, #dashboardRace, .overview-leader-line")
   );
 }
 
