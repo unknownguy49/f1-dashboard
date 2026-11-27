@@ -3797,6 +3797,13 @@ const laserCursor = document.querySelector(".laser-cursor");
 
 const laserTrail = document.querySelector(".laser-trail");
 
+// Inject the outer telemetry ring for the hover state
+if (laserCursor && !laserCursor.querySelector(".cursor-ring")) {
+  const ring = document.createElement("span");
+  ring.className = "cursor-ring";
+  laserCursor.appendChild(ring);
+}
+
 let mouseX = 0;
 
 let mouseY = 0;
@@ -3809,19 +3816,15 @@ let trailY = 0;
    Track mouse
 --------------------------------------------- */
 
-document.addEventListener(
-  "mousemove",
+document.addEventListener("mousemove", (event) => {
+  mouseX = event.clientX;
+  mouseY = event.clientY;
 
-  (event) => {
-    mouseX = event.clientX;
-
-    mouseY = event.clientY;
-
+  if (laserCursor) {
     laserCursor.style.left = `${mouseX}px`;
-
     laserCursor.style.top = `${mouseY}px`;
-  },
-);
+  }
+});
 
 /* ---------------------------------------------
    Animate laser trail
@@ -3829,28 +3832,24 @@ document.addEventListener(
 
 function animateLaserTrail() {
   trailX += (mouseX - trailX) * 0.18;
-
   trailY += (mouseY - trailY) * 0.18;
 
   const dx = mouseX - trailX;
-
   const dy = mouseY - trailY;
 
   const distance = Math.sqrt(dx * dx + dy * dy);
-
   const angle = Math.atan2(dy, dx) * (180 / Math.PI);
 
-  laserTrail.style.left = `${trailX}px`;
+  if (laserTrail) {
+    laserTrail.style.left = `${trailX}px`;
+    laserTrail.style.top = `${trailY}px`;
 
-  laserTrail.style.top = `${trailY}px`;
-
-  laserTrail.style.transform = `
-            translate(-100%, -50%)
-            rotate(${angle}deg)
-            scaleX(
-                ${Math.min(1.5, Math.max(0.15, distance / 30))}
-            )
-        `;
+    laserTrail.style.transform = `
+      translate(-100%, -50%)
+      rotate(${angle}deg)
+      scaleX(${Math.min(1.5, Math.max(0.15, distance / 30))})
+    `;
+  }
 
   requestAnimationFrame(animateLaserTrail);
 }
@@ -3861,29 +3860,25 @@ animateLaserTrail();
    LASER HOVER STATE
 ===================================================== */
 
-document.addEventListener(
-  "mouseover",
+const interactiveSelector =
+  'button, a, select, input, [role="button"], [data-h2h-driver]';
 
-  (event) => {
-    const interactive = event.target.closest("button, a");
+document.addEventListener("mouseover", (event) => {
+  const interactive = event.target.closest(interactiveSelector);
 
-    if (interactive) {
-      document.body.classList.add("cursor-hover");
-    }
-  },
-);
+  if (interactive) {
+    document.body.classList.add("cursor-hover");
+  }
+});
 
-document.addEventListener(
-  "mouseout",
+document.addEventListener("mouseout", (event) => {
+  const interactive = event.target.closest(interactiveSelector);
 
-  (event) => {
-    const interactive = event.target.closest("button, a");
-
-    if (interactive) {
-      document.body.classList.remove("cursor-hover");
-    }
-  },
-);
+  // Only remove hover if the cursor actually left the interactive element
+  if (interactive && !interactive.contains(event.relatedTarget)) {
+    document.body.classList.remove("cursor-hover");
+  }
+});
 
 /* =====================================================
    PHASE 2 DASHBOARD
