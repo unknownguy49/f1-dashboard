@@ -5,9 +5,9 @@
     2025,
     2026
   ],
-  "refreshedAt": "2026-11-26T15:35:06.191Z",
-  "filesUpdated": 0,
-  "successfulRequests": 361,
+  "refreshedAt": "2026-11-27T15:22:50.428Z",
+  "filesUpdated": 2,
+  "successfulRequests": 363,
   "retries": 0,
   "requestFailures": 0,
   "failedRequests": [],
@@ -17,12 +17,12 @@
   "known404sTotal": 44,
   "refreshes": {
     "current": {
-      "refreshedAt": "2026-11-26T15:35:06.191Z",
+      "refreshedAt": "2026-11-27T15:22:50.428Z",
       "seasons": [
         2026
       ],
-      "filesUpdated": 0,
-      "successfulRequests": 361,
+      "filesUpdated": 2,
+      "successfulRequests": 363,
       "retries": 0,
       "requestFailures": 0,
       "failedRequests": [],
