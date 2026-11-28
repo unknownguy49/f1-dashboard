@@ -12781,3 +12781,8 @@ img[data-fade-in].is-loaded {
     opacity: 0.05;
   }
 }
+
+#practiceResultsRemaining {
+  margin-top: 0;
+  border-top: none;
+}
