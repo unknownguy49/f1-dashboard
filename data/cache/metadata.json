@@ -5,29 +5,157 @@
     2025,
     2026
   ],
-  "refreshedAt": "2026-11-27T15:22:50.428Z",
-  "filesUpdated": 2,
-  "successfulRequests": 363,
+  "refreshedAt": "2026-11-28T14:14:46.881Z",
+  "filesUpdated": 0,
+  "successfulRequests": 0,
   "retries": 0,
-  "requestFailures": 0,
-  "failedRequests": [],
+  "requestFailures": 8,
+  "failedRequests": [
+    {
+      "endpoint": "meetings",
+      "params": {
+        "year": 2026
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Race"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Qualifying"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Sprint"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Sprint Qualifying"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Practice 1"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Practice 2"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    },
+    {
+      "endpoint": "sessions",
+      "params": {
+        "year": 2026,
+        "session_name": "Practice 3"
+      },
+      "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+    }
+  ],
   "replayTelemetryCached": false,
   "known404sAdded": 0,
-  "known404sSkipped": 10,
+  "known404sSkipped": 3,
   "known404sTotal": 44,
   "refreshes": {
     "current": {
-      "refreshedAt": "2026-11-27T15:22:50.428Z",
+      "refreshedAt": "2026-11-28T14:14:46.881Z",
       "seasons": [
         2026
       ],
-      "filesUpdated": 2,
-      "successfulRequests": 363,
+      "filesUpdated": 0,
+      "successfulRequests": 0,
       "retries": 0,
-      "requestFailures": 0,
-      "failedRequests": [],
+      "requestFailures": 8,
+      "failedRequests": [
+        {
+          "endpoint": "meetings",
+          "params": {
+            "year": 2026
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Race"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Qualifying"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Sprint"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Sprint Qualifying"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Practice 1"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Practice 2"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        },
+        {
+          "endpoint": "sessions",
+          "params": {
+            "year": 2026,
+            "session_name": "Practice 3"
+          },
+          "error": "HTTP 401: {\"detail\":\"Live F1 session in progress. Global API access (including past sessions) is restricted to authenticated users until the session ends. Get an API key here: https://buy.stripe.com/eVqcN41BPekP0iIalBcEw02\"}"
+        }
+      ],
       "known404sAdded": 0,
-      "known404sSkipped": 10
+      "known404sSkipped": 3
     },
     "historical": {
       "refreshedAt": "2026-11-10T11:25:00.801Z",
